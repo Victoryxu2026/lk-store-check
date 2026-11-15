@@ -212,14 +212,14 @@ function badBlock(code,ids){ids=ids||[];return '<div class="slot" style="border-
 function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[code]||{};
  if(autoNA(code)){a.level='NA';return '<div class="card" style="opacity:.75"><h3>'+it.code+' '+esc(f(it,'title'))+'</h3>'+(extra||'')+'<div class="small muted">'+t('autoNaNote')+'</div></div>';}
  var h='<div class="card" id="it_'+code.replace('.','_')+'"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div><div class="small muted" style="margin-top:4px">'+t('lowest')+'</div>'+(extra||'');
- LV.forEach(function(l){var txt=f(it,l[1]);if(txt==='—')return;h+='<div class="opt'+(a.level===l[0]?' sel':'')+'" onclick="setLv(\''+code+'\',\''+l[0]+'\')"><span>'+esc(txt)+'</span><span>'+l[0]+'%</span></div>';});
+ LV.forEach(function(l){var txt=f(it,l[1]);if(txt==='—')return;h+='<div class="opt'+(a.level===l[0]&&!a.red?' sel':'')+'" onclick="setLv(\''+code+'\',\''+l[0]+'\')"><span>'+esc(txt)+'</span><span>'+l[0]+'%</span></div>';});
  if(naAllowed(it))h+='<div class="opt'+(a.level==='NA'?' sel':'')+'" onclick="setLv(\''+code+'\',\'NA\')"><span>'+t('na')+'</span><span></span></div>';
- if(it.red==='Y')h+='<label class="opt"><span>⚠ '+t('red')+'</span><input type="checkbox" style="width:auto" '+(a.red?'checked':'')+' onchange="setRed(\''+code+'\',this.checked)"></label>';
+ if(it.red==='Y'){var rt=f(it,'redtxt');h+='<div class="opt'+(a.red?' sel':'')+'" style="border-color:#b3261e;'+(a.red?'background:#fde8e6':'')+'" onclick="setRed(\''+code+'\','+(a.red?'false':'true')+')"><span><b style="color:#b3261e">⚠ '+(L==='zh'?'红线':'Pelanggaran berat')+'：</b>'+esc(rt&&rt!=='—'?rt:'')+'<br><span class="small muted">'+t('red')+'</span></span><span style="color:#b3261e">0%</span></div>';}
  var need=Number(it.photos)||0;if(need&&a.level!=='NA'){if(it.skip_zh)h+='<label class="opt"><span>'+esc(f(it,'skip'))+'</span><input type="checkbox" style="width:auto" '+(a.skipPhoto?'checked':'')+' onchange="S.v.answers[\''+code+'\'].skipPhoto=this.checked;saveDraft();render()"></label>';if(!a.skipPhoto)h+=photoBlock(code,f(it,'photo')||t('photosReq'),need,false,a.photoIds);}
  if(needBad(it,a))h+=badBlock(code,a.badIds);if(a.level&&a.level!=='100'&&a.level!=='NA')h+='<textarea placeholder="'+t('note')+' — '+t('noteReq')+'" oninput="S.v.answers[\''+code+'\'].note=this.value;saveDraft()">'+esc(a.note||'')+'</textarea>';
  return h+'</div>';}
-function setLv(c,l){var a=S.v.answers[c];a.level=l;if(l!=='0')a.red=false;saveDraft();render();}
-function setRed(c,on){var a=S.v.answers[c];a.red=on;if(on)a.level='0';saveDraft();render();}
+function setLv(c,l){var a=S.v.answers[c];a.level=l;a.red=false;saveDraft();render();}
+function setRed(c,on){var a=S.v.answers[c];a.red=on;a.level=on?'0':'';saveDraft();render();}
 function itemDone(code){var it=item(code),a=S.v.answers[code]||{};if(!a.level)return false;if(a.level==='NA')return true;if(!a.skipPhoto&&(a.photoIds||[]).length<(Number(it.photos)||0))return false;if(needBad(it,a)&&!(a.badIds||[]).length)return false;if(a.level!=='100'&&!(a.note||'').trim())return false;return true;}
 
 // ---------- STANDARD visit ----------
