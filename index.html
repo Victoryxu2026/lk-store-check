@@ -48,7 +48,7 @@ var T = {
  fixed:['Sudah diperbaiki','已整改'], notfixed:['Belum diperbaiki','还没整改'], nohint:['Tidak ada peringatan dari data penjualan','销售数据没有异常提示'],
  true_:['Benar terjadi','确实存在'], false_:['Tidak terjadi','不存在'], explained:['Ada alasan yang jelas','有合理原因'],
  reason:['Pilih alasan utama','选择主要原因'], reasons:[['Ada toko pesaing baru di dekat sini','附近新开了竞争店'],['Stok produk laris kosong','畅销品断货'],['Kurang staf','人手不够'],['Mall / jalan sepi','商场或街道客流少'],['Lainnya (tulis di keterangan)','其他（写在说明里）']],
- pricecheck:['Cocokkan label harga 3 produk ini dengan harga di bawah','核对这 3 个商品的价签，和下面的价格是否一致'], keybrands:['Brand prioritas bulan ini (harus dipajang di posisi utama)','本月重点品牌（要放在主陈列位）'], promos:['Promo yang berjalan bulan ini (materinya harus terpasang)','本月正在做的促销（物料要摆出来）'],
+ pricecheck:['Cocokkan label harga 2 produk ini dengan harga di bawah','核对这 2 个商品的价签，和下面的价格是否一致'], lowest:['Kalau ada beberapa masalah sekaligus, pilih nilai yang paling rendah.','同一项有几种问题时，按最低的那一档选。'], keybrands:['Brand prioritas bulan ini (harus dipajang di posisi utama)','本月重点品牌（要放在主陈列位）'], promos:['Promo yang berjalan bulan ini (materinya harus terpasang)','本月正在做的促销（物料要摆出来）'],
  sales:['Tes Penjualan','销售考核'], staff:['Staf yang dites','被考核的店员'], staffname:['Ketik nama staf','输入店员名字'],
  guide:['Untuk tim operasional: adakan training rutin (bulanan & mingguan) dan kirim materi ke toko — pengetahuan produk, promo, teknik jualan, standar operasional toko. Kalau staf gagal tes, cek dulu apakah training-nya sudah sampai ke dia.','给运营团队：要定期做月度和周度培训，把产品知识、促销、销售技巧、门店运营规范的资料发到门店。店员考不过时，先看看培训有没有真正落到他身上。'],
  learnedQ:['Tanyakan ke staf: "Bulan ini kamu sudah belajar produk baru, promo, pengetahuan produk, dan standar toko?"','问店员：「这个月的新品、促销、产品知识和门店规范，你都学过了吗？」'],
@@ -205,7 +205,7 @@ function needBad(it,a){return a.level&&a.level!=='100'&&a.level!=='NA'&&(it.sec!
 function badBlock(code,ids){ids=ids||[];return '<div class="slot" style="border-color:#b3261e"><div>📷 '+t('badPhoto')+' ('+ids.length+')</div>'+thumbHtml(ids)+'<button class="btn btn2" onclick="snap(\'bad_'+code+'\',0)">'+(ids.length?t('addBad'):t('takephoto'))+'</button>'+(ids.length?'<button class="btn btn2" onclick="clearPh(\'bad_'+code+'\')">'+t('retake')+'</button>':'')+'</div>';}
 function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[code]||{};
  if(autoNA(code)){a.level='NA';return '<div class="card" style="opacity:.75"><h3>'+it.code+' '+esc(f(it,'title'))+'</h3>'+(extra||'')+'<div class="small muted">'+t('autoNaNote')+'</div></div>';}
- var h='<div class="card"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div>'+(extra||'');
+ var h='<div class="card"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div><div class="small muted" style="margin-top:4px">'+t('lowest')+'</div>'+(extra||'');
  LV.forEach(function(l){var txt=f(it,l[1]);if(txt==='—')return;h+='<div class="opt'+(a.level===l[0]?' sel':'')+'" onclick="setLv(\''+code+'\',\''+l[0]+'\')"><span>'+esc(txt)+'</span><span>'+l[0]+'%</span></div>';});
  if(naAllowed(it))h+='<div class="opt'+(a.level==='NA'?' sel':'')+'" onclick="setLv(\''+code+'\',\'NA\')"><span>'+t('na')+'</span><span></span></div>';
  if(it.red==='Y')h+='<label class="opt"><span>⚠ '+t('red')+'</span><input type="checkbox" style="width:auto" '+(a.red?'checked':'')+' onchange="setRed(\''+code+'\',this.checked)"></label>';
