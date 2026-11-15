@@ -142,17 +142,20 @@ function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id)
 var REC=null;
 function recUI(key,min,max){var r=S.v.rec[key]||{};var html='<div class="card"><h3>'+t(key)+'</h3>';
  if(r.id&&!REC)html+='<div class="ok">✓ '+t('recok')+' ('+Math.round(r.sec/60*10)/10+' '+t('minutes')+')</div><button class="btn btn2" onclick="recStart(\''+key+'\','+min+','+max+')">'+t('rerec')+'</button>';
- else if(REC&&REC.key===key)html+='<div class="rec" id="rtime">0:00</div><div class="row"><button class="btn btn2" onclick="recPause()" id="rpause">'+t('pause')+'</button><button class="btn" onclick="recStop()">'+t('stop')+'</button></div>';
+ else if(REC&&REC.key===key)html+='<div class="rec" id="rtime">'+Math.floor(recClock()/60)+':'+('0'+recClock()%60).slice(-2)+'</div><div class="row"><button class="btn btn2" onclick="recPause()" id="rpause">'+t('pause')+'</button><button class="btn" onclick="recStop()">'+t('stop')+'</button></div>';
  else html+='<button class="btn btnY" onclick="recStart(\''+key+'\','+min+','+max+')">● '+t('start')+'</button>';
  return html+'</div>';}
-function recStart(key,min,max){navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){var mr=new MediaRecorder(st);var ch=[];mr.ondataavailable=function(e){ch.push(e.data)};
- REC={key:key,mr:mr,st:st,ch:ch,min:min,max:max,sec:0,paused:false};mr.start(1000);
- REC.timer=setInterval(function(){if(!REC.paused)REC.sec++;var e=document.getElementById('rtime');if(e)e.textContent=Math.floor(REC.sec/60)+':'+('0'+REC.sec%60).slice(-2);if(REC.sec>=REC.max*60)recStop(true);},1000);
- mr.onstop=function(){var b=new Blob(ch,{type:mr.mimeType||'audio/webm'});var fr=new FileReader();fr.onload=function(){var id='a'+Date.now();mput(id,fr.result);
-  S.v.media[id]={name:key+'_'+id+'.webm',mime:b.type.split(';')[0]};S.v.rec[key]={id:id,sec:REC.sec};st.getTracks().forEach(function(tk){tk.stop()});clearInterval(REC.timer);REC=null;saveDraft();pump();render();};fr.readAsDataURL(b);};
- render();}).catch(function(){toast(t('micfail'))});}
-function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.paused=false;document.getElementById('rpause').textContent=t('pause');}else{REC.mr.pause();REC.paused=true;document.getElementById('rpause').textContent=t('cont');}}
-function recStop(force){if(!REC)return;if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}if(REC.paused)REC.mr.resume();REC.mr.stop();}
+var REC_BUSY=false,REC_TIMERS=[];
+function recClock(){if(!REC)return 0;var ms=REC.acc+(REC.paused?0:Date.now()-REC.t0);return Math.floor(ms/1000);}
+function recStart(key,min,max){if(REC||REC_BUSY)return;REC_BUSY=true;REC_TIMERS.forEach(clearInterval);REC_TIMERS=[];
+ navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){var mr=new MediaRecorder(st);var ch=[];mr.ondataavailable=function(e){ch.push(e.data)};
+ var me={key:key,mr:mr,st:st,ch:ch,min:min,max:max,sec:0,paused:false,acc:0,t0:Date.now()};REC=me;REC_BUSY=false;mr.start(1000);
+ me.timer=setInterval(function(){if(REC!==me){clearInterval(me.timer);return;}me.sec=recClock();var e=document.getElementById('rtime');if(e)e.textContent=Math.floor(me.sec/60)+':'+('0'+me.sec%60).slice(-2);if(me.sec>=me.max*60)recStop(true);},500);REC_TIMERS.push(me.timer);
+ mr.onstop=function(){clearInterval(me.timer);var b=new Blob(ch,{type:mr.mimeType||'audio/webm'});var fr=new FileReader();fr.onload=function(){var id='a'+Date.now();mput(id,fr.result);
+  S.v.media[id]={name:key+'_'+id+'.webm',mime:b.type.split(';')[0]};S.v.rec[key]={id:id,sec:me.sec};st.getTracks().forEach(function(tk){tk.stop()});if(REC===me)REC=null;saveDraft();pump();render();};fr.readAsDataURL(b);};
+ render();}).catch(function(){REC_BUSY=false;toast(t('micfail'))});}
+function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.t0=Date.now();REC.paused=false;document.getElementById('rpause').textContent=t('pause');}else{REC.mr.pause();REC.acc+=Date.now()-REC.t0;REC.paused=true;document.getElementById('rpause').textContent=t('cont');}}
+function recStop(force){if(!REC||REC.stopping)return;REC.sec=recClock();if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}REC.stopping=true;clearInterval(REC.timer);if(REC.paused){REC.mr.resume();}REC.mr.stop();}
 
 // ================= screens =================
 function render(){var a=document.getElementById('app');setSync();
