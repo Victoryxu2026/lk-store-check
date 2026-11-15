@@ -42,7 +42,7 @@ var T = {
  takephoto:['Ambil foto','拍照'], retake:['Foto ulang','重拍'], gps:['Lokasi tercatat','已记录定位'], gpsfail:['Lokasi tidak terbaca. Tetap bisa lanjut.','没拿到定位，不影响继续'],
  far:['Lokasimu jauh dari toko. Ini hanya dicatat, tetap bisa lanjut.','你离门店较远，只做记录，可以继续'], saved:['Semua tersimpan','已全部保存'], waitCheckin:['Dikirim setelah check-in:','签到后上传：'], signingIn:['Sedang masuk…','正在登录…'], checkingIn:['Sedang check-in dan memuat data toko. Tunggu sebentar…','正在签到并加载门店数据，请稍等…'], submitting:['Sedang mengirim hasil…','正在提交结果…'], uploading:['Sedang upload:','正在上传：'],
  na:['Tidak berlaku (self-check PIC)','不适用（店长自查时）'], autoNaNote:['Item ini belum dinilai bulan ini, tidak perlu diisi.','这一项本月暂不评分，不用填写。'], note:['Tulis masalahnya: apa yang kurang, di mana','写清楚问题：哪里不达标、在哪个位置'], noteReq:['wajib diisi kalau tidak 100%','没到 100% 必须填写'],
- red:['Pelanggaran berat: nilai langsung 0 dan dilaporkan','红线问题：直接 0 分，并上报'], photosReq:['Foto wajib','必拍照片'],
+ red:['Pelanggaran berat: nilai langsung 0 dan dilaporkan','红线问题：直接 0 分，并上报'], photosReq:['Foto wajib','必拍照片'], badPhoto:['Foto dekat bagian yang bermasalah (setiap masalah 1 foto, minimal 1)','问题处近照（每个问题拍 1 张，至少 1 张）'], addBad:['Foto masalah lagi','再拍一处问题'],
  step:['Langkah','第'], of:['dari','步 / 共'], needAll:['Belum lengkap. Pilih nilai, ambil foto, dan isi keterangan yang wajib.','还没填完：请选档位、拍照，并填写必填说明'],
  s1:['Cek masalah lama & data toko','复查上次问题 + 看数据提示'], noissue:['Tidak ada masalah dari inspeksi sebelumnya','上次检查没有遗留问题'],
  fixed:['Sudah diperbaiki','已整改'], notfixed:['Belum diperbaiki','还没整改'], nohint:['Tidak ada peringatan dari data penjualan','销售数据没有异常提示'],
@@ -118,7 +118,7 @@ function getGeo(cb){if(!navigator.geolocation)return cb(null);var done=false;nav
 // ================= camera + watermark =================
 function zoom(id){var z=document.getElementById('zoom');z.innerHTML='<img src="'+S.thumbs[id]+'" style="max-width:100%;max-height:100%">';z.style.display='flex';}
 function tagLabel(k){var zh=L==='zh',m={selfie:zh?'签到自拍':'Selfie check-in',outselfie:zh?'签退自拍':'Selfie check-out',front:zh?'门头':'Tampak depan',group:zh?'店员合照':'Foto bersama staf'};
- if(m[k])return m[k];if(k.indexOf('fix_')===0)return (zh?'整改 ':'Perbaikan ')+k.slice(4);
+ if(m[k])return m[k];if(k.indexOf('fix_')===0)return (zh?'整改 ':'Perbaikan ')+k.slice(4);if(k.indexOf('bad_')===0)return (zh?'问题处 ':'Masalah ')+tagLabel(k.slice(4));
  var g=/^([gp])_(\d+)$/.exec(k);if(g&&S.v&&S.v.items){var it=S.v.items[+g[2]]||{};return (g[1]==='g'?(zh?'货品 ':'Barang '):'POS ')+(it.sku||'')+' '+(it.name||'');}
  var it=S.boot&&S.boot.items?S.boot.items.find(function(i){return i.code===k}):null;return it?k+' '+f(it,'title'):k;}
 function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在定位…':'Mencari lokasi…');if(g)return '📍 '+(L==='zh'?'已定位，精度约 ':'Lokasi tercatat, akurasi ±')+g.acc+' m';
@@ -190,8 +190,8 @@ function pickStore(id){var s=S.boot.stores.find(function(x){return x.id===id});S
 function photoBlock(key,label,n,front,ids){ids=ids||[];return '<div class="slot"><div>📷 '+esc(label)+' ('+ids.length+'/'+n+')</div>'+thumbHtml(ids)+(ids.length<n?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+')">'+t('takephoto')+'</button>':'<button class="btn btn2" onclick="clearPh(\''+key+'\')">'+t('retake')+'</button>')+'</div>';}
 var PH={selfie:'startSelfieIds',front:'frontIds',outselfie:'endSelfieIds',group:'groupIds'};
 function snap(key,front){if(key==='selfie'&&S.lastGeo)S.v.startGeo=S.lastGeo;if(key==='outselfie'&&S.lastGeo)S.v.endGeo=S.lastGeo;getGeo(function(g){if(g){S.lastGeo=g;S.lastGeoAt=Date.now();if(key==='selfie')S.v.startGeo=g;if(key==='outselfie')S.v.endGeo=g;saveDraft();}});
- takePhoto(key,!!front,function(id){var p=PH[key];if(p){S.v[p]=(S.v[p]||[]).concat(id);}else{var a=S.v.answers[key]=S.v.answers[key]||{};a.photoIds=(a.photoIds||[]).concat(id);}saveDraft();render();});}
-function clearPh(key){var p=PH[key];if(p)S.v[p]=[];else S.v.answers[key].photoIds=[];saveDraft();render();}
+ takePhoto(key,!!front,function(id){var p=PH[key];if(key.indexOf('bad_')===0){var b=S.v.answers[key.slice(4)];b.badIds=(b.badIds||[]).concat(id);}else if(p){S.v[p]=(S.v[p]||[]).concat(id);}else{var a=S.v.answers[key]=S.v.answers[key]||{};a.photoIds=(a.photoIds||[]).concat(id);}saveDraft();render();});}
+function clearPh(key){var p=PH[key];if(key.indexOf('bad_')===0)S.v.answers[key.slice(4)].badIds=[];else if(p)S.v[p]=[];else S.v.answers[key].photoIds=[];saveDraft();render();}
 function doCheckin(){var v=S.v;if(S.inCheckin)return;S.inCheckin=1;busyOn(t('checkingIn'));run('startVisit',[S.token,v.type,v.storeId,v.startGeo||null],function(r){S.inCheckin=0;busyOff();v.visitId=r.visitId;v.startTime=r.startTime;v.startDist=r.dist;v.ctx=r;v.step=1;
  if(v.type==='SPOT'){v.items=r.skus.map(function(s){return {sku:s.sku,name:s.name,shared:s.shared}});v.idx=0;}
  if(r.dist!==''&&r.dist>500)toast(t('far'));saveDraft();render();pump();},function(e){S.inCheckin=0;busyOff();toast(t('err')+': '+e);});}
@@ -201,6 +201,8 @@ var LV=[['100','l100'],['80','l80'],['60','l60'],['40','l40'],['0','l0']];
 function item(code){return S.boot.items.find(function(i){return i.code===code})}
 function autoNA(c){return ((S.boot&&S.boot.autoNA)||['B.8','C.3']).indexOf(c)>=0;}
 function naAllowed(it){return String(it.picNA)==='Y'&&S.user&&S.user.kind==='PIC';}
+function needBad(it,a){return a.level&&a.level!=='100'&&a.level!=='NA'&&(it.sec!=='C'||it.code==='C.0')&&it.code!=='B.8';}
+function badBlock(code,ids){ids=ids||[];return '<div class="slot" style="border-color:#b3261e"><div>📷 '+t('badPhoto')+' ('+ids.length+')</div>'+thumbHtml(ids)+'<button class="btn btn2" onclick="snap(\'bad_'+code+'\',0)">'+(ids.length?t('addBad'):t('takephoto'))+'</button>'+(ids.length?'<button class="btn btn2" onclick="clearPh(\'bad_'+code+'\')">'+t('retake')+'</button>':'')+'</div>';}
 function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[code]||{};
  if(autoNA(code)){a.level='NA';return '<div class="card" style="opacity:.75"><h3>'+it.code+' '+esc(f(it,'title'))+'</h3>'+(extra||'')+'<div class="small muted">'+t('autoNaNote')+'</div></div>';}
  var h='<div class="card"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div>'+(extra||'');
@@ -208,11 +210,11 @@ function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[
  if(naAllowed(it))h+='<div class="opt'+(a.level==='NA'?' sel':'')+'" onclick="setLv(\''+code+'\',\'NA\')"><span>'+t('na')+'</span><span></span></div>';
  if(it.red==='Y')h+='<label class="opt"><span>⚠ '+t('red')+'</span><input type="checkbox" style="width:auto" '+(a.red?'checked':'')+' onchange="setRed(\''+code+'\',this.checked)"></label>';
  var need=Number(it.photos)||0;if(need&&a.level!=='NA'){if(it.skip_zh)h+='<label class="opt"><span>'+esc(f(it,'skip'))+'</span><input type="checkbox" style="width:auto" '+(a.skipPhoto?'checked':'')+' onchange="S.v.answers[\''+code+'\'].skipPhoto=this.checked;saveDraft();render()"></label>';if(!a.skipPhoto)h+=photoBlock(code,f(it,'photo')||t('photosReq'),need,false,a.photoIds);}
- if(a.level&&a.level!=='100'&&a.level!=='NA')h+='<textarea placeholder="'+t('note')+' — '+t('noteReq')+'" oninput="S.v.answers[\''+code+'\'].note=this.value;saveDraft()">'+esc(a.note||'')+'</textarea>';
+ if(needBad(it,a))h+=badBlock(code,a.badIds);if(a.level&&a.level!=='100'&&a.level!=='NA')h+='<textarea placeholder="'+t('note')+' — '+t('noteReq')+'" oninput="S.v.answers[\''+code+'\'].note=this.value;saveDraft()">'+esc(a.note||'')+'</textarea>';
  return h+'</div>';}
 function setLv(c,l){var a=S.v.answers[c];a.level=l;if(l!=='0')a.red=false;saveDraft();render();}
 function setRed(c,on){var a=S.v.answers[c];a.red=on;if(on)a.level='0';saveDraft();render();}
-function itemDone(code){var it=item(code),a=S.v.answers[code]||{};if(!a.level)return false;if(a.level==='NA')return true;if(!a.skipPhoto&&(a.photoIds||[]).length<(Number(it.photos)||0))return false;if(a.level!=='100'&&!(a.note||'').trim())return false;return true;}
+function itemDone(code){var it=item(code),a=S.v.answers[code]||{};if(!a.level)return false;if(a.level==='NA')return true;if(!a.skipPhoto&&(a.photoIds||[]).length<(Number(it.photos)||0))return false;if(needBad(it,a)&&!(a.badIds||[]).length)return false;if(a.level!=='100'&&!(a.note||'').trim())return false;return true;}
 
 // ---------- STANDARD visit ----------
 var STEPS=[null,'s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'];
@@ -280,7 +282,7 @@ function std_s10(){var v=S.v;var h='<h2>'+t('checkout')+'</h2><div class="card">
  h+='<button class="btn" '+((v.endSelfieIds||[]).length&&!n?'':'disabled')+' onclick="submitStd()">'+t('submit')+'</button><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button>';return h;}
 function mins(){return (Date.now()+OFF-new Date(S.v.startTime.replace(' ','T')))/60000;}
 function submitStd(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<30&&!confirm(t('minTime')))return;
- var ans={};Object.keys(v.answers).forEach(function(k){if(k.indexOf('fix_')===0)return;var a=v.answers[k];ans[k]={level:a.level,note:(a.skipPhoto?'['+(item(k)?f(item(k),'skip'):'skip')+'] ':'')+(a.note||''),red:!!a.red,photos:(a.photoIds||[]).map(murl)};});
+ var ans={};Object.keys(v.answers).forEach(function(k){if(k.indexOf('fix_')===0)return;var a=v.answers[k];ans[k]={level:a.level,note:(a.skipPhoto?'['+(item(k)?f(item(k),'skip'):'skip')+'] ':'')+(a.note||''),red:!!a.red,photos:(a.photoIds||[]).concat(a.level!=='100'?(a.badIds||[]):[]).map(murl)};});
  var cs=['C.0','C.1','C.3','C.4','C.5','C.6','C.7'],e=0,p=0;cs.forEach(function(c){var a=v.answers[c];if(a&&a.level&&a.level!=='NA'){var pts=Number(item(c).pts);e+=pts*Number(a.level)/100;p+=pts;}});
  var s=v.sales||{};
  var payload={visitId:v.visitId,storeId:v.storeId,startTime:v.startTime,startGeo:v.startGeo||null,startDist:v.startDist,startSelfie:(v.startSelfieIds||[]).map(murl).concat((v.frontIds||[]).map(murl)).join('\n'),
