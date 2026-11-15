@@ -227,20 +227,25 @@ function std_s1(){var h='<h2>'+tt(T.sec[1])+'</h2>'+itemCard('C.0');return h+nav
 function std_s2(){var v=S.v,c=v.ctx,h='<h2>'+t('s1')+'</h2><div class="card">';
  if(!c.openIssues.length)h+='<div class="muted">'+t('noissue')+'</div>';
  c.openIssues.forEach(function(o,i){h+='<div class="q"><b>'+esc(o.code)+'</b> '+esc(o.desc)+'<div class="row"><div class="opt'+(o.result==='fixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'fixed\';saveDraft();render()">'+t('fixed')+'</div><div class="opt'+(o.result==='notfixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'notfixed\';saveDraft();render()">'+t('notfixed')+'</div></div></div>';});
- h+='</div><div class="card"><div class="guide">'+t('hintNoSnap')+'</div>';
+ h+='</div><div class="card">';
  if(!c.hints.length)h+='<div class="muted">'+t('nohint')+'</div>';
  c.hints.forEach(function(x,i){h+='<div class="q"><b>'+esc(L==='zh'?x.zh:x.id)+'</b>';
-  if(x.mode==='reason')h+='<select onchange="S.v.ctx.hints['+i+'].result=this.value;saveDraft()"><option value="">'+t('reason')+'</option>'+T.reasons.map(function(r){return '<option'+(x.result===r[1]?' selected':'')+' value="'+r[1]+'">'+tt(r)+'</option>'}).join('')+'</select>';
+  if(x.mode==='skus'){(x.items||[]).forEach(function(it,j){h+='<div style="margin-top:10px"><div><b>'+esc(it.name)+'</b> <span class="muted small">'+esc(L==='zh'?it.info_zh:it.info_id)+'</span></div>'+x.opts.map(function(o){return '<div class="opt'+(it.result===o[0]?' sel':'')+'" onclick="S.v.ctx.hints['+i+'].items['+j+'].result=\''+o[0]+'\';saveDraft();render()"><span>'+(L==='zh'?o[2]:o[1])+'</span></div>'}).join('')+'</div>';});}
+  else if(x.mode==='reason')h+='<select onchange="S.v.ctx.hints['+i+'].result=this.value;saveDraft()"><option value="">'+t('reason')+'</option>'+T.reasons.map(function(r){return '<option'+(x.result===r[1]?' selected':'')+' value="'+r[1]+'">'+tt(r)+'</option>'}).join('')+'</select>';
   else h+='<div class="row">'+[['true_','属实'],['false_','不属实'],['explained','已说明原因']].map(function(o){return '<div class="opt'+(x.result===o[1]?' sel':'')+'" onclick="S.v.ctx.hints['+i+'].result=\''+o[1]+'\';saveDraft();render()">'+t(o[0])+'</div>'}).join('')+'</div>';
   h+='<textarea placeholder="'+t('note')+'" oninput="S.v.ctx.hints['+i+'].note=this.value;saveDraft()">'+esc(x.note||'')+'</textarea></div>';});
- h+='</div>';var ok=c.openIssues.every(function(o){return o.result})&&c.hints.every(function(x){return x.result});return h+nav(ok);}
+ h+='</div>';var ok=c.openIssues.every(function(o){return o.result})&&c.hints.every(function(x){return x.mode==='skus'?(x.items||[]).every(function(it){return it.result}):x.result});return h+nav(ok);}
 function std_s3(){var cs=['A.1','A.2','A.3','A.4','A.5'];return '<h2>'+tt(T.sec[3])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
 function std_s4(){return '<h2>'+tt(T.sec[4])+'</h2>'+itemCard('B.1')+nav(codesDone(['B.1']));}
 function std_s5(){var c=S.v.ctx;var pc='<div class="guide"><b>'+t('pricecheck')+'</b>'+c.priceChecks.map(function(p){return '<div>'+esc(p.name)+' — <b>Rp'+Number(p.price).toLocaleString()+'</b></div>'}).join('')+'</div>';
  var kb='<div class="guide"><b>'+t('keybrands')+':</b> '+esc(S.boot.keyBrands)+'</div>';
  var pr='<div class="guide"><b>'+t('promos')+'</b>'+(c.promos||[]).map(function(p){return '<div class="small">• '+esc(p)+'</div>'}).join('')+'</div>';
  var cs=['B.3','B.4','B.5','B.6'];return '<h2>'+tt(T.sec[5])+'</h2>'+itemCard('B.3',pc)+itemCard('B.4')+itemCard('B.5',kb)+itemCard('B.6',pr)+nav(codesDone(cs));}
-function std_s6(){var a=S.v.answers['B.8']=S.v.answers['B.8']||{};if(!a.level)a.level='NA';return '<h2>'+tt(T.sec[6])+'</h2>'+itemCard('B.8','<div class="guide">'+t('hintNoSnap')+'</div>')+nav(codesDone(['B.8']));}
+function b8Suggest(){var n1=0,n2=0;(S.v.ctx.hints||[]).forEach(function(x){(x.items||[]).forEach(function(it){if(x.key==='OOS'&&it.result==='notasked')n1++;if(x.key==='SLOW'&&it.result==='noshelf')n2++;});});
+ var lv=n1>=3?'0':n1==2?'40':(n1==1||n2>=2)?'60':n2==1?'80':'100';return {lv:lv,n1:n1,n2:n2};}
+function std_s6(){var a=S.v.answers['B.8']=S.v.answers['B.8']||{};if(a.level==='NA')delete a.level;var g=b8Suggest();
+ var tip=(L==='zh'?'根据第 2 步的核实结果，系统建议：<b>'+g.lv+'%</b>（断货没报补货 '+g.n1+' 个，不动销没上架/没价签 '+g.n2+' 个）。请确认后选择档位。':'Berdasarkan hasil cek di langkah 2, saran sistem: <b>'+g.lv+'%</b> (kosong belum minta restock: '+g.n1+', tidak laku belum dipajang/tanpa label: '+g.n2+'). Konfirmasi lalu pilih nilai.');
+ return '<h2>'+tt(T.sec[6])+'</h2>'+itemCard('B.8','<div class="guide">'+tip+'</div>')+nav(codesDone(['B.8']));}
 function cLow(){return ['C.0','C.1','C.3','C.4','C.5','C.6','C.7'].some(function(c){var l=(S.v.answers[c]||{}).level;return l&&l!=='NA'&&Number(l)<80});}
 function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3']=v.answers['C.3']||{};if(!a3.level)a3.level='NA';
  var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card"><label class="small">'+t('staff')+'</label>';
