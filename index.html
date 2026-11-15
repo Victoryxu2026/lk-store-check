@@ -41,7 +41,7 @@ var T = {
  checkin:['Check-in','签到'], selfie:['Selfie: wajah terlihat jelas, latar belakang toko','自拍：正脸清楚，背景能看到门店'], front:['Foto tampak depan toko (seluruh fasad)','门头正面照（拍全整个门头）'],
  takephoto:['Ambil foto','拍照'], retake:['Foto ulang','重拍'], gps:['Lokasi tercatat','已记录定位'], gpsfail:['Lokasi tidak terbaca. Tetap bisa lanjut.','没拿到定位，不影响继续'],
  far:['Lokasimu jauh dari toko. Ini hanya dicatat, tetap bisa lanjut.','你离门店较远，只做记录，可以继续'], saved:['Semua tersimpan','已全部保存'], waitCheckin:['Dikirim setelah check-in:','签到后上传：'], signingIn:['Sedang masuk…','正在登录…'], checkingIn:['Sedang check-in dan memuat data toko. Tunggu sebentar…','正在签到并加载门店数据，请稍等…'], submitting:['Sedang mengirim hasil…','正在提交结果…'], uploading:['Sedang upload:','正在上传：'],
- na:['Tidak berlaku di toko ini','本店不适用'], note:['Tulis masalahnya: apa yang kurang, di mana','写清楚问题：哪里不达标、在哪个位置'], noteReq:['wajib diisi kalau tidak 100%','没到 100% 必须填写'],
+ na:['Tidak berlaku (self-check PIC)','不适用（店长自查时）'], autoNaNote:['Item ini belum dinilai bulan ini, tidak perlu diisi.','这一项本月暂不评分，不用填写。'], note:['Tulis masalahnya: apa yang kurang, di mana','写清楚问题：哪里不达标、在哪个位置'], noteReq:['wajib diisi kalau tidak 100%','没到 100% 必须填写'],
  red:['Pelanggaran berat: nilai langsung 0 dan dilaporkan','红线问题：直接 0 分，并上报'], photosReq:['Foto wajib','必拍照片'],
  step:['Langkah','第'], of:['dari','步 / 共'], needAll:['Belum lengkap. Pilih nilai, ambil foto, dan isi keterangan yang wajib.','还没填完：请选档位、拍照，并填写必填说明'],
  s1:['Cek masalah lama & data toko','复查上次问题 + 看数据提示'], noissue:['Tidak ada masalah dari inspeksi sebelumnya','上次检查没有遗留问题'],
@@ -198,10 +198,13 @@ function doCheckin(){var v=S.v;if(S.inCheckin)return;S.inCheckin=1;busyOn(t('che
 // ---------- item card ----------
 var LV=[['100','l100'],['80','l80'],['60','l60'],['40','l40'],['0','l0']];
 function item(code){return S.boot.items.find(function(i){return i.code===code})}
+function autoNA(c){return ((S.boot&&S.boot.autoNA)||['B.8','C.3']).indexOf(c)>=0;}
+function naAllowed(it){return String(it.picNA)==='Y'&&S.user&&S.user.kind==='PIC';}
 function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[code]||{};
+ if(autoNA(code)){a.level='NA';return '<div class="card" style="opacity:.75"><h3>'+it.code+' '+esc(f(it,'title'))+'</h3>'+(extra||'')+'<div class="small muted">'+t('autoNaNote')+'</div></div>';}
  var h='<div class="card"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div>'+(extra||'');
  LV.forEach(function(l){var txt=f(it,l[1]);if(txt==='—')return;h+='<div class="opt'+(a.level===l[0]?' sel':'')+'" onclick="setLv(\''+code+'\',\''+l[0]+'\')"><span>'+esc(txt)+'</span><span>'+l[0]+'%</span></div>';});
- h+='<div class="opt'+(a.level==='NA'?' sel':'')+'" onclick="setLv(\''+code+'\',\'NA\')"><span>'+t('na')+'</span><span></span></div>';
+ if(naAllowed(it))h+='<div class="opt'+(a.level==='NA'?' sel':'')+'" onclick="setLv(\''+code+'\',\'NA\')"><span>'+t('na')+'</span><span></span></div>';
  if(it.red==='Y')h+='<label class="opt"><span>⚠ '+t('red')+'</span><input type="checkbox" style="width:auto" '+(a.red?'checked':'')+' onchange="setRed(\''+code+'\',this.checked)"></label>';
  var need=Number(it.photos)||0;if(need&&a.level!=='NA')h+=photoBlock(code,f(it,'photo')||t('photosReq'),need,false,a.photoIds);
  if(a.level&&a.level!=='100'&&a.level!=='NA')h+='<textarea placeholder="'+t('note')+' — '+t('noteReq')+'" oninput="S.v.answers[\''+code+'\'].note=this.value;saveDraft()">'+esc(a.note||'')+'</textarea>';
