@@ -261,14 +261,14 @@ function togGap(g){var s=S.v.sales;s.gaps=s.gaps||[];var i=s.gaps.indexOf(g);i<0
 function togTopic(g){var s=S.v.sales;s.coachTopics=s.coachTopics||[];var i=s.coachTopics.indexOf(g);i<0?s.coachTopics.push(g):s.coachTopics.splice(i,1);saveDraft();render();}
 function std_s8(){var cs=['D.1','D.2','D.3','D.6'];return '<h2>'+tt(T.sec[8])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
 function failing(){return S.boot.items.filter(function(it){var a=S.v.answers[it.code];return a&&a.level&&a.level!=='NA'&&a.level!=='100'});}
-function std_s9(){var v=S.v;v.fix=v.fix||{};var h='<h2>'+t('summary')+'</h2><div class="small muted">'+t('c0adj')+'</div>'+itemCard('C.0');
+function std_s9(){var v=S.v;v.fix=v.fix||{};var h='<h2>'+t('summary')+'</h2>';
  failing().forEach(function(it){var x=v.fix[it.code]=v.fix[it.code]||{};h+='<div class="card"><b>'+it.code+' '+esc(f(it,'title'))+'</b> <span class="tag">'+v.answers[it.code].level+'%</span><div class="small">'+esc(v.answers[it.code].note||'')+'</div><div class="row">'+
   '<div class="opt'+(x.action==='solved'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'solved\';saveDraft();render()">'+t('solved')+'</div><div class="opt'+(x.action==='rectify'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'rectify\';saveDraft();render()">'+t('rectify')+'</div></div>';
   if(x.action==='solved')h+=photoBlock('fix_'+it.code,t('solved'),1,false,(v.answers['fix_'+it.code]||{}).photoIds);
   if(x.action==='rectify')h+='<input placeholder="'+t('owner')+'" value="'+esc(x.owner||'')+'" oninput="S.v.fix[\''+it.code+'\'].owner=this.value;saveDraft()"><input type="date" value="'+esc(x.due||'')+'" oninput="S.v.fix[\''+it.code+'\'].due=this.value;saveDraft()">';
   h+='</div>';});
  h+='<div class="card"><textarea placeholder="'+t('helped')+'" oninput="S.v.helped=this.value;saveDraft()">'+esc(v.helped||'')+'</textarea><input placeholder="'+t('confirm')+'" value="'+esc(v.staffConfirm||'')+'" oninput="S.v.staffConfirm=this.value;saveDraft()"></div>';
- var ok=itemDone('C.0')&&failing().every(function(it){var x=v.fix[it.code]||{};return x.action==='rectify'?(x.owner&&x.due):x.action==='solved'?((v.answers['fix_'+it.code]||{}).photoIds||[]).length:false})&&(v.helped||'').trim()&&(v.staffConfirm||'').trim();
+ var ok=failing().every(function(it){var x=v.fix[it.code]||{};return x.action==='rectify'?(x.owner&&x.due):x.action==='solved'?((v.answers['fix_'+it.code]||{}).photoIds||[]).length:false})&&(v.helped||'').trim()&&(v.staffConfirm||'').trim();
  return h+nav(ok);}
 function std_s10(){var v=S.v;var h='<h2>'+t('checkout')+'</h2><div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';
  var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
