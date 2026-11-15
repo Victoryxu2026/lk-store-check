@@ -70,7 +70,7 @@ var T = {
  posqty:['4. Jumlah stok di POS','4. POS 显示的库存数'], diff:['Selisih','差异'], recount:['Hitung ulang: jumlahnya berapa?','重新点一遍：是多少？'], diffnote:['Jelaskan kenapa ada selisih','说明差异原因'],
  nosku:['Toko ini tidak punya data penjualan 14 hari terakhir, jadi tidak ada SKU untuk dicek.','这家店近 14 天没有销售数据，没有可抽查的 SKU'], spotDone:['SKU cocok','个 SKU 一致'],
  photoOld:['Foto harus diambil langsung sekarang, bukan dari galeri','照片必须现场拍，不能用相册里的旧照片'], loading:['Memuat…','加载中…'], err:['Gagal. Cek internet lalu coba lagi.','操作失败，请检查网络后重试'],
- expired:['Sesi sudah habis. Silakan masuk lagi.','登录已过期，请重新登录'], c3na:['Kartu produk belum ada, jadi C.3 otomatis "tidak berlaku"','卖点卡还没下发，C.3 自动按"不适用"处理'],
+ expired:['Sesi sudah habis. Silakan masuk lagi.','登录已过期，请重新登录'], c3pick:['Minta staf menjelaskan 2 produk ini:','请店员介绍这 2 个商品：'], c3na:['Kartu produk belum ada, jadi C.3 otomatis "tidak berlaku"','卖点卡还没下发，C.3 自动按"不适用"处理'],
  selectStore:['Pilih toko','选择门店'], hintNoSnap:['Data stok harian belum tersambung, jadi B.8 otomatis "tidak berlaku"','每日库存数据还没接入，B.8 自动按"不适用"处理'],
  sec:{1:['Kondisi staf saat kamu masuk (lihat sebelum menyapa)','进店先看：店员在岗状态（先观察，再打招呼）'],3:['Penampilan staf & toko','店员和门店形象'],4:['Tasting counter (meja tester)','试抽台'],5:['Display & label harga','陈列和价签'],6:['Stok','库存'],8:['Operasional harian','日常运营']}
 };
@@ -249,13 +249,13 @@ function std_s6(){var a=S.v.answers['B.8']=S.v.answers['B.8']||{};if(a.level==='
  var tip=(L==='zh'?'根据第 2 步的核实结果，系统建议：<b>'+g.lv+'%</b>（断货没报补货 '+g.n1+' 个，不动销没上架/没价签 '+g.n2+' 个）。请确认后选择档位。':'Berdasarkan hasil cek di langkah 2, saran sistem: <b>'+g.lv+'%</b> (kosong belum minta restock: '+g.n1+', tidak laku belum dipajang/tanpa label: '+g.n2+'). Konfirmasi lalu pilih nilai.');
  return '<h2>'+tt(T.sec[6])+'</h2>'+itemCard('B.8','<div class="guide">'+tip+'</div>')+nav(codesDone(['B.8']));}
 function cLow(){return ['C.0','C.1','C.3','C.4','C.5','C.6','C.7'].some(function(c){var l=(S.v.answers[c]||{}).level;return l&&l!=='NA'&&Number(l)<80});}
-function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3']=v.answers['C.3']||{};if(!a3.level)a3.level='NA';
+function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3']=v.answers['C.3']||{};if(a3.level==='NA')delete a3.level;
  var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card"><label class="small">'+t('staff')+'</label>';
  if(c.staff&&c.staff.length)h+='<select onchange="S.v.sales.staff=this.value;saveDraft()"><option value="">—</option>'+c.staff.map(function(n){return '<option'+(s.staff===n?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
  else h+='<input placeholder="'+t('staffname')+'" value="'+esc(s.staff||'')+'" oninput="S.v.sales.staff=this.value;saveDraft()">';
  h+='<div class="q">'+t('learnedQ')+'</div>'+T.gaps.map(function(o,i){var v=(s.learnMap||{})[o[1]];return '<div style="margin-top:8px"><b>'+tt(o)+'</b><div class="row"><div class="opt'+(v==='Y'?' sel':'')+'" onclick="setLearn('+i+',\'Y\')">'+t('learnY')+'</div><div class="opt'+(v==='N'?' sel':'')+'" onclick="setLearn('+i+',\'N\')">'+t('learnN')+'</div></div></div>'}).join('');
  h+='</div><div class="guide">'+t('roleplayTip')+'</div>'+recUI('rec1',3,10);
- h+=itemCard('C.1')+itemCard('C.3','<div class="guide">'+t('c3na')+'</div>')+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
+ h+=itemCard('C.1')+itemCard('C.3',(c.c3&&c.c3.length?'<div class="guide"><b>'+t('c3pick')+'</b>'+c.c3.map(function(p){return '<div>'+esc(p.name)+' — Rp'+Number(p.price).toLocaleString()+'</div>'}).join('')+'</div>':''))+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
  h+='<div class="card"><h3>'+t('quiz')+'</h3>'+(c.quiz||[]).map(function(q){return '<div class="q">'+esc(L==='zh'?q.q_zh:q.q_id)+'<div class="ans">'+t('answer')+': '+esc(L==='zh'?q.a_zh:q.a_id)+'</div></div>'}).join('')+'</div>'+recUI('rec2',1,5)+itemCard('C.6');
  h+='<div class="card">'+photoBlock('group',t('groupphoto'),1,false,v.groupIds)+'<textarea placeholder="'+t('comment')+'" oninput="S.v.sales.comment=this.value;saveDraft()">'+esc(s.comment||'')+'</textarea></div>';
  if(cLow()){h+='<div class="card" style="border:2px solid #b26a00"><h3>'+t('coach')+'</h3><div class="small">'+t('coachWhy')+'</div><div class="row" style="flex-wrap:wrap">'+T.topics.map(function(o){var on=(s.coachTopics||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togTopic(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div></div>'+recUI('rec3',3,15)+
