@@ -1,6 +1,6 @@
 {
-  "name": "LK Store Check",
-  "short_name": "LK Check",
+  "name": "LK Hub",
+  "short_name": "LK Hub",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
