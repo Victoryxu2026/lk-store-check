@@ -31,48 +31,48 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 // ================= i18n =================
 var L = localStorage.getItem('lk_lang') || 'id';
 var T = {
- login:['Masuk','登录'], nick:['Nama panggilan','简称'], pw:['Password','密码'], wrong:['Nama atau password salah','名字或密码不对'],
- newpw:['Buat password baru (min. 6 karakter)','设置新密码（至少 6 位）'], newpw2:['Ulangi password baru','再输一次新密码'], save:['Simpan','保存'],
- mustchange:['Login pertama: wajib ganti password','第一次登录：必须改密码'], pwdiff:['Password tidak sama / terlalu lemah','两次不一致或太简单'],
- menu:['Pilih menu','选择入口'], std:['Inspeksi standar toko','门店标准化检核'], spot:['Stock opname acak','库存抽检'],
- stdsub:['10 langkah · ±35–40 menit','10 步 · 约 35–40 分钟'], spotsub:['30 SKU · min. 30 menit','30 个 SKU · 至少 30 分钟'],
- resume:['Lanjutkan yang belum selesai','继续没做完的'], discard:['Hapus draft','删除草稿'], logout:['Keluar','退出'],
- city:['Kota','城市'], store:['Kode toko','门店编号'], next:['Lanjut','下一步'], back:['Kembali','上一步'],
- checkin:['Check-in','签到'], selfie:['Foto selfie (wajah jelas + latar toko)','自拍（看得到正脸 + 门店背景）'], front:['Foto tampak depan toko','门头正面全景'],
- takephoto:['Ambil foto','拍照'], retake:['Ulang','重拍'], gps:['Lokasi','定位'], gpsfail:['Lokasi tidak didapat (tetap bisa lanjut)','拿不到定位（可以继续）'],
- far:['Lokasi jauh dari toko (hanya catatan)','离门店较远（只做记录）'], saved:['Tersimpan','已保存'], waitCheckin:['Menunggu check-in','签到后上传'], signingIn:['Sedang masuk…','正在登录…'], checkingIn:['Sedang check-in, memuat data toko…','签到中，正在加载门店数据…'], submitting:['Mengirim…','提交中…'], uploading:['Mengirim','上传中'],
- na:['Tidak berlaku','不适用'], note:['Keterangan masalah','问题说明'], noteReq:['Wajib diisi jika nilai < 100%','低于 100% 必填'],
- red:['Pelanggaran berat (langsung 0 + lapor)','红线（直接 0 分并上报）'], photosReq:['Foto wajib','必拍照片'],
- step:['Langkah','第'], of:['dari','步，共'], needAll:['Lengkapi dulu semua isian dan foto','先把选项和照片补齐'],
- s1:['Masalah sebelumnya & cek data','上次问题复检 + 数据提示'], noissue:['Tidak ada masalah terbuka','没有未关闭的问题'],
- fixed:['Sudah diperbaiki','已整改'], notfixed:['Belum diperbaiki','未整改'], nohint:['Tidak ada peringatan data','没有数据提示'],
- true_:['Benar','属实'], false_:['Tidak benar','不属实'], explained:['Sudah dijelaskan','已说明原因'],
- reason:['Alasan','原因'], reasons:[['Ada toko pesaing baru','附近有竞争店'],['Stok kosong','断货'],['Kurang staf','人手不够'],['Mall / jalan sepi','商场客流少'],['Lainnya','其他']],
- pricecheck:['Cek 3 label harga ini','核对这 3 个价签'], keybrands:['Brand utama bulan ini','本月重点品牌'], promos:['Promo bulan ini','本月促销'],
- sales:['Tes penjualan','销售考核'], staff:['Staf yang dites','被考店员'], staffname:['Nama staf','店员名字'],
- guide:['Panduan untuk tim operasional: adakan training rutin bulanan & mingguan dan kirim materi ke toko (pengetahuan produk, promo, teknik jualan, standar operasional toko). Jika staf gagal, cek dulu apakah training sudah sampai.','给运营团队的培训指引：要安排有规律的月度和周度培训，把产品知识、促销活动、销售技巧、门店运营规范的材料下发给门店学习。店员考核不合格时，先想一下是不是培训没做到位。'],
- learnedQ:['Tanya staf: "Produk baru, promo, pengetahuan produk dan standar toko bulan ini sudah kamu pelajari?"','问店员：「本月的新品、促销活动、产品知识和门店运营规范，你学过了吗？」'],
- learnedA:[['Sudah semua','都学过'],['Sebagian','部分学过'],['Belum','没学过']], gaps:[['Produk baru','新品'],['Promo','促销'],['Pengetahuan produk','产品知识'],['Standar toko','门店规范']],
- rec1:['Rekaman 1: roleplay pelanggan (3–10 menit)','录音 1：扮顾客演练（3–10 分钟）'], rec2:['Rekaman 2: pertanyaan (1–5 menit)','录音 2：知识题（1–5 分钟）'],
- rec3:['Rekaman 3: coaching di tempat (min. 3 menit)','录音 3：现场带教（至少 3 分钟）'], start:['Mulai','开始'], stop:['Selesai','结束'], pause:['Jeda','暂停'], cont:['Lanjut rekam','继续录'],
- tooshort:['Belum mencapai durasi minimum','还没到最短时长'], recok:['Rekaman tersimpan','录音已保存'], micfail:['Mikrofon tidak bisa dipakai','麦克风打不开'],
- roleplayTip:['Urutan: sapa → tanya kebutuhan → jelaskan produk & tawarkan coba → harga & promo → produk tambahan → input POS (JANGAN checkout) → struk & member','顺序：招呼 → 问需求 → 讲产品、邀请试抽 → 价格和促销 → 推加购 → POS 录单（不要结算）→ 小票和会员'],
- quiz:['Pertanyaan','题目'], answer:['Jawaban acuan','参考答案'], groupphoto:['Foto bersama staf','和店员合照'], comment:['Komentar (min. 20 huruf): yang baik, yang perlu diperbaiki','评语（至少 20 字）：哪里好、哪里要改'],
- coach:['Coaching di tempat (wajib)','现场带教（必做）'], coachWhy:['Ada nilai di bawah 80%. Ajari langsung, lalu staf ulangi bagian yang kurang.','有一项低于 80%，要当场教，再让店员把不合格的部分重做一遍。'],
- topics:[['Sikap pelayanan','接待态度'],['Teknik jualan','销售技巧'],['Pengetahuan promo','促销知识'],['Pengetahuan produk','产品知识']],
- after:['Hasil setelah coaching','带教后结果'], afterA:[['Sudah paham','已掌握'],['Sebagian','部分掌握'],['Belum','未掌握']],
- summary:['Ringkasan masalah','问题汇总'], solved:['Selesai di tempat','现场已解决'], rectify:['Perlu perbaikan','需整改'], owner:['Penanggung jawab','负责人'], due:['Batas waktu','期限'],
- helped:['Hari ini saya membantu toko dengan apa?','本次帮门店解决了什么？'], confirm:['Nama staf yang bertugas (konfirmasi)','在岗店员名字（确认）'], c0adj:['Nilai C.0 bisa diubah di sini','C.0 可以在这里改档'],
- checkout:['Check-out','签退'], outselfie:['Selfie check-out (wajah + latar toko)','签退自拍（正脸 + 门店背景）'], submit:['Kirim','提交'],
- waitUp:['Tunggu, foto / rekaman masih dikirim','等一下，照片或录音还在上传'], minTime:['Belum 30 menit di toko. Tetap kirim? (akan ditandai)','在店还不到 30 分钟，确定提交吗？（会被标红）'],
- done:['Terkirim','已提交'], score:['Nilai','得分'], minutes:['menit','分钟'], home:['Kembali ke menu','回首页'],
- sku:['SKU','SKU'], goods:['1. Foto barang (dikumpulkan)','1. 货品照（摆在一起）'], actual:['2. Stok fisik','2. 实际库存'], posphoto:['3. Foto layar POS','3. POS 画面照'],
- posqty:['4. Stok di POS','4. POS 理论库存'], diff:['Selisih','差异'], recount:['Hitung ulang','复点数'], diffnote:['Penjelasan selisih','差异说明'],
- nosku:['Tidak ada data penjualan 14 hari untuk toko ini','这家店近 14 天没有销售数据'], spotDone:['sama','一致'],
- photoOld:['Foto harus diambil langsung, bukan dari galeri','照片要现场拍，不能用相册里的'], loading:['Memuat…','加载中…'], err:['Gagal, coba lagi','失败，请重试'],
- expired:['Sesi habis, silakan login lagi','登录过期，请重新登录'], c3na:['Kartu produk belum tersedia → C.3 tidak berlaku','卖点卡还没出 → C.3 不适用'],
- selectStore:['Pilih toko','选择门店'], hintNoSnap:['Data stok (snapshot) belum tersambung → B.8 tidak berlaku','库存快照还没接上 → B.8 不适用'],
- sec:{1:['Kondisi staf saat masuk','在岗状态（进店先看）'],3:['Tampilan','形象'],4:['Tasting counter','试抽台'],5:['Display & harga','陈列与价格'],6:['Stok','库存'],8:['Operasional harian','日常营运']}
+ login:['Masuk','登录'], nick:['Nama','姓名'], pw:['Password','密码'], wrong:['Nama atau password salah. Cek lagi.','姓名或密码不对，请检查后重试'],
+ newpw:['Password baru (minimal 6 karakter)','新密码（至少 6 位）'], newpw2:['Ketik ulang password baru','再输入一次新密码'], save:['Simpan password','保存新密码'],
+ mustchange:['Ini login pertamamu. Ganti password dulu, jangan pakai password awal.','第一次登录，请先改密码，不能继续用初始密码'], pwdiff:['Kedua password tidak sama, atau kurang dari 6 karakter','两次输入不一致，或少于 6 位'],
+ menu:['Mau mengerjakan apa?','请选择要做的检查'], std:['Inspeksi Standar Toko','门店标准化检核'], spot:['Stock Opname Acak','库存抽检'],
+ stdsub:['10 langkah · sekitar 35–40 menit di toko','共 10 步 · 在店约 35–40 分钟'], spotsub:['Cek 30 SKU · minimal 30 menit di toko','抽查 30 个 SKU · 在店至少 30 分钟'],
+ resume:['Lanjutkan inspeksi yang belum selesai','继续上次没做完的检查'], discard:['Hapus dan mulai baru','删除草稿，重新开始'], logout:['Keluar','退出登录'],
+ city:['Pilih kota','选择城市'], store:['Pilih toko','选择门店'], next:['Lanjut','下一步'], back:['Kembali','上一步'],
+ checkin:['Check-in','签到'], selfie:['Selfie: wajah terlihat jelas, latar belakang toko','自拍：正脸清楚，背景能看到门店'], front:['Foto tampak depan toko (seluruh fasad)','门头正面照（拍全整个门头）'],
+ takephoto:['Ambil foto','拍照'], retake:['Foto ulang','重拍'], gps:['Lokasi tercatat','已记录定位'], gpsfail:['Lokasi tidak terbaca. Tetap bisa lanjut.','没拿到定位，不影响继续'],
+ far:['Lokasimu jauh dari toko. Ini hanya dicatat, tetap bisa lanjut.','你离门店较远，只做记录，可以继续'], saved:['Semua tersimpan','已全部保存'], waitCheckin:['Dikirim setelah check-in:','签到后上传：'], signingIn:['Sedang masuk…','正在登录…'], checkingIn:['Sedang check-in dan memuat data toko. Tunggu sebentar…','正在签到并加载门店数据，请稍等…'], submitting:['Sedang mengirim hasil…','正在提交结果…'], uploading:['Sedang upload:','正在上传：'],
+ na:['Tidak berlaku di toko ini','本店不适用'], note:['Tulis masalahnya: apa yang kurang, di mana','写清楚问题：哪里不达标、在哪个位置'], noteReq:['wajib diisi kalau tidak 100%','没到 100% 必须填写'],
+ red:['Pelanggaran berat: nilai langsung 0 dan dilaporkan','红线问题：直接 0 分，并上报'], photosReq:['Foto wajib','必拍照片'],
+ step:['Langkah','第'], of:['dari','步 / 共'], needAll:['Belum lengkap. Pilih nilai, ambil foto, dan isi keterangan yang wajib.','还没填完：请选档位、拍照，并填写必填说明'],
+ s1:['Cek masalah lama & data toko','复查上次问题 + 看数据提示'], noissue:['Tidak ada masalah dari inspeksi sebelumnya','上次检查没有遗留问题'],
+ fixed:['Sudah diperbaiki','已整改'], notfixed:['Belum diperbaiki','还没整改'], nohint:['Tidak ada peringatan dari data penjualan','销售数据没有异常提示'],
+ true_:['Benar terjadi','确实存在'], false_:['Tidak terjadi','不存在'], explained:['Ada alasan yang jelas','有合理原因'],
+ reason:['Pilih alasan utama','选择主要原因'], reasons:[['Ada toko pesaing baru di dekat sini','附近新开了竞争店'],['Stok produk laris kosong','畅销品断货'],['Kurang staf','人手不够'],['Mall / jalan sepi','商场或街道客流少'],['Lainnya (tulis di keterangan)','其他（写在说明里）']],
+ pricecheck:['Cocokkan label harga 3 produk ini dengan harga di bawah','核对这 3 个商品的价签，和下面的价格是否一致'], keybrands:['Brand prioritas bulan ini (harus dipajang di posisi utama)','本月重点品牌（要放在主陈列位）'], promos:['Promo yang berjalan bulan ini (materinya harus terpasang)','本月正在做的促销（物料要摆出来）'],
+ sales:['Tes Penjualan','销售考核'], staff:['Staf yang dites','被考核的店员'], staffname:['Ketik nama staf','输入店员名字'],
+ guide:['Untuk tim operasional: adakan training rutin (bulanan & mingguan) dan kirim materi ke toko — pengetahuan produk, promo, teknik jualan, standar operasional toko. Kalau staf gagal tes, cek dulu apakah training-nya sudah sampai ke dia.','给运营团队：要定期做月度和周度培训，把产品知识、促销、销售技巧、门店运营规范的资料发到门店。店员考不过时，先看看培训有没有真正落到他身上。'],
+ learnedQ:['Tanyakan ke staf: "Bulan ini kamu sudah belajar produk baru, promo, pengetahuan produk, dan standar toko?"','问店员：「这个月的新品、促销、产品知识和门店规范，你都学过了吗？」'],
+ learnedA:[['Sudah semua','都学过'],['Baru sebagian','只学了一部分'],['Belum','还没学']], gaps:[['Produk baru','新品'],['Promo','促销'],['Pengetahuan produk','产品知识'],['Standar toko','门店规范']],
+ rec1:['Rekaman 1 — Roleplay: kamu jadi pelanggan (3–10 menit)','录音 1 — 角色扮演：你扮演顾客（3–10 分钟）'], rec2:['Rekaman 2 — Tanya jawab pengetahuan (1–5 menit)','录音 2 — 知识问答（1–5 分钟）'],
+ rec3:['Rekaman 3 — Coaching langsung (minimal 3 menit)','录音 3 — 现场带教（至少 3 分钟）'], start:['Mulai rekam','开始录音'], stop:['Selesai rekam','结束录音'], pause:['Jeda','暂停'], cont:['Lanjut rekam','继续录音'],
+ tooshort:['Rekaman belum cukup lama. Minimal','录音时间还不够，至少'], recok:['Rekaman tersimpan','录音已保存'], micfail:['Mikrofon tidak bisa dipakai. Izinkan akses mikrofon di pengaturan browser.','麦克风打不开：请在浏览器设置里允许使用麦克风'],
+ roleplayTip:['Perhatikan apakah staf melakukan urutan ini: menyapa → tanya kebutuhan → jelaskan produk & tawarkan coba → sebut harga & promo → tawarkan produk tambahan → input di POS (JANGAN bayar/checkout) → tawarkan struk & daftar member','看店员是否按这个顺序：打招呼 → 问需求 → 介绍产品并邀请试抽 → 说价格和促销 → 推荐加购 → 在 POS 录单（不要结账）→ 给小票、邀请注册会员'],
+ quiz:['Pertanyaan untuk staf (tanyakan langsung, jangan tunjukkan layar)','考店员的题目（口头问，不要给他看屏幕）'], answer:['Jawaban yang benar','正确答案'], groupphoto:['Foto bersama staf yang dites','和被考核店员合照'], comment:['Catatan untuk staf (minimal 20 huruf): apa yang sudah bagus, apa yang harus diperbaiki','给店员的评语（至少 20 字）：哪里做得好、哪里要改'],
+ coach:['Coaching langsung (wajib)','现场带教（必须做）'], coachWhy:['Ada penilaian di bawah 80%. Ajari staf langsung sekarang, lalu minta dia mengulang bagian yang kurang sampai benar.','有一项低于 80%：现在当场教，再让店员把没做好的部分重做一遍，直到做对'],
+ topics:[['Sikap melayani','接待态度'],['Teknik jualan','销售技巧'],['Pengetahuan promo','促销知识'],['Pengetahuan produk','产品知识']],
+ after:['Setelah coaching, staf…','带教后，店员…'], afterA:[['Sudah bisa','已经会了'],['Baru sebagian','还差一点'],['Belum bisa','还不会']],
+ summary:['Ringkasan masalah & tindak lanjut','问题汇总和后续跟进'], solved:['Sudah beres di tempat (foto hasilnya)','现场已解决（拍整改后照片）'], rectify:['Perlu diperbaiki (tentukan PIC & tanggal)','需要整改（定负责人和完成日期）'], owner:['Siapa yang memperbaiki','谁来整改'], due:['Selesai paling lambat','最晚完成日期'],
+ helped:['Hari ini kamu membantu toko menyelesaikan apa?','这次你帮门店解决了什么？'], confirm:['Nama staf yang bertugas hari ini','今天在岗的店员名字'], c0adj:['Kalau penilaian kondisi staf (C.0) perlu diubah setelah melihat semuanya, ubah di sini','看完全部后，如果要调整 C.0（在岗状态）的档位，在这里改'],
+ checkout:['Check-out','签退'], outselfie:['Selfie check-out: wajah jelas, latar belakang toko','签退自拍：正脸清楚，背景能看到门店'], submit:['Kirim hasil inspeksi','提交检查结果'],
+ waitUp:['Tunggu sebentar, foto/rekaman masih di-upload. Jangan tutup halaman.','请稍等，照片或录音还在上传，不要关闭页面'], minTime:['Kamu belum 30 menit di toko. Tetap kirim? Hasil ini akan ditandai.','在店还不到 30 分钟，确定要提交吗？这次结果会被标记'],
+ done:['Berhasil dikirim','提交成功'], score:['Nilai','得分'], minutes:['menit','分钟'], home:['Kembali ke menu utama','回到首页'],
+ sku:['SKU','SKU'], goods:['1. Kumpulkan semua stok produk ini, lalu foto','1. 把这个商品的库存全部拿出来摆在一起拍照'], actual:['2. Jumlah stok fisik (hasil hitung)','2. 实际点数'], posphoto:['3. Foto layar stok produk ini di POS','3. 拍下 POS 里这个商品的库存画面'],
+ posqty:['4. Jumlah stok di POS','4. POS 显示的库存数'], diff:['Selisih','差异'], recount:['Hitung ulang: jumlahnya berapa?','重新点一遍：是多少？'], diffnote:['Jelaskan kenapa ada selisih','说明差异原因'],
+ nosku:['Toko ini tidak punya data penjualan 14 hari terakhir, jadi tidak ada SKU untuk dicek.','这家店近 14 天没有销售数据，没有可抽查的 SKU'], spotDone:['SKU cocok','个 SKU 一致'],
+ photoOld:['Foto harus diambil langsung sekarang, bukan dari galeri','照片必须现场拍，不能用相册里的旧照片'], loading:['Memuat…','加载中…'], err:['Gagal. Cek internet lalu coba lagi.','操作失败，请检查网络后重试'],
+ expired:['Sesi sudah habis. Silakan masuk lagi.','登录已过期，请重新登录'], c3na:['Kartu produk belum ada, jadi C.3 otomatis "tidak berlaku"','卖点卡还没下发，C.3 自动按"不适用"处理'],
+ selectStore:['Pilih toko','选择门店'], hintNoSnap:['Data stok harian belum tersambung, jadi B.8 otomatis "tidak berlaku"','每日库存数据还没接入，B.8 自动按"不适用"处理'],
+ sec:{1:['Kondisi staf saat kamu masuk (lihat sebelum menyapa)','进店先看：店员在岗状态（先观察，再打招呼）'],3:['Penampilan staf & toko','店员和门店形象'],4:['Tasting counter (meja tester)','试抽台'],5:['Display & label harga','陈列和价签'],6:['Stok','库存'],8:['Operasional harian','日常运营']}
 };
 function t(k,i){var v=T[k];if(!v)return k;return L==='zh'?v[1]:v[0];}
 function tt(arr){return L==='zh'?arr[1]:arr[0];}
@@ -144,7 +144,7 @@ function recStart(key,min,max){navigator.mediaDevices.getUserMedia({audio:true})
   S.v.media[id]={name:key+'_'+id+'.webm',mime:b.type.split(';')[0]};S.v.rec[key]={id:id,sec:REC.sec};st.getTracks().forEach(function(tk){tk.stop()});clearInterval(REC.timer);REC=null;saveDraft();pump();render();};fr.readAsDataURL(b);};
  render();}).catch(function(){toast(t('micfail'))});}
 function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.paused=false;document.getElementById('rpause').textContent=t('pause');}else{REC.mr.pause();REC.paused=true;document.getElementById('rpause').textContent=t('cont');}}
-function recStop(force){if(!REC)return;if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' ('+REC.min+' '+t('minutes')+')');return;}if(REC.paused)REC.mr.resume();REC.mr.stop();}
+function recStop(force){if(!REC)return;if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}if(REC.paused)REC.mr.resume();REC.mr.stop();}
 
 // ================= screens =================
 function render(){var a=document.getElementById('app');setSync();
@@ -206,7 +206,7 @@ function itemDone(code){var it=item(code),a=S.v.answers[code]||{};if(!a.level)re
 // ---------- STANDARD visit ----------
 var STEPS=[null,'s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'];
 function scStd(){var v=S.v;if(!v.visitId)return scCheckin();
- var n=v.step,h='<div class="top"><span>'+t('step')+' '+n+' '+t('of')+' 10</span><span>'+esc(v.storeId)+'</span></div><div class="bar"><i style="width:'+(n*10)+'%"></i></div>';
+ var n=v.step,h='<div class="top"><span>'+(L==='zh'?'第 '+n+' 步 / 共 10 步':'Langkah '+n+' dari 10')+'</span><span>'+esc(v.storeName||v.storeId)+'</span></div><div class="bar"><i style="width:'+(n*10)+'%"></i></div>';
  h+=window['std_'+STEPS[n]]();
  return h;}
 function nav(ok){return '<div class="row"><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button><button class="btn" onclick="go(1,'+(ok?1:0)+')">'+t('next')+'</button></div>';}
@@ -278,7 +278,7 @@ function submitStd(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<
 function scSpot(){var v=S.v;if(!v.visitId)return scCheckin();
  if(!v.items.length)return '<div class="card">'+t('nosku')+'</div><button class="btn btn2" onclick="S.v=null;localStorage.removeItem(DRAFT_KEY);render()">'+t('home')+'</button>';
  if(v.idx>=v.items.length)return spotEnd();
- var it=v.items[v.idx],n=v.items.length,h='<div class="top"><span>'+t('sku')+' '+(v.idx+1)+'/'+n+'</span><span>'+esc(v.storeId)+'</span></div><div class="bar"><i style="width:'+((v.idx+1)/n*100)+'%"></i></div>';
+ var it=v.items[v.idx],n=v.items.length,h='<div class="top"><span>'+t('sku')+' '+(v.idx+1)+'/'+n+'</span><span>'+esc(v.storeName||v.storeId)+'</span></div><div class="bar"><i style="width:'+((v.idx+1)/n*100)+'%"></i></div>';
  h+='<div class="card"><h3>'+esc(it.name)+'</h3><div class="muted">'+esc(it.sku)+'</div>';
  h+=photoBlock('g_'+v.idx,t('goods'),1,false,(v.answers['g_'+v.idx]||{}).photoIds);
  h+='<label class="small">'+t('actual')+'</label><input type="number" inputmode="numeric" value="'+esc(it.actual==null?'':it.actual)+'" oninput="S.v.items['+v.idx+'].actual=this.value;saveDraft()">';
