@@ -10,6 +10,7 @@ main{padding:12px;max-width:560px;margin:0 auto}
 h2{font-size:18px;margin:4px 0 10px}h3{font-size:16px;margin:0 0 6px}.muted{color:#777;font-size:13px}.small{font-size:13px}
 .btn{display:block;width:100%;padding:13px;border-radius:10px;border:0;background:#111;color:#FDCD17;font-size:16px;font-weight:600;margin-top:10px}
 .btn2{background:#fff;color:#111;border:1px solid #bbb}.btnY{background:#FDCD17;color:#111}.btn:disabled{opacity:.45}
+*{box-sizing:border-box}input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
 input,select,textarea{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:15px;margin-top:6px;background:#fff}
 textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10px;margin-top:7px;display:flex;justify-content:space-between;gap:8px;cursor:pointer;background:#fff}
 .opt.sel{border:2px solid #111;background:#fff8d6}.opt span:last-child{color:#888;font-size:13px;white-space:nowrap}
@@ -56,15 +57,15 @@ var T = {
  learnedQ:['Tanyakan ke staf satu per satu: "Bulan ini kamu sudah belajar … ?" lalu pilih jawabannya untuk tiap topik.','逐项问店员：「这个月的……你学过了吗？」每一项选一个答案。'], learnY:['Sudah belajar','学过'], learnN:['Belum belajar','没学过'],
  learnedA:[['Sudah semua','都学过'],['Baru sebagian','只学了一部分'],['Belum','还没学']], gaps:[['Produk baru bulan ini','本月新品'],['Promo bulan ini','本月促销'],['Pengetahuan produk','产品知识'],['Standar operasional toko','门店规范']],
  rec1:['Rekaman 1 — Roleplay: kamu jadi pelanggan (3–10 menit)','录音 1 — 角色扮演：你扮演顾客（3–10 分钟）'], rec2:['Rekaman 2 — Tanya jawab pengetahuan (1–5 menit)','录音 2 — 知识问答（1–5 分钟）'],
- rec3:['Rekaman 3 — Coaching langsung (minimal 3 menit)','录音 3 — 现场带教（至少 3 分钟）'], start:['Mulai rekam','开始录音'], stop:['Selesai rekam','结束录音'], pause:['Jeda','暂停'], cont:['Lanjut rekam','继续录音'],
+ rec3:['Rekaman 3 — Setelah dilatih, staf mengulang (minimal 1 menit)','录音 3 — 培训后让店员重新讲一遍（至少 1 分钟）'], start:['Mulai rekam','开始录音'], stop:['Selesai rekam','结束录音'], pause:['Jeda','暂停'], cont:['Lanjut rekam','继续录音'],
  tooshort:['Rekaman belum cukup lama. Minimal','录音时间还不够，至少'], recok:['Rekaman tersimpan','录音已保存'], micfail:['Mikrofon tidak bisa dipakai. Izinkan akses mikrofon di pengaturan browser.','麦克风打不开：请在浏览器设置里允许使用麦克风'],
  roleplayTip:['Perhatikan apakah staf melakukan urutan ini: menyapa → tanya kebutuhan → jelaskan produk & tawarkan coba → sebut harga & promo → tawarkan produk tambahan → input di POS (JANGAN bayar/checkout) → beri struk & ajak tambah WhatsApp toko atau follow Instagram','看店员是否按这个顺序：打招呼 → 问需求 → 介绍产品并邀请试抽 → 说价格和促销 → 推荐加购 → 在 POS 录单（不要结账）→ 给小票、邀请加门店 WhatsApp 或关注 Instagram'],
  quiz:['Pertanyaan untuk staf (tanyakan langsung, jangan tunjukkan layar)','考店员的题目（口头问，不要给他看屏幕）'], answer:['Jawaban yang benar','正确答案'], groupphoto:['Foto bersama staf yang dites','和被考核店员合照'], comment:['Catatan untuk staf (minimal 20 huruf): apa yang sudah bagus, apa yang harus diperbaiki','给店员的评语（至少 20 字）：哪里做得好、哪里要改'],
- coach:['Coaching langsung (wajib)','现场带教（必须做）'], coachWhy:['Ada penilaian di bawah 80%. Ajari staf langsung sekarang, lalu minta dia mengulang bagian yang kurang sampai benar.','有一项低于 80%：现在当场教，再让店员把没做好的部分重做一遍，直到做对'],
+ coach:['Pelatihan langsung (wajib)','现场培训（必须做）'], coachWhy:['Item di bawah ini belum 100%. Latih staf sekarang (produk, promo, cara melayani, standar toko), lalu minta dia mengulang / menjelaskan lagi sambil direkam.','下面这些项没拿满分：现在当场培训店员（产品、促销、接待、门店规范），教完让店员重新讲一遍 / 演示一遍，同时录音'],
  topics:[['Sikap melayani','接待态度'],['Teknik jualan','销售技巧'],['Pengetahuan promo','促销知识'],['Pengetahuan produk','产品知识']],
- after:['Setelah coaching, staf…','带教后，店员…'], afterA:[['Sudah bisa','已经会了'],['Baru sebagian','还差一点'],['Belum bisa','还不会']],
+ after:['Setelah dilatih, staf…','培训后，店员…'], afterA:[['Sudah bisa','已经会了'],['Baru sebagian','还差一点'],['Belum bisa','还不会']],
  summary:['Ringkasan masalah & tindak lanjut','问题汇总和后续跟进'], solved:['Sudah beres di tempat (foto hasilnya)','现场已解决（拍整改后照片）'], rectify:['Perlu diperbaiki (tentukan PIC & tanggal)','需要整改（定负责人和完成日期）'], owner:['Siapa yang memperbaiki','谁来整改'], due:['Selesai paling lambat','最晚完成日期'],
- helped:['Hari ini kamu membantu toko menyelesaikan apa?','这次你帮门店解决了什么？'], confirm:['Nama staf yang bertugas hari ini','今天在岗的店员名字'], c0adj:['Kalau penilaian kondisi staf (C.0) perlu diubah setelah melihat semuanya, ubah di sini','看完全部后，如果要调整 C.0（在岗状态）的档位，在这里改'],
+ helped:['Hari ini kamu membantu toko menyelesaikan apa?','这次你帮门店解决了什么？'], confirm:['Nama staf yang bertugas hari ini','今天在岗的店员名字'], dutyN:['Berapa staf yang bertugas saat ini?','现在在岗几人？'], dutyName:['Nama staf','店员名字'], otherFix:['Masalah lain: selesaikan di tempat atau tentukan perbaikan','其他问题：现场解决，或定整改'], dueLbl:['Tanggal selesai paling lambat','最晚完成日期'], c0adj:['Kalau penilaian kondisi staf (C.0) perlu diubah setelah melihat semuanya, ubah di sini','看完全部后，如果要调整 C.0（在岗状态）的档位，在这里改'],
  checkout:['Check-out','签退'], outselfie:['Selfie check-out: wajah jelas, latar belakang toko','签退自拍：正脸清楚，背景能看到门店'], submit:['Kirim hasil inspeksi','提交检查结果'],
  waitUp:['Tunggu sebentar, foto/rekaman masih di-upload. Jangan tutup halaman.','请稍等，照片或录音还在上传，不要关闭页面'], minTime:['Kamu belum 30 menit di toko. Tetap kirim? Hasil ini akan ditandai.','在店还不到 30 分钟，确定要提交吗？这次结果会被标记'],
  done:['Berhasil dikirim','提交成功'], score:['Nilai','得分'], minutes:['menit','分钟'], home:['Kembali ke menu utama','回到首页'],
@@ -253,15 +254,17 @@ function stepMiss(n){var v=S.v,c=v.ctx,out=[];
   out=out.concat(codesMiss(['C.6']));
   if(!(v.groupIds||[]).length)out.push({id:'rq_group',msg:M('没拍和店员的合照','belum foto bersama staf')});
   var cl=(s.comment||'').trim().length;if(cl<20)out.push({id:'rq_comment',msg:M('评语至少 20 个字，现在只有 '+cl+' 个','komentar minimal 20 karakter, sekarang '+cl)});
-  if(cLow()){if(!(s.coachTopics||[]).length)out.push({id:'rq_coach',msg:M('没选带教内容','belum pilih topik coaching')});if(!v.rec.rec3)out.push({id:'rq_rec3',msg:M('录音 3（带教）没录','rekaman 3 belum ada')});if(!s.coachResult)out.push({id:'rq_after',msg:M('没选带教后结果','belum pilih hasil coaching')});}
   return out;}
  if(n===8)return codesMiss(['D.1','D.2','D.3','D.6']);
- if(n===9){v.fix=v.fix||{};failing().forEach(function(it){var x=v.fix[it.code]||{},id='rq_fix_'+it.code.replace('.','_');
-   if(!x.action)out.push({id:id,msg:it.code+M(' 没选「已解决 / 要整改」',' belum pilih selesai / perbaikan')});
+ if(n===9){v.fix=v.fix||{};var s9=v.sales||{};
+  if(cTrain().length){if(!(s9.coachTopics||[]).length)out.push({id:'rq_coach',msg:M('没选培训了哪些','belum pilih topik pelatihan')});if(!v.rec.rec3)out.push({id:'rq_rec3',msg:M('培训后的录音 3 没录','rekaman 3 belum ada')});if(!s9.coachResult)out.push({id:'rq_after',msg:M('没选培训后店员会不会','belum pilih hasil pelatihan')});}
+  otherFail().forEach(function(it){var x=v.fix[it.code]||{},id='rq_fix_'+it.code.replace('.','_');
+   if(!x.action)out.push({id:id,msg:it.code+M(' 没选「现场已解决 / 需要整改」',' belum pilih selesai / perbaikan')});
    else if(x.action==='solved'&&!((v.answers['fix_'+it.code]||{}).photoIds||[]).length)out.push({id:id,msg:it.code+M(' 没拍解决后的照片',' belum foto setelah diperbaiki')});
    else if(x.action==='rectify'&&!(x.owner&&x.due))out.push({id:id,msg:it.code+M(' 没填负责人或完成日期',' PIC / tanggal belum diisi')});});
   if(!(v.helped||'').trim())out.push({id:'rq_end',msg:M('没写「这次帮门店解决了什么」','belum isi apa yang dibantu')});
-  if(!(v.staffConfirm||'').trim())out.push({id:'rq_end',msg:M('没写今天在岗店员名字','belum isi nama staf bertugas')});return out;}
+  var dl=dutyList();if(!dl.length)out.push({id:'rq_duty',msg:M('没选现在在岗几人','belum pilih jumlah staf bertugas')});else if(dl.some(function(x){return !x.trim()}))out.push({id:'rq_duty',msg:M('在岗店员名字没填完','nama staf bertugas belum lengkap')});
+  return out;}
  return out;}
 function showMiss(list){if(!list.length)return toast(t('needAll'));
  var msg=M('还没填完（共 '+list.length+' 处）：\n','Belum lengkap ('+list.length+'):\n')+list.slice(0,3).map(function(x){return '• '+x.msg}).join('\n')+(list.length>3?M('\n…还有 '+(list.length-3)+' 处','\n…dan '+(list.length-3)+' lagi'):'');
@@ -293,7 +296,9 @@ function b8Suggest(){var n1=0,n2=0;(S.v.ctx.hints||[]).forEach(function(x){(x.it
 function std_s6(){var a=S.v.answers['B.8']=S.v.answers['B.8']||{};if(a.level==='NA')delete a.level;var g=b8Suggest();
  var tip=(L==='zh'?'根据第 2 步的核实结果，系统建议：<b>'+g.lv+'%</b>（断货没报补货 '+g.n1+' 个，不动销没上架/没价签 '+g.n2+' 个）。请确认后选择档位。':'Berdasarkan hasil cek di langkah 2, saran sistem: <b>'+g.lv+'%</b> (kosong belum minta restock: '+g.n1+', tidak laku belum dipajang/tanpa label: '+g.n2+'). Konfirmasi lalu pilih nilai.');
  return '<h2>'+tt(T.sec[6])+'</h2>'+itemCard('B.8','<div class="guide">'+tip+'</div>')+nav(codesDone(['B.8']));}
-function cLow(){return ['C.0','C.1','C.3','C.4','C.5','C.6','C.7'].some(function(c){var l=(S.v.answers[c]||{}).level;return l&&l!=='NA'&&Number(l)<80});}
+var CCODES=['C.0','C.1','C.3','C.4','C.5','C.6','C.7'];
+function cTrain(){return CCODES.filter(function(c){var l=(S.v.answers[c]||{}).level;return l&&l!=='NA'&&Number(l)<100});}
+function cLow(){return cTrain().length>0;}
 function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3']=v.answers['C.3']||{};if(a3.level==='NA')delete a3.level;
  var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card" id="rq_staff"><label class="small">'+t('staff')+'</label>';
  if(c.staff&&c.staff.length)h+='<select onchange="S.v.sales.staff=this.value;saveDraft()"><option value="">—</option>'+c.staff.map(function(n){return '<option'+(s.staff===n?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
@@ -303,25 +308,33 @@ function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3'
  h+=itemCard('C.1')+itemCard('C.3',(c.c3&&c.c3.length?'<div class="guide"><b>'+t('c3pick')+'</b>'+c.c3.map(function(p){return '<div>'+esc(p.name)+' — Rp'+Number(p.price).toLocaleString()+'</div>'}).join('')+'</div>':''))+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
  h+='<div class="card"><h3>'+t('quiz')+'</h3>'+(c.quiz||[]).map(function(q){return '<div class="q">'+esc(L==='zh'?q.q_zh:q.q_id)+'<div class="ans">'+t('answer')+': '+esc(L==='zh'?q.a_zh:q.a_id)+'</div></div>'}).join('')+'</div>'+recUI('rec2',1,5)+itemCard('C.6');
  h+='<div class="card" id="rq_group">'+photoBlock('group',t('groupphoto'),1,false,v.groupIds)+'<textarea id="rq_comment" placeholder="'+t('comment')+'" oninput="S.v.sales.comment=this.value;saveDraft();var c=document.getElementById(\'cmtN\');if(c)c.textContent=this.value.trim().length">'+esc(s.comment||'')+'</textarea><div class="small muted">'+(L==='zh'?'至少 20 个字，现在 ':'Minimal 20 karakter, sekarang ')+'<b id="cmtN">'+(s.comment||'').trim().length+'</b></div></div>';
- if(cLow()){h+='<div class="card" id="rq_coach" style="border:2px solid #b26a00"><h3>'+t('coach')+'</h3><div class="small">'+t('coachWhy')+'</div><div class="row" style="flex-wrap:wrap">'+T.topics.map(function(o){var on=(s.coachTopics||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togTopic(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div></div>'+recUI('rec3',3,15)+
-  '<div class="card" id="rq_after"><b>'+t('after')+'</b><div class="row">'+T.afterA.map(function(o){return '<div class="opt'+(s.coachResult===o[1]?' sel':'')+'" onclick="S.v.sales.coachResult=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div></div>';}
+
  var ok=s.staff&&s.learned&&v.rec.rec1&&v.rec.rec2&&codesDone(['C.1','C.3','C.4','C.5','C.6','C.7'])&&(v.groupIds||[]).length&&(s.comment||'').trim().length>=20;
- if(cLow())ok=ok&&(s.coachTopics||[]).length&&v.rec.rec3&&s.coachResult;
  return h+nav(ok);}
 function setLearn(i,v){var s=S.v.sales;s.learnMap=s.learnMap||{};s.learnMap[T.gaps[i][1]]=v;var ks=T.gaps.map(function(o){return o[1]}),ans=ks.filter(function(k){return s.learnMap[k]});if(ans.length===ks.length){var no=ks.filter(function(k){return s.learnMap[k]==='N'});s.gaps=no;s.learned=no.length===0?'都学过':no.length===ks.length?'没学过':'部分学过';}else{s.learned='';s.gaps=[];}saveDraft();render();}
 function togGap(g){var s=S.v.sales;s.gaps=s.gaps||[];var i=s.gaps.indexOf(g);i<0?s.gaps.push(g):s.gaps.splice(i,1);saveDraft();render();}
 function togTopic(g){var s=S.v.sales;s.coachTopics=s.coachTopics||[];var i=s.coachTopics.indexOf(g);i<0?s.coachTopics.push(g):s.coachTopics.splice(i,1);saveDraft();render();}
 function std_s8(){var cs=['D.1','D.2','D.3','D.6'];return '<h2>'+tt(T.sec[8])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
 function failing(){return S.boot.items.filter(function(it){var a=S.v.answers[it.code];return a&&a.level&&a.level!=='NA'&&a.level!=='100'});}
-function std_s9(){var v=S.v;v.fix=v.fix||{};var h='<h2>'+t('summary')+'</h2>';
- failing().forEach(function(it){var x=v.fix[it.code]=v.fix[it.code]||{};h+='<div class="card" id="rq_fix_'+it.code.replace('.','_')+'"><b>'+it.code+' '+esc(f(it,'title'))+'</b> <span class="tag">'+v.answers[it.code].level+'%</span><div class="small">'+esc(v.answers[it.code].note||'')+'</div><div class="row">'+
+function otherFail(){return failing().filter(function(it){return CCODES.indexOf(it.code)<0});}
+function dutyList(){var v=S.v;var n=Number(v.dutyN)||0;v.dutyNames=(v.dutyNames||[]).slice(0,n);while(v.dutyNames.length<n)v.dutyNames.push('');return v.dutyNames;}
+function setDutyN(n){S.v.dutyN=n;dutyList();if(n&&!S.v.dutyNames[0]&&S.v.sales&&S.v.sales.staff)S.v.dutyNames[0]=S.v.sales.staff;saveDraft();render();}
+function std_s9(){var v=S.v,s=v.sales=v.sales||{};v.fix=v.fix||{};var h='<h2>'+t('summary')+'</h2>';
+ var tr=cTrain();
+ if(tr.length){h+='<div class="card" id="rq_coach" style="border:2px solid #b26a00"><h3>'+t('coach')+'</h3><div class="small">'+t('coachWhy')+'</div>'+tr.map(function(c){var it=item(c),a=v.answers[c];return '<div class="q"><b>'+c+' '+esc(f(it,'title'))+'</b> <span class="tag">'+a.level+'%</span><div class="small muted">'+esc(a.note||'')+'</div></div>'}).join('')+
+  '<div class="small" style="margin-top:8px">'+(L==='zh'?'这次培训了哪些（可多选）：':'Yang dilatih (boleh pilih lebih dari 1):')+'</div><div class="row" style="flex-wrap:wrap">'+T.topics.map(function(o){var on=(s.coachTopics||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togTopic(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div></div>'+recUI('rec3',1,15)+
+  '<div class="card" id="rq_after"><b>'+t('after')+'</b><div class="row">'+T.afterA.map(function(o){return '<div class="opt'+(s.coachResult===o[1]?' sel':'')+'" onclick="S.v.sales.coachResult=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div></div>';}
+ var of=otherFail();if(of.length)h+='<h3 style="margin-top:14px">'+t('otherFix')+'</h3>';
+ of.forEach(function(it){var x=v.fix[it.code]=v.fix[it.code]||{};h+='<div class="card" id="rq_fix_'+it.code.replace('.','_')+'"><b>'+it.code+' '+esc(f(it,'title'))+'</b> <span class="tag">'+v.answers[it.code].level+'%</span><div class="small">'+esc(v.answers[it.code].note||'')+'</div><div class="row">'+
   '<div class="opt'+(x.action==='solved'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'solved\';saveDraft();render()">'+t('solved')+'</div><div class="opt'+(x.action==='rectify'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'rectify\';saveDraft();render()">'+t('rectify')+'</div></div>';
   if(x.action==='solved')h+=photoBlock('fix_'+it.code,t('solved'),1,false,(v.answers['fix_'+it.code]||{}).photoIds);
-  if(x.action==='rectify')h+='<input placeholder="'+t('owner')+'" value="'+esc(x.owner||'')+'" oninput="S.v.fix[\''+it.code+'\'].owner=this.value;saveDraft()"><input type="date" value="'+esc(x.due||'')+'" oninput="S.v.fix[\''+it.code+'\'].due=this.value;saveDraft()">';
+  if(x.action==='rectify')h+='<input placeholder="'+t('owner')+'" value="'+esc(x.owner||'')+'" oninput="S.v.fix[\''+it.code+'\'].owner=this.value;saveDraft()"><label class="small muted" style="display:block;margin-top:8px">'+t('dueLbl')+'</label><input type="date" value="'+esc(x.due||'')+'" onchange="S.v.fix[\''+it.code+'\'].due=this.value;saveDraft()">';
   h+='</div>';});
- h+='<div class="card" id="rq_end"><textarea placeholder="'+t('helped')+'" oninput="S.v.helped=this.value;saveDraft()">'+esc(v.helped||'')+'</textarea><input placeholder="'+t('confirm')+'" value="'+esc(v.staffConfirm||'')+'" oninput="S.v.staffConfirm=this.value;saveDraft()"></div>';
- var ok=failing().every(function(it){var x=v.fix[it.code]||{};return x.action==='rectify'?(x.owner&&x.due):x.action==='solved'?((v.answers['fix_'+it.code]||{}).photoIds||[]).length:false})&&(v.helped||'').trim()&&(v.staffConfirm||'').trim();
- return h+nav(ok);}
+ var dl=dutyList();
+ h+='<div class="card" id="rq_end"><textarea placeholder="'+t('helped')+'" oninput="S.v.helped=this.value;saveDraft()">'+esc(v.helped||'')+'</textarea>'+
+  '<div class="q" id="rq_duty">'+t('dutyN')+'</div><div class="row" style="flex-wrap:wrap">'+[1,2,3,4,5,6].map(function(n){return '<div class="opt'+(Number(v.dutyN)===n?' sel':'')+'" style="flex:1;justify-content:center" onclick="setDutyN('+n+')">'+n+'</div>'}).join('')+'</div>'+
+  dl.map(function(nm,i){return '<input placeholder="'+t('dutyName')+' '+(i+1)+'" value="'+esc(nm)+'" oninput="S.v.dutyNames['+i+']=this.value;saveDraft()">'}).join('')+'</div>';
+ return h+nav(stepMiss(9).length===0);}
 function std_s10(){var v=S.v;var h='<h2>'+t('checkout')+'</h2><div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';
  var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
  h+='<button class="btn" '+((v.endSelfieIds||[]).length&&!n?'':'disabled')+' onclick="submitStd()">'+t('submit')+'</button><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button>';return h;}
@@ -333,8 +346,8 @@ function submitStd(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<
  var payload={visitId:v.visitId,storeId:v.storeId,startTime:v.startTime,startGeo:v.startGeo||null,startDist:v.startDist,startSelfie:(v.startSelfieIds||[]).map(murl).concat((v.frontIds||[]).map(murl)).join('\n'),
   endGeo:v.endGeo||null,endSelfie:(v.endSelfieIds||[]).map(murl).join('\n'),answers:ans,hints:v.ctx.hints,openIssues:v.ctx.openIssues.map(function(o){return {issueId:o.issueId,result:o.result}}),
   sales:{staff:s.staff,learned:s.learned,gaps:s.gaps||[],quiz:v.ctx.quiz,rec1:murl((v.rec.rec1||{}).id),rec2:murl((v.rec.rec2||{}).id),rec3:murl((v.rec.rec3||{}).id),coached:cLow(),coachTopics:s.coachTopics||[],coachResult:s.coachResult||'',comment:s.comment,groupPhoto:(v.groupIds||[]).map(murl).join('\n'),cTotal:p?e/p*100:undefined},
-  issues:failing().map(function(it){var x=v.fix[it.code]||{};return {code:it.code,desc:(v.answers[it.code].note||''),action:x.action,owner:x.owner||'',due:x.due||'',photo:((v.answers['fix_'+it.code]||{}).photoIds||[]).map(murl).join('\n')}}),
-  helped:v.helped,staffConfirm:v.staffConfirm,lang:L};
+  issues:failing().map(function(it){var x=v.fix[it.code]||{};var tr=CCODES.indexOf(it.code)>=0;return {code:it.code,desc:(v.answers[it.code].note||''),action:tr?'coached':x.action,owner:x.owner||'',due:x.due||'',photo:((v.answers['fix_'+it.code]||{}).photoIds||[]).map(murl).join('\n')}}),
+  helped:v.helped,staffConfirm:dutyList().length+(L==='zh'?' 人：':' orang: ')+dutyList().join(', '),lang:L};
  busyOn(t('submitting'));run('submitStd',[S.token,payload],function(r){busyOff();localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+t('score')+': <b>'+r.total+'</b> · '+esc(r.grade)+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags&&r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';},function(e){busyOff();toast(t('err')+': '+e);});}
 
 // ---------- SPOT check ----------
