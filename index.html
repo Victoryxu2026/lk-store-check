@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8"><base target="_top">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#111111"><title>LK Store Check</title><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#111111"><meta name="apple-mobile-web-app-title" content="LK Check"><meta name="apple-mobile-web-app-status-bar-style" content="black"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="img/apple-touch-icon.png"><link rel="icon" href="img/icon-192.png"><title>LK Store Check</title><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:15px}
 header{background:#111;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
@@ -170,7 +170,12 @@ function render(){var a=document.getElementById('app');setSync();
  if(!S.v)return a.innerHTML=scHome();
  if(S.v.type==='STD')return a.innerHTML=scStd();
  a.innerHTML=scSpot();window.scrollTo(0,0);}
-function scLogin(){return '<div class="card"><h2>'+t('login')+'</h2><input id="nick" placeholder="'+t('nick')+'" autocapitalize="none"><input id="pw" type="password" placeholder="'+t('pw')+'"><button class="btn" onclick="doLogin()">'+t('login')+'</button></div>';}
+function standalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
+function a2hsTip(){if(standalone())return '';var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/i.test(ua),inapp=/FBAN|FBAV|Instagram|WhatsApp|Line\/|; wv\)/i.test(ua);
+ var zh=inapp?'现在是在 App 里面打开的，录音和定位可能用不了。请点右上角「⋯」→「在浏览器中打开」。':ios?'第一次使用：点浏览器的「分享」按钮（方框加向上箭头）→「添加到主屏幕」→「添加」。以后从桌面的 LK 图标打开，全屏显示，像 App 一样。':'第一次使用：点浏览器右上角「⋮」→「添加到主屏幕」或「安装应用」。以后从桌面的 LK 图标打开，全屏显示，像 App 一样。';
+ var id=inapp?'Halaman ini dibuka di dalam aplikasi, rekaman dan lokasi mungkin tidak berfungsi. Ketuk "⋯" di kanan atas → "Buka di browser".':ios?'Pertama kali: ketuk tombol "Bagikan" (kotak dengan panah ke atas) → "Tambahkan ke Layar Utama" → "Tambah". Selanjutnya buka dari ikon LK di layar utama, tampil penuh seperti aplikasi.':'Pertama kali: ketuk "⋮" di kanan atas browser → "Tambahkan ke layar utama" atau "Instal aplikasi". Selanjutnya buka dari ikon LK di layar utama, tampil penuh seperti aplikasi.';
+ return '<div class="card" style="border-left:5px solid #FDCD17"><div class="small">📲 '+(L==='zh'?zh:id)+'</div></div>';}
+function scLogin(){return '<div class="card"><h2>'+t('login')+'</h2><input id="nick" placeholder="'+t('nick')+'" autocapitalize="none"><input id="pw" type="password" placeholder="'+t('pw')+'"><button class="btn" onclick="doLogin()">'+t('login')+'</button></div>'+a2hsTip();}
 function doLogin(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var n=document.getElementById('nick').value,p=document.getElementById('pw').value;busyOn(t('signingIn'));run('login',[n,p],function(r){busyOff();if(!r.ok)return toast(t('wrong'));if(r.boot){S.boot=r.boot;OFF=new Date(r.boot.serverTime.replace(' ','T'))-Date.now();}S.token=r.token;S.user=r.user;S.mustChange=r.mustChange;if(!localStorage.getItem('lk_lang')){L=r.lang;localStorage.setItem('lk_lang',L);}sessionStorage.setItem('lk_sess',JSON.stringify({token:r.token,user:r.user}));render();},function(e){busyOff();toast(t('err'));});}
 function scChangePw(){return '<div class="card"><h2>'+t('mustchange')+'</h2><input id="p1" type="password" placeholder="'+t('newpw')+'"><input id="p2" type="password" placeholder="'+t('newpw2')+'"><button class="btn" onclick="doChange()">'+t('save')+'</button></div>';}
 function doChange(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var a=document.getElementById('p1').value,b=document.getElementById('p2').value;if(a!==b||a.length<6)return toast(t('pwdiff'));run('changePassword',[S.token,a],function(r){if(!r.ok)return toast(t('pwdiff'));S.mustChange=false;render();});}
