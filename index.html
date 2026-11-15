@@ -92,6 +92,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return
 function busyOn(m){document.getElementById('busymsg').textContent=m;document.getElementById('busy').style.display='flex';}
 function busyOff(){document.getElementById('busy').style.display='none';}
 var API='https://script.google.com/macros/s/AKfycbxPxspsZC9VBAmycgwoYaAdzPRe_t3LzAP9js9Aon7GgJNAtoAmdg4KShmHbCPGl0I/exec';
+try{fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'warm',args:[]})}).catch(function(){});}catch(e){}
 function run(fn,args,ok,fail){var onFail=function(e){if(String(e).indexOf('SESSION_EXPIRED')>=0){toast(t('expired'));logout();return;}(fail||function(){toast(t('err'))})(e);};
  if(window.google&&google.script&&google.script.run){var r=google.script.run.withSuccessHandler(ok).withFailureHandler(onFail);r[fn].apply(r,args);return;}
  fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:args})})
