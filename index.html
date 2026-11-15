@@ -26,7 +26,7 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .sync{font-size:12px}
 </style></head><body>
 <header><div><b>LK</b> Store Check</div><div><span id="sync" class="sync"></span> <button class="lang" onclick="toggleLang()">ID | 中文</button></div></header>
-<main id="app"></main><div id="toast"></div><div id="busy"><div id="busymsg"></div></div>
+<main id="app"></main><div id="toast"></div><div id="zoom" onclick="this.style.display='none'" style="position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:9"></div><div id="busy"><div id="busymsg"></div></div>
 <script>
 // ================= i18n =================
 var L = localStorage.getItem('lk_lang') || 'id';
@@ -116,10 +116,11 @@ function murl(id){return S.v&&S.v.media[id]?S.v.media[id].url||'':'';}
 function getGeo(cb){if(!navigator.geolocation)return cb(null);var done=false;navigator.geolocation.getCurrentPosition(function(p){if(done)return;done=true;cb({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)})},function(){if(done)return;done=true;cb(null)},{enableHighAccuracy:true,timeout:12000,maximumAge:30000});setTimeout(function(){if(!done){done=true;cb(null)}},14000);}
 
 // ================= camera + watermark =================
+function zoom(id){var z=document.getElementById('zoom');z.innerHTML='<img src="'+S.thumbs[id]+'" style="max-width:100%;max-height:100%">';z.style.display='flex';}
 function tagLabel(k){var zh=L==='zh',m={selfie:zh?'签到自拍':'Selfie check-in',outselfie:zh?'签退自拍':'Selfie check-out',front:zh?'门头':'Tampak depan',group:zh?'店员合照':'Foto bersama staf'};
  if(m[k])return m[k];if(k.indexOf('fix_')===0)return (zh?'整改 ':'Perbaikan ')+k.slice(4);
  var g=/^([gp])_(\d+)$/.exec(k);if(g&&S.v&&S.v.items){var it=S.v.items[+g[2]]||{};return (g[1]==='g'?(zh?'货品 ':'Barang '):'POS ')+(it.sku||'')+' '+(it.name||'');}
- return k;}
+ var it=S.boot&&S.boot.items?S.boot.items.find(function(i){return i.code===k}):null;return it?k+' '+f(it,'title'):k;}
 function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在定位…':'Mencari lokasi…');if(g)return '📍 '+(L==='zh'?'已定位，精度约 ':'Lokasi tercatat, akurasi ±')+g.acc+' m';
  return '⚠️ '+(L==='zh'?'没拿到定位。请允许浏览器使用位置，然后 ':'Lokasi belum terbaca. Izinkan akses lokasi di browser, lalu ')+'<a href="#" onclick="askGeo();return false">'+(L==='zh'?'点这里重试':'coba lagi')+'</a>';}
 function askGeo(){S.geoBusy=1;render();getGeo(function(g){S.geoBusy=0;if(g){S.lastGeo=g;S.lastGeoAt=Date.now();}render();});}
@@ -135,7 +136,7 @@ function takePhoto(tag,front,cb){var inp=document.createElement('input');inp.typ
   img.src=URL.createObjectURL(file);};
  getGeo(function(g){if(g)S.lastGeo=g;});inp.click();}
 S.thumbs={};
-function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id){var src=S.thumbs[id]||murl(id);return src&&S.thumbs[id]?'<img src="'+S.thumbs[id]+'">':'<span class="tag ok">✓ foto</span>'}).join('')+'</div>';}
+function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id){var src=S.thumbs[id]||murl(id);return src&&S.thumbs[id]?'<img src="'+S.thumbs[id]+'" onclick="zoom(\''+id+'\')">':'<span class="tag ok">✓ foto</span>'}).join('')+'</div>';}
 
 // ================= audio =================
 var REC=null;
