@@ -51,8 +51,8 @@ var T = {
  pricecheck:['Cocokkan label harga 2 produk ini dengan harga di bawah','核对这 2 个商品的价签，和下面的价格是否一致'], lowest:['Kalau ada beberapa masalah sekaligus, pilih nilai yang paling rendah.','同一项有几种问题时，按最低的那一档选。'], keybrands:['Brand prioritas bulan ini (harus dipajang di posisi utama)','本月重点品牌（要放在主陈列位）'], promos:['Promo yang berjalan bulan ini (materinya harus terpasang)','本月正在做的促销（物料要摆出来）'],
  sales:['Tes Penjualan','销售考核'], staff:['Staf yang dites','被考核的店员'], staffname:['Ketik nama staf','输入店员名字'],
  guide:['Untuk tim operasional: adakan training rutin (bulanan & mingguan) dan kirim materi ke toko — pengetahuan produk, promo, teknik jualan, standar operasional toko. Kalau staf gagal tes, cek dulu apakah training-nya sudah sampai ke dia.','给运营团队：要定期做月度和周度培训，把产品知识、促销、销售技巧、门店运营规范的资料发到门店。店员考不过时，先看看培训有没有真正落到他身上。'],
- learnedQ:['Tanyakan ke staf: "Bulan ini kamu sudah belajar produk baru, promo, pengetahuan produk, dan standar toko?"','问店员：「这个月的新品、促销、产品知识和门店规范，你都学过了吗？」'],
- learnedA:[['Sudah semua','都学过'],['Baru sebagian','只学了一部分'],['Belum','还没学']], gaps:[['Produk baru','新品'],['Promo','促销'],['Pengetahuan produk','产品知识'],['Standar toko','门店规范']],
+ learnedQ:['Tanyakan ke staf satu per satu: "Bulan ini kamu sudah belajar … ?" lalu pilih jawabannya untuk tiap topik.','逐项问店员：「这个月的……你学过了吗？」每一项选一个答案。'], learnY:['Sudah belajar','学过'], learnN:['Belum belajar','没学过'],
+ learnedA:[['Sudah semua','都学过'],['Baru sebagian','只学了一部分'],['Belum','还没学']], gaps:[['Produk baru bulan ini','本月新品'],['Promo bulan ini','本月促销'],['Pengetahuan produk','产品知识'],['Standar operasional toko','门店规范']],
  rec1:['Rekaman 1 — Roleplay: kamu jadi pelanggan (3–10 menit)','录音 1 — 角色扮演：你扮演顾客（3–10 分钟）'], rec2:['Rekaman 2 — Tanya jawab pengetahuan (1–5 menit)','录音 2 — 知识问答（1–5 分钟）'],
  rec3:['Rekaman 3 — Coaching langsung (minimal 3 menit)','录音 3 — 现场带教（至少 3 分钟）'], start:['Mulai rekam','开始录音'], stop:['Selesai rekam','结束录音'], pause:['Jeda','暂停'], cont:['Lanjut rekam','继续录音'],
  tooshort:['Rekaman belum cukup lama. Minimal','录音时间还不够，至少'], recok:['Rekaman tersimpan','录音已保存'], micfail:['Mikrofon tidak bisa dipakai. Izinkan akses mikrofon di pengaturan browser.','麦克风打不开：请在浏览器设置里允许使用麦克风'],
@@ -253,8 +253,7 @@ function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3'
  var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card"><label class="small">'+t('staff')+'</label>';
  if(c.staff&&c.staff.length)h+='<select onchange="S.v.sales.staff=this.value;saveDraft()"><option value="">—</option>'+c.staff.map(function(n){return '<option'+(s.staff===n?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
  else h+='<input placeholder="'+t('staffname')+'" value="'+esc(s.staff||'')+'" oninput="S.v.sales.staff=this.value;saveDraft()">';
- h+='<div class="q">'+t('learnedQ')+'</div><div class="row">'+T.learnedA.map(function(o){return '<div class="opt'+(s.learned===o[1]?' sel':'')+'" onclick="S.v.sales.learned=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div>';
- if(s.learned&&s.learned!=='都学过')h+='<div class="row" style="flex-wrap:wrap">'+T.gaps.map(function(o){var on=(s.gaps||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togGap(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div>';
+ h+='<div class="q">'+t('learnedQ')+'</div>'+T.gaps.map(function(o,i){var v=(s.learnMap||{})[o[1]];return '<div style="margin-top:8px"><b>'+tt(o)+'</b><div class="row"><div class="opt'+(v==='Y'?' sel':'')+'" onclick="setLearn('+i+',\'Y\')">'+t('learnY')+'</div><div class="opt'+(v==='N'?' sel':'')+'" onclick="setLearn('+i+',\'N\')">'+t('learnN')+'</div></div></div>'}).join('');
  h+='</div><div class="guide">'+t('roleplayTip')+'</div>'+recUI('rec1',3,10);
  h+=itemCard('C.1')+itemCard('C.3','<div class="guide">'+t('c3na')+'</div>')+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
  h+='<div class="card"><h3>'+t('quiz')+'</h3>'+(c.quiz||[]).map(function(q){return '<div class="q">'+esc(L==='zh'?q.q_zh:q.q_id)+'<div class="ans">'+t('answer')+': '+esc(L==='zh'?q.a_zh:q.a_id)+'</div></div>'}).join('')+'</div>'+recUI('rec2',1,5)+itemCard('C.6');
@@ -264,6 +263,7 @@ function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3'
  var ok=s.staff&&s.learned&&v.rec.rec1&&v.rec.rec2&&codesDone(['C.1','C.3','C.4','C.5','C.6','C.7'])&&(v.groupIds||[]).length&&(s.comment||'').trim().length>=20;
  if(cLow())ok=ok&&(s.coachTopics||[]).length&&v.rec.rec3&&s.coachResult;
  return h+nav(ok);}
+function setLearn(i,v){var s=S.v.sales;s.learnMap=s.learnMap||{};s.learnMap[T.gaps[i][1]]=v;var ks=T.gaps.map(function(o){return o[1]}),ans=ks.filter(function(k){return s.learnMap[k]});if(ans.length===ks.length){var no=ks.filter(function(k){return s.learnMap[k]==='N'});s.gaps=no;s.learned=no.length===0?'都学过':no.length===ks.length?'没学过':'部分学过';}else{s.learned='';s.gaps=[];}saveDraft();render();}
 function togGap(g){var s=S.v.sales;s.gaps=s.gaps||[];var i=s.gaps.indexOf(g);i<0?s.gaps.push(g):s.gaps.splice(i,1);saveDraft();render();}
 function togTopic(g){var s=S.v.sales;s.coachTopics=s.coachTopics||[];var i=s.coachTopics.indexOf(g);i<0?s.coachTopics.push(g):s.coachTopics.splice(i,1);saveDraft();render();}
 function std_s8(){var cs=['D.1','D.2','D.3','D.6'];return '<h2>'+tt(T.sec[8])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
