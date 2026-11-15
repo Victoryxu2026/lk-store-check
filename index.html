@@ -220,7 +220,7 @@ function scHome(){var d=loadDraft(),h=profileCard()+'<div class="guide" style="b
  if(S.user.entries.indexOf('STD')>=0)h+='<div class="card" onclick="newVisit(\'STD\')"><h3>📋 '+t('std')+'</h3><div class="muted">'+t('stdsub')+'</div></div>';
  if(S.user.entries.indexOf('SPOT')>=0)h+='<div class="card" onclick="newVisit(\'SPOT\')"><h3>📦 '+t('spot')+'</h3><div class="muted">'+t('spotsub')+'</div></div>';
  return h+a2hsMini()+'<button class="btn btn2" onclick="logout()">'+t('logout')+'</button>';}
-function a2hsMini(){if(standalone()||a2hsEnv()==='pc')return '';if(S.a2hsOpen)return a2hsTip();return '<div class="small" style="margin-top:12px;padding:10px;border:1px dashed #d8b200;border-radius:10px;background:#fffbea;cursor:pointer" onclick="S.a2hsOpen=1;render()">📲 '+(L==='zh'?'还没把 LK Hub 加到手机桌面？点这里看步骤 ›':'Belum tambahkan LK Hub ke layar utama? Ketuk untuk lihat langkahnya ›')+'</div>';}
+function a2hsMini(){if(standalone()||a2hsEnv()==='pc')return '';try{if(localStorage.getItem('lk_a2hs_hide')==='1')return '';}catch(e){}if(S.a2hsOpen)return a2hsTip();return '<div class="small" style="margin-top:12px;padding:10px;border:1px dashed #d8b200;border-radius:10px;background:#fffbea;cursor:pointer" onclick="S.a2hsOpen=1;render()">📲 '+(L==='zh'?'还没把 LK Hub 加到手机桌面？点这里看步骤 ›':'Belum tambahkan LK Hub ke layar utama? Ketuk untuk lihat langkahnya ›')+'</div>';}
 function resume(){S.v=loadDraft();render();pump();}
 function discard(){if(!confirm(t('discard')+'?'))return;localStorage.removeItem(DRAFT_KEY);render();}
 function newVisit(type){S.v={type:type,nick:S.user.nick,step:0,media:{},rec:{},answers:{},storeId:'',storeName:''};render();}
