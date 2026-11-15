@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><base target="_top">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="theme-color" content="#111111"><title>LK Store Check</title><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:15px}
+header{background:#111;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+header b{color:#FDCD17}.lang{border:1px solid #FDCD17;color:#FDCD17;border-radius:6px;padding:3px 8px;font-size:13px;background:none}
+main{padding:12px;max-width:560px;margin:0 auto}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #e4e4e0}
+h2{font-size:18px;margin:4px 0 10px}h3{font-size:16px;margin:0 0 6px}.muted{color:#777;font-size:13px}.small{font-size:13px}
+.btn{display:block;width:100%;padding:13px;border-radius:10px;border:0;background:#111;color:#FDCD17;font-size:16px;font-weight:600;margin-top:10px}
+.btn2{background:#fff;color:#111;border:1px solid #bbb}.btnY{background:#FDCD17;color:#111}.btn:disabled{opacity:.45}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccc;border-radius:8px;font-size:15px;margin-top:6px;background:#fff}
+textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10px;margin-top:7px;display:flex;justify-content:space-between;gap:8px;cursor:pointer;background:#fff}
+.opt.sel{border:2px solid #111;background:#fff8d6}.opt span:last-child{color:#888;font-size:13px;white-space:nowrap}
+.bar{height:5px;background:#ddd;border-radius:3px;margin:6px 0 10px}.bar i{display:block;height:5px;background:#FDCD17;border-radius:3px}
+.top{display:flex;justify-content:space-between;font-size:13px;color:#555}.ok{color:#1d7a3a}.warn{color:#b26a00}.err{color:#b3261e}
+.slot{border:1px dashed #999;border-radius:9px;padding:10px;text-align:center;margin-top:8px;color:#555;position:relative}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.thumbs img{width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #ccc}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;background:#eee;font-size:12px;margin:2px}
+.guide{background:#fff8d6;border-left:4px solid #FDCD17;padding:10px;border-radius:6px;font-size:13px;margin-bottom:10px}
+.rec{font-size:28px;font-weight:700;text-align:center;margin:8px 0}.row{display:flex;gap:8px}.row>*{flex:1}
+.q{border-top:1px solid #eee;padding-top:8px;margin-top:8px}.ans{color:#1d7a3a;font-size:13px;margin-top:4px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;display:none;z-index:9}
+.sync{font-size:12px}
+</style></head><body>
+<header><div><b>LK</b> Store Check</div><div><span id="sync" class="sync"></span> <button class="lang" onclick="toggleLang()">ID | 中文</button></div></header>
+<main id="app"></main><div id="toast"></div>
+<script>
+// ================= i18n =================
+var L = localStorage.getItem('lk_lang') || 'id';
+var T = {
+ login:['Masuk','登录'], nick:['Nama panggilan','简称'], pw:['Password','密码'], wrong:['Nama atau password salah','名字或密码不对'],
+ newpw:['Buat password baru (min. 6 karakter)','设置新密码（至少 6 位）'], newpw2:['Ulangi password baru','再输一次新密码'], save:['Simpan','保存'],
+ mustchange:['Login pertama: wajib ganti password','第一次登录：必须改密码'], pwdiff:['Password tidak sama / terlalu lemah','两次不一致或太简单'],
+ menu:['Pilih menu','选择入口'], std:['Inspeksi standar toko','门店标准化检核'], spot:['Stock opname acak','库存抽检'],
+ stdsub:['10 langkah · ±35–40 menit','10 步 · 约 35–40 分钟'], spotsub:['30 SKU · min. 30 menit','30 个 SKU · 至少 30 分钟'],
+ resume:['Lanjutkan yang belum selesai','继续没做完的'], discard:['Hapus draft','删除草稿'], logout:['Keluar','退出'],
+ city:['Kota','城市'], store:['Kode toko','门店编号'], next:['Lanjut','下一步'], back:['Kembali','上一步'],
+ checkin:['Check-in','签到'], selfie:['Foto selfie (wajah jelas + latar toko)','自拍（看得到正脸 + 门店背景）'], front:['Foto tampak depan toko','门头正面全景'],
+ takephoto:['Ambil foto','拍照'], retake:['Ulang','重拍'], gps:['Lokasi','定位'], gpsfail:['Lokasi tidak didapat (tetap bisa lanjut)','拿不到定位（可以继续）'],
+ far:['Lokasi jauh dari toko (hanya catatan)','离门店较远（只做记录）'], saved:['Tersimpan','已保存'], uploading:['Mengirim','上传中'],
+ na:['Tidak berlaku','不适用'], note:['Keterangan masalah','问题说明'], noteReq:['Wajib diisi jika nilai < 100%','低于 100% 必填'],
+ red:['Pelanggaran berat (langsung 0 + lapor)','红线（直接 0 分并上报）'], photosReq:['Foto wajib','必拍照片'],
+ step:['Langkah','第'], of:['dari','步，共'], needAll:['Lengkapi dulu semua isian dan foto','先把选项和照片补齐'],
+ s1:['Masalah sebelumnya & cek data','上次问题复检 + 数据提示'], noissue:['Tidak ada masalah terbuka','没有未关闭的问题'],
+ fixed:['Sudah diperbaiki','已整改'], notfixed:['Belum diperbaiki','未整改'], nohint:['Tidak ada peringatan data','没有数据提示'],
+ true_:['Benar','属实'], false_:['Tidak benar','不属实'], explained:['Sudah dijelaskan','已说明原因'],
+ reason:['Alasan','原因'], reasons:[['Ada toko pesaing baru','附近有竞争店'],['Stok kosong','断货'],['Kurang staf','人手不够'],['Mall / jalan sepi','商场客流少'],['Lainnya','其他']],
+ pricecheck:['Cek 3 label harga ini','核对这 3 个价签'], keybrands:['Brand utama bulan ini','本月重点品牌'], promos:['Promo bulan ini','本月促销'],
+ sales:['Tes penjualan','销售考核'], staff:['Staf yang dites','被考店员'], staffname:['Nama staf','店员名字'],
+ guide:['Panduan untuk tim operasional: adakan training rutin bulanan & mingguan dan kirim materi ke toko (pengetahuan produk, promo, teknik jualan, standar operasional toko). Jika staf gagal, cek dulu apakah training sudah sampai.','给运营团队的培训指引：要安排有规律的月度和周度培训，把产品知识、促销活动、销售技巧、门店运营规范的材料下发给门店学习。店员考核不合格时，先想一下是不是培训没做到位。'],
+ learnedQ:['Tanya staf: "Produk baru, promo, pengetahuan produk dan standar toko bulan ini sudah kamu pelajari?"','问店员：「本月的新品、促销活动、产品知识和门店运营规范，你学过了吗？」'],
+ learnedA:[['Sudah semua','都学过'],['Sebagian','部分学过'],['Belum','没学过']], gaps:[['Produk baru','新品'],['Promo','促销'],['Pengetahuan produk','产品知识'],['Standar toko','门店规范']],
+ rec1:['Rekaman 1: roleplay pelanggan (3–10 menit)','录音 1：扮顾客演练（3–10 分钟）'], rec2:['Rekaman 2: pertanyaan (1–5 menit)','录音 2：知识题（1–5 分钟）'],
+ rec3:['Rekaman 3: coaching di tempat (min. 3 menit)','录音 3：现场带教（至少 3 分钟）'], start:['Mulai','开始'], stop:['Selesai','结束'], pause:['Jeda','暂停'], cont:['Lanjut rekam','继续录'],
+ tooshort:['Belum mencapai durasi minimum','还没到最短时长'], recok:['Rekaman tersimpan','录音已保存'], micfail:['Mikrofon tidak bisa dipakai','麦克风打不开'],
+ roleplayTip:['Urutan: sapa → tanya kebutuhan → jelaskan produk & tawarkan coba → harga & promo → produk tambahan → input POS (JANGAN checkout) → struk & member','顺序：招呼 → 问需求 → 讲产品、邀请试抽 → 价格和促销 → 推加购 → POS 录单（不要结算）→ 小票和会员'],
+ quiz:['Pertanyaan','题目'], answer:['Jawaban acuan','参考答案'], groupphoto:['Foto bersama staf','和店员合照'], comment:['Komentar (min. 20 huruf): yang baik, yang perlu diperbaiki','评语（至少 20 字）：哪里好、哪里要改'],
+ coach:['Coaching di tempat (wajib)','现场带教（必做）'], coachWhy:['Ada nilai di bawah 80%. Ajari langsung, lalu staf ulangi bagian yang kurang.','有一项低于 80%，要当场教，再让店员把不合格的部分重做一遍。'],
+ topics:[['Sikap pelayanan','接待态度'],['Teknik jualan','销售技巧'],['Pengetahuan promo','促销知识'],['Pengetahuan produk','产品知识']],
+ after:['Hasil setelah coaching','带教后结果'], afterA:[['Sudah paham','已掌握'],['Sebagian','部分掌握'],['Belum','未掌握']],
+ summary:['Ringkasan masalah','问题汇总'], solved:['Selesai di tempat','现场已解决'], rectify:['Perlu perbaikan','需整改'], owner:['Penanggung jawab','负责人'], due:['Batas waktu','期限'],
+ helped:['Hari ini saya membantu toko dengan apa?','本次帮门店解决了什么？'], confirm:['Nama staf yang bertugas (konfirmasi)','在岗店员名字（确认）'], c0adj:['Nilai C.0 bisa diubah di sini','C.0 可以在这里改档'],
+ checkout:['Check-out','签退'], outselfie:['Selfie check-out (wajah + latar toko)','签退自拍（正脸 + 门店背景）'], submit:['Kirim','提交'],
+ waitUp:['Tunggu, foto / rekaman masih dikirim','等一下，照片或录音还在上传'], minTime:['Belum 30 menit di toko. Tetap kirim? (akan ditandai)','在店还不到 30 分钟，确定提交吗？（会被标红）'],
+ done:['Terkirim','已提交'], score:['Nilai','得分'], minutes:['menit','分钟'], home:['Kembali ke menu','回首页'],
+ sku:['SKU','SKU'], goods:['1. Foto barang (dikumpulkan)','1. 货品照（摆在一起）'], actual:['2. Stok fisik','2. 实际库存'], posphoto:['3. Foto layar POS','3. POS 画面照'],
+ posqty:['4. Stok di POS','4. POS 理论库存'], diff:['Selisih','差异'], recount:['Hitung ulang','复点数'], diffnote:['Penjelasan selisih','差异说明'],
+ nosku:['Tidak ada data penjualan 14 hari untuk toko ini','这家店近 14 天没有销售数据'], spotDone:['sama','一致'],
+ photoOld:['Foto harus diambil langsung, bukan dari galeri','照片要现场拍，不能用相册里的'], loading:['Memuat…','加载中…'], err:['Gagal, coba lagi','失败，请重试'],
+ expired:['Sesi habis, silakan login lagi','登录过期，请重新登录'], c3na:['Kartu produk belum tersedia → C.3 tidak berlaku','卖点卡还没出 → C.3 不适用'],
+ selectStore:['Pilih toko','选择门店'], hintNoSnap:['Data stok (snapshot) belum tersambung → B.8 tidak berlaku','库存快照还没接上 → B.8 不适用'],
+ sec:{1:['Kondisi staf saat masuk','在岗状态（进店先看）'],3:['Tampilan','形象'],4:['Tasting counter','试抽台'],5:['Display & harga','陈列与价格'],6:['Stok','库存'],8:['Operasional harian','日常营运']}
+};
+function t(k,i){var v=T[k];if(!v)return k;return L==='zh'?v[1]:v[0];}
+function tt(arr){return L==='zh'?arr[1]:arr[0];}
+function f(it,k){return it[k+'_'+L]||it[k+'_id']||'';}
+function toggleLang(){L=L==='zh'?'id':'zh';localStorage.setItem('lk_lang',L);if(S.token)run('setLang',[S.token,L],function(){},function(){});render();}
+
+// ================= state =================
+var S={token:null,user:null,boot:null,v:null,screen:'login'};
+var DRAFT_KEY='lk_draft_v1';
+function saveDraft(){if(S.v){localStorage.setItem(DRAFT_KEY,JSON.stringify(S.v));}setSync();}
+function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch(e){return null;}}
+var sess=JSON.parse(sessionStorage.getItem('lk_sess')||'null');if(sess){S.token=sess.token;S.user=sess.user;}
+function toast(m){var e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none'},2600);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
+var API='https://script.google.com/macros/s/AKfycbxPxspsZC9VBAmycgwoYaAdzPRe_t3LzAP9js9Aon7GgJNAtoAmdg4KShmHbCPGl0I/exec';
+function run(fn,args,ok,fail){var onFail=function(e){if(String(e).indexOf('SESSION_EXPIRED')>=0){toast(t('expired'));logout();return;}(fail||function(){toast(t('err'))})(e);};
+ if(window.google&&google.script&&google.script.run){var r=google.script.run.withSuccessHandler(ok).withFailureHandler(onFail);r[fn].apply(r,args);return;}
+ fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:args})})
+  .then(function(x){return x.json()}).then(function(j){if(j.err)onFail(j.err);else ok(j.data);}).catch(onFail);}
+var OFF=0;function nowStr(){var d=new Date(Date.now()+OFF);function p(n){return(n<10?'0':'')+n}return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
+
+// ================= media store (IndexedDB) + upload queue =================
+var DB;function idb(cb){if(DB)return cb(DB);var r=indexedDB.open('lkcheck',1);r.onupgradeneeded=function(){r.result.createObjectStore('m')};r.onsuccess=function(){DB=r.result;cb(DB)};}
+function mput(id,val){idb(function(db){db.transaction('m','readwrite').objectStore('m').put(val,id)});}
+function mget(id,cb){idb(function(db){var q=db.transaction('m').objectStore('m').get(id);q.onsuccess=function(){cb(q.result)}})}
+function mdel(id){idb(function(db){db.transaction('m','readwrite').objectStore('m').delete(id)})}
+// media registry in draft: S.v.media[id]={name,mime,url}
+var busy=false;
+function pump(){if(busy||!S.v||!S.token||!S.v.visitId){setSync();return;}var ids=Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url});setSync();if(!ids.length)return;busy=true;var id=ids[0],m=S.v.media[id];
+ mget(id,function(data){if(!data){delete S.v.media[id];busy=false;saveDraft();return pump();}
+  run('uploadFile',[S.token,S.v.visitId,m.name,m.mime,data.split(',')[1]],function(res){S.v.media[id].url=res.url;mdel(id);busy=false;saveDraft();pump();},
+   function(){busy=false;setTimeout(pump,15000);});});}
+setInterval(pump,20000);
+function pending(){return S.v?Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url}).length:0;}
+function setSync(){var e=document.getElementById('sync');if(!e)return;var n=pending();e.innerHTML=S.v?(n?'<span class="warn">⟳ '+t('uploading')+' '+n+'</span>':'<span class="ok">✓ '+t('saved')+'</span>'):'';}
+function murl(id){return S.v&&S.v.media[id]?S.v.media[id].url||'':'';}
+
+// ================= GPS =================
+function getGeo(cb){if(!navigator.geolocation)return cb(null);var done=false;navigator.geolocation.getCurrentPosition(function(p){if(done)return;done=true;cb({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)})},function(){if(done)return;done=true;cb(null)},{enableHighAccuracy:true,timeout:12000,maximumAge:30000});setTimeout(function(){if(!done){done=true;cb(null)}},14000);}
+
+// ================= camera + watermark =================
+function takePhoto(tag,front,cb){var inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.setAttribute('capture',front?'user':'environment');
+ inp.onchange=function(){var file=inp.files[0];if(!file)return;if(file.lastModified&&Date.now()-file.lastModified>5*60000){toast(t('photoOld'));return;}
+  var img=new Image();img.onload=function(){var max=1280,w=img.width,h=img.height,r=Math.min(1,max/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);
+   var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(img,0,0,w,h);
+   var g=S.lastGeo,lines=[nowStr(),(S.v?S.v.storeId+' '+(S.v.storeName||''):''),(S.user?S.user.nick:'')+' · '+tag,g?('GPS '+g.lat.toFixed(5)+', '+g.lng.toFixed(5)):'GPS -'];
+   var fs=Math.max(16,Math.round(w/40));x.font='bold '+fs+'px Arial';var bh=(fs+6)*lines.length+10;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,h-bh,w,bh);x.fillStyle='#FDCD17';
+   lines.forEach(function(l,i){x.fillText(l,10,h-bh+fs+6+i*(fs+6))});
+   var data=c.toDataURL('image/jpeg',0.72);var id='p'+Date.now()+Math.floor(Math.random()*1000);
+   mput(id,data);S.v.media[id]={name:tag.replace(/[^\w.-]+/g,'_')+'_'+id+'.jpg',mime:'image/jpeg'};S.thumbs[id]=data;saveDraft();pump();cb(id);};
+  img.src=URL.createObjectURL(file);};
+ getGeo(function(g){if(g)S.lastGeo=g;});inp.click();}
+S.thumbs={};
+function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id){var src=S.thumbs[id]||murl(id);return src&&S.thumbs[id]?'<img src="'+S.thumbs[id]+'">':'<span class="tag ok">✓ foto</span>'}).join('')+'</div>';}
+
+// ================= audio =================
+var REC=null;
+function recUI(key,min,max){var r=S.v.rec[key]||{};var html='<div class="card"><h3>'+t(key)+'</h3>';
+ if(r.id&&!REC)html+='<div class="ok">✓ '+t('recok')+' ('+Math.round(r.sec/60*10)/10+' '+t('minutes')+')</div><button class="btn btn2" onclick="recStart(\''+key+'\','+min+','+max+')">'+t('retake')+'</button>';
+ else if(REC&&REC.key===key)html+='<div class="rec" id="rtime">0:00</div><div class="row"><button class="btn btn2" onclick="recPause()" id="rpause">'+t('pause')+'</button><button class="btn" onclick="recStop()">'+t('stop')+'</button></div>';
+ else html+='<button class="btn btnY" onclick="recStart(\''+key+'\','+min+','+max+')">● '+t('start')+'</button>';
+ return html+'</div>';}
+function recStart(key,min,max){navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){var mr=new MediaRecorder(st);var ch=[];mr.ondataavailable=function(e){ch.push(e.data)};
+ REC={key:key,mr:mr,st:st,ch:ch,min:min,max:max,sec:0,paused:false};mr.start(1000);
+ REC.timer=setInterval(function(){if(!REC.paused)REC.sec++;var e=document.getElementById('rtime');if(e)e.textContent=Math.floor(REC.sec/60)+':'+('0'+REC.sec%60).slice(-2);if(REC.sec>=REC.max*60)recStop(true);},1000);
+ mr.onstop=function(){var b=new Blob(ch,{type:mr.mimeType||'audio/webm'});var fr=new FileReader();fr.onload=function(){var id='a'+Date.now();mput(id,fr.result);
+  S.v.media[id]={name:key+'_'+id+'.webm',mime:b.type.split(';')[0]};S.v.rec[key]={id:id,sec:REC.sec};st.getTracks().forEach(function(tk){tk.stop()});clearInterval(REC.timer);REC=null;saveDraft();pump();render();};fr.readAsDataURL(b);};
+ render();}).catch(function(){toast(t('micfail'))});}
+function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.paused=false;document.getElementById('rpause').textContent=t('pause');}else{REC.mr.pause();REC.paused=true;document.getElementById('rpause').textContent=t('cont');}}
+function recStop(force){if(!REC)return;if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' ('+REC.min+' '+t('minutes')+')');return;}if(REC.paused)REC.mr.resume();REC.mr.stop();}
+
+// ================= screens =================
+function render(){var a=document.getElementById('app');setSync();
+ if(!S.token)return a.innerHTML=scLogin();
+ if(S.mustChange)return a.innerHTML=scChangePw();
+ if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';if(!S.booting){S.booting=1;run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();render();},function(){S.booting=0;toast(t('err'));});}return;}
+ if(!S.v)return a.innerHTML=scHome();
+ if(S.v.type==='STD')return a.innerHTML=scStd();
+ a.innerHTML=scSpot();window.scrollTo(0,0);}
+function scLogin(){return '<div class="card"><h2>'+t('login')+'</h2><input id="nick" placeholder="'+t('nick')+'" autocapitalize="none"><input id="pw" type="password" placeholder="'+t('pw')+'"><button class="btn" onclick="doLogin()">'+t('login')+'</button></div>';}
+function doLogin(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var n=document.getElementById('nick').value,p=document.getElementById('pw').value;run('login',[n,p],function(r){if(!r.ok)return toast(t('wrong'));S.token=r.token;S.user=r.user;S.mustChange=r.mustChange;if(!localStorage.getItem('lk_lang')){L=r.lang;localStorage.setItem('lk_lang',L);}sessionStorage.setItem('lk_sess',JSON.stringify({token:r.token,user:r.user}));render();});}
+function scChangePw(){return '<div class="card"><h2>'+t('mustchange')+'</h2><input id="p1" type="password" placeholder="'+t('newpw')+'"><input id="p2" type="password" placeholder="'+t('newpw2')+'"><button class="btn" onclick="doChange()">'+t('save')+'</button></div>';}
+function doChange(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var a=document.getElementById('p1').value,b=document.getElementById('p2').value;if(a!==b||a.length<6||a==='LKvape2026')return toast(t('pwdiff'));run('changePassword',[S.token,a],function(r){if(!r.ok)return toast(t('pwdiff'));S.mustChange=false;render();});}
+function logout(){S={token:null,user:null,boot:null,v:null,thumbs:{}};sessionStorage.removeItem('lk_sess');render();}
+function scHome(){var d=loadDraft(),h='<div class="muted">'+esc(S.user.nick)+' · '+esc(S.user.role)+'</div><h2>'+t('menu')+'</h2>';
+ if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+t('resume')+'</b><div class="small">'+esc(d.storeId+' '+d.storeName)+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div>';
+ if(S.user.entries.indexOf('STD')>=0)h+='<div class="card" onclick="newVisit(\'STD\')"><h3>📋 '+t('std')+'</h3><div class="muted">'+t('stdsub')+'</div></div>';
+ if(S.user.entries.indexOf('SPOT')>=0)h+='<div class="card" onclick="newVisit(\'SPOT\')"><h3>📦 '+t('spot')+'</h3><div class="muted">'+t('spotsub')+'</div></div>';
+ return h+'<button class="btn btn2" onclick="logout()">'+t('logout')+'</button>';}
+function resume(){S.v=loadDraft();render();pump();}
+function discard(){if(!confirm(t('discard')+'?'))return;localStorage.removeItem(DRAFT_KEY);render();}
+function newVisit(type){S.v={type:type,nick:S.user.nick,step:0,media:{},rec:{},answers:{},storeId:'',storeName:''};render();}
+
+// ---------- shared: store select + check-in (step 0) ----------
+function scCheckin(){var v=S.v,stores=S.boot.stores,cities=[];stores.forEach(function(s){if(cities.indexOf(s.city)<0)cities.push(s.city)});
+ var h='<div class="card"><h2>'+t('checkin')+' · '+(v.type==='STD'?t('std'):t('spot'))+'</h2><label class="small">'+t('city')+'</label><select id="city" onchange="S.v.city=this.value;S.v.storeId=\'\';render()"><option value="">—</option>'+cities.map(function(c){return '<option'+(v.city===c?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select>';
+ if(v.city)h+='<label class="small">'+t('store')+'</label><select onchange="pickStore(this.value)"><option value="">—</option>'+stores.filter(function(s){return s.city===v.city}).map(function(s){return '<option value="'+s.id+'"'+(v.storeId===s.id?' selected':'')+'>'+s.id+'</option>'}).join('')+'</select>';
+ if(v.storeId)h+='<div style="margin-top:6px"><b>'+esc(v.storeName)+'</b></div>';
+ h+='</div>';
+ if(v.storeId){h+='<div class="card">'+photoBlock('selfie',t('selfie'),1,true,v.startSelfieIds)+(v.type==='STD'?photoBlock('front',t('front'),1,false,v.frontIds):'')+'<div class="small" id="gpsline">'+(v.startGeo?'📍 '+t('gps')+' ±'+v.startGeo.acc+'m':'')+'</div></div>';
+  var ok=(v.startSelfieIds||[]).length&&(v.type!=='STD'||(v.frontIds||[]).length);
+  h+='<button class="btn" '+(ok?'':'disabled')+' onclick="doCheckin()">'+t('next')+'</button>';}
+ return h+'<button class="btn btn2" onclick="S.v=null;localStorage.removeItem(DRAFT_KEY);render()">'+t('back')+'</button>';}
+function pickStore(id){var s=S.boot.stores.find(function(x){return x.id===id});S.v.storeId=id;S.v.storeName=s?s.name:'';S.v.storeType=s?s.type:'';saveDraft();render();}
+function photoBlock(key,label,n,front,ids){ids=ids||[];return '<div class="slot"><div>📷 '+esc(label)+' ('+ids.length+'/'+n+')</div>'+thumbHtml(ids)+(ids.length<n?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+')">'+t('takephoto')+'</button>':'<button class="btn btn2" onclick="clearPh(\''+key+'\')">'+t('retake')+'</button>')+'</div>';}
+var PH={selfie:'startSelfieIds',front:'frontIds',outselfie:'endSelfieIds',group:'groupIds'};
+function snap(key,front){getGeo(function(g){if(g){S.lastGeo=g;if(key==='selfie')S.v.startGeo=g;if(key==='outselfie')S.v.endGeo=g;}});
+ takePhoto(key,!!front,function(id){var p=PH[key];if(p){S.v[p]=(S.v[p]||[]).concat(id);}else{var a=S.v.answers[key]=S.v.answers[key]||{};a.photoIds=(a.photoIds||[]).concat(id);}saveDraft();render();});}
+function clearPh(key){var p=PH[key];if(p)S.v[p]=[];else S.v.answers[key].photoIds=[];saveDraft();render();}
+function doCheckin(){var v=S.v;toast(t('loading'));run('startVisit',[S.token,v.type,v.storeId,v.startGeo||null],function(r){v.visitId=r.visitId;v.startTime=r.startTime;v.startDist=r.dist;v.ctx=r;v.step=1;
+ if(v.type==='SPOT'){v.items=r.skus.map(function(s){return {sku:s.sku,name:s.name,shared:s.shared}});v.idx=0;}
+ if(r.dist!==''&&r.dist>500)toast(t('far'));saveDraft();render();pump();});}
+
+// ---------- item card ----------
+var LV=[['100','l100'],['80','l80'],['60','l60'],['40','l40'],['0','l0']];
+function item(code){return S.boot.items.find(function(i){return i.code===code})}
+function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[code]||{};
+ var h='<div class="card"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div>'+(extra||'');
+ LV.forEach(function(l){var txt=f(it,l[1]);if(txt==='—')return;h+='<div class="opt'+(a.level===l[0]?' sel':'')+'" onclick="setLv(\''+code+'\',\''+l[0]+'\')"><span>'+esc(txt)+'</span><span>'+l[0]+'%</span></div>';});
+ h+='<div class="opt'+(a.level==='NA'?' sel':'')+'" onclick="setLv(\''+code+'\',\'NA\')"><span>'+t('na')+'</span><span></span></div>';
+ if(it.red==='Y')h+='<label class="opt"><span>⚠ '+t('red')+'</span><input type="checkbox" style="width:auto" '+(a.red?'checked':'')+' onchange="setRed(\''+code+'\',this.checked)"></label>';
+ var need=Number(it.photos)||0;if(need&&a.level!=='NA')h+=photoBlock(code,f(it,'photo')||t('photosReq'),need,false,a.photoIds);
+ if(a.level&&a.level!=='100'&&a.level!=='NA')h+='<textarea placeholder="'+t('note')+' — '+t('noteReq')+'" oninput="S.v.answers[\''+code+'\'].note=this.value;saveDraft()">'+esc(a.note||'')+'</textarea>';
+ return h+'</div>';}
+function setLv(c,l){var a=S.v.answers[c];a.level=l;if(l!=='0')a.red=false;saveDraft();render();}
+function setRed(c,on){var a=S.v.answers[c];a.red=on;if(on)a.level='0';saveDraft();render();}
+function itemDone(code){var it=item(code),a=S.v.answers[code]||{};if(!a.level)return false;if(a.level==='NA')return true;if((a.photoIds||[]).length<(Number(it.photos)||0))return false;if(a.level!=='100'&&!(a.note||'').trim())return false;return true;}
+
+// ---------- STANDARD visit ----------
+var STEPS=[null,'s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'];
+function scStd(){var v=S.v;if(!v.visitId)return scCheckin();
+ var n=v.step,h='<div class="top"><span>'+t('step')+' '+n+' '+t('of')+' 10</span><span>'+esc(v.storeId)+'</span></div><div class="bar"><i style="width:'+(n*10)+'%"></i></div>';
+ h+=window['std_'+STEPS[n]]();
+ return h;}
+function nav(ok){return '<div class="row"><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button><button class="btn" onclick="go(1,'+(ok?1:0)+')">'+t('next')+'</button></div>';}
+function go(d,ok){if(d>0&&!ok)return toast(t('needAll'));S.v.step=Math.max(1,Math.min(10,S.v.step+d));saveDraft();render();}
+function codesDone(cs){return cs.every(itemDone);}
+function std_s1(){var h='<h2>'+tt(T.sec[1])+'</h2>'+itemCard('C.0');return h+nav(codesDone(['C.0']));}
+function std_s2(){var v=S.v,c=v.ctx,h='<h2>'+t('s1')+'</h2><div class="card">';
+ if(!c.openIssues.length)h+='<div class="muted">'+t('noissue')+'</div>';
+ c.openIssues.forEach(function(o,i){h+='<div class="q"><b>'+esc(o.code)+'</b> '+esc(o.desc)+'<div class="row"><div class="opt'+(o.result==='fixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'fixed\';saveDraft();render()">'+t('fixed')+'</div><div class="opt'+(o.result==='notfixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'notfixed\';saveDraft();render()">'+t('notfixed')+'</div></div></div>';});
+ h+='</div><div class="card"><div class="guide">'+t('hintNoSnap')+'</div>';
+ if(!c.hints.length)h+='<div class="muted">'+t('nohint')+'</div>';
+ c.hints.forEach(function(x,i){h+='<div class="q"><b>'+esc(L==='zh'?x.zh:x.id)+'</b>';
+  if(x.mode==='reason')h+='<select onchange="S.v.ctx.hints['+i+'].result=this.value;saveDraft()"><option value="">'+t('reason')+'</option>'+T.reasons.map(function(r){return '<option'+(x.result===r[1]?' selected':'')+' value="'+r[1]+'">'+tt(r)+'</option>'}).join('')+'</select>';
+  else h+='<div class="row">'+[['true_','属实'],['false_','不属实'],['explained','已说明原因']].map(function(o){return '<div class="opt'+(x.result===o[1]?' sel':'')+'" onclick="S.v.ctx.hints['+i+'].result=\''+o[1]+'\';saveDraft();render()">'+t(o[0])+'</div>'}).join('')+'</div>';
+  h+='<textarea placeholder="'+t('note')+'" oninput="S.v.ctx.hints['+i+'].note=this.value;saveDraft()">'+esc(x.note||'')+'</textarea></div>';});
+ h+='</div>';var ok=c.openIssues.every(function(o){return o.result})&&c.hints.every(function(x){return x.result});return h+nav(ok);}
+function std_s3(){var cs=['A.1','A.2','A.3','A.4','A.5'];return '<h2>'+tt(T.sec[3])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
+function std_s4(){return '<h2>'+tt(T.sec[4])+'</h2>'+itemCard('B.1')+nav(codesDone(['B.1']));}
+function std_s5(){var c=S.v.ctx;var pc='<div class="guide"><b>'+t('pricecheck')+'</b>'+c.priceChecks.map(function(p){return '<div>'+esc(p.name)+' — <b>Rp'+Number(p.price).toLocaleString()+'</b></div>'}).join('')+'</div>';
+ var kb='<div class="guide"><b>'+t('keybrands')+':</b> '+esc(S.boot.keyBrands)+'</div>';
+ var pr='<div class="guide"><b>'+t('promos')+'</b>'+(c.promos||[]).map(function(p){return '<div class="small">• '+esc(p)+'</div>'}).join('')+'</div>';
+ var cs=['B.3','B.4','B.5','B.6'];return '<h2>'+tt(T.sec[5])+'</h2>'+itemCard('B.3',pc)+itemCard('B.4')+itemCard('B.5',kb)+itemCard('B.6',pr)+nav(codesDone(cs));}
+function std_s6(){var a=S.v.answers['B.8']=S.v.answers['B.8']||{};if(!a.level)a.level='NA';return '<h2>'+tt(T.sec[6])+'</h2>'+itemCard('B.8','<div class="guide">'+t('hintNoSnap')+'</div>')+nav(codesDone(['B.8']));}
+function cLow(){return ['C.0','C.1','C.3','C.4','C.5','C.6','C.7'].some(function(c){var l=(S.v.answers[c]||{}).level;return l&&l!=='NA'&&Number(l)<80});}
+function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3']=v.answers['C.3']||{};if(!a3.level)a3.level='NA';
+ var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card"><label class="small">'+t('staff')+'</label>';
+ if(c.staff&&c.staff.length)h+='<select onchange="S.v.sales.staff=this.value;saveDraft()"><option value="">—</option>'+c.staff.map(function(n){return '<option'+(s.staff===n?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
+ else h+='<input placeholder="'+t('staffname')+'" value="'+esc(s.staff||'')+'" oninput="S.v.sales.staff=this.value;saveDraft()">';
+ h+='<div class="q">'+t('learnedQ')+'</div><div class="row">'+T.learnedA.map(function(o){return '<div class="opt'+(s.learned===o[1]?' sel':'')+'" onclick="S.v.sales.learned=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div>';
+ if(s.learned&&s.learned!=='都学过')h+='<div class="row" style="flex-wrap:wrap">'+T.gaps.map(function(o){var on=(s.gaps||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togGap(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div>';
+ h+='</div><div class="guide">'+t('roleplayTip')+'</div>'+recUI('rec1',3,10);
+ h+=itemCard('C.1')+itemCard('C.3','<div class="guide">'+t('c3na')+'</div>')+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
+ h+='<div class="card"><h3>'+t('quiz')+'</h3>'+(c.quiz||[]).map(function(q){return '<div class="q">'+esc(L==='zh'?q.q_zh:q.q_id)+'<div class="ans">'+t('answer')+': '+esc(L==='zh'?q.a_zh:q.a_id)+'</div></div>'}).join('')+'</div>'+recUI('rec2',1,5)+itemCard('C.6');
+ h+='<div class="card">'+photoBlock('group',t('groupphoto'),1,false,v.groupIds)+'<textarea placeholder="'+t('comment')+'" oninput="S.v.sales.comment=this.value;saveDraft()">'+esc(s.comment||'')+'</textarea></div>';
+ if(cLow()){h+='<div class="card" style="border:2px solid #b26a00"><h3>'+t('coach')+'</h3><div class="small">'+t('coachWhy')+'</div><div class="row" style="flex-wrap:wrap">'+T.topics.map(function(o){var on=(s.coachTopics||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togTopic(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div></div>'+recUI('rec3',3,15)+
+  '<div class="card"><b>'+t('after')+'</b><div class="row">'+T.afterA.map(function(o){return '<div class="opt'+(s.coachResult===o[1]?' sel':'')+'" onclick="S.v.sales.coachResult=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div></div>';}
+ var ok=s.staff&&s.learned&&v.rec.rec1&&v.rec.rec2&&codesDone(['C.1','C.3','C.4','C.5','C.6','C.7'])&&(v.groupIds||[]).length&&(s.comment||'').trim().length>=20;
+ if(cLow())ok=ok&&(s.coachTopics||[]).length&&v.rec.rec3&&s.coachResult;
+ return h+nav(ok);}
+function togGap(g){var s=S.v.sales;s.gaps=s.gaps||[];var i=s.gaps.indexOf(g);i<0?s.gaps.push(g):s.gaps.splice(i,1);saveDraft();render();}
+function togTopic(g){var s=S.v.sales;s.coachTopics=s.coachTopics||[];var i=s.coachTopics.indexOf(g);i<0?s.coachTopics.push(g):s.coachTopics.splice(i,1);saveDraft();render();}
+function std_s8(){var cs=['D.1','D.2','D.3','D.6'];return '<h2>'+tt(T.sec[8])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
+function failing(){return S.boot.items.filter(function(it){var a=S.v.answers[it.code];return a&&a.level&&a.level!=='NA'&&a.level!=='100'});}
+function std_s9(){var v=S.v;v.fix=v.fix||{};var h='<h2>'+t('summary')+'</h2><div class="small muted">'+t('c0adj')+'</div>'+itemCard('C.0');
+ failing().forEach(function(it){var x=v.fix[it.code]=v.fix[it.code]||{};h+='<div class="card"><b>'+it.code+' '+esc(f(it,'title'))+'</b> <span class="tag">'+v.answers[it.code].level+'%</span><div class="small">'+esc(v.answers[it.code].note||'')+'</div><div class="row">'+
+  '<div class="opt'+(x.action==='solved'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'solved\';saveDraft();render()">'+t('solved')+'</div><div class="opt'+(x.action==='rectify'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'rectify\';saveDraft();render()">'+t('rectify')+'</div></div>';
+  if(x.action==='solved')h+=photoBlock('fix_'+it.code,t('solved'),1,false,(v.answers['fix_'+it.code]||{}).photoIds);
+  if(x.action==='rectify')h+='<input placeholder="'+t('owner')+'" value="'+esc(x.owner||'')+'" oninput="S.v.fix[\''+it.code+'\'].owner=this.value;saveDraft()"><input type="date" value="'+esc(x.due||'')+'" oninput="S.v.fix[\''+it.code+'\'].due=this.value;saveDraft()">';
+  h+='</div>';});
+ h+='<div class="card"><textarea placeholder="'+t('helped')+'" oninput="S.v.helped=this.value;saveDraft()">'+esc(v.helped||'')+'</textarea><input placeholder="'+t('confirm')+'" value="'+esc(v.staffConfirm||'')+'" oninput="S.v.staffConfirm=this.value;saveDraft()"></div>';
+ var ok=itemDone('C.0')&&failing().every(function(it){var x=v.fix[it.code]||{};return x.action==='rectify'?(x.owner&&x.due):x.action==='solved'?((v.answers['fix_'+it.code]||{}).photoIds||[]).length:false})&&(v.helped||'').trim()&&(v.staffConfirm||'').trim();
+ return h+nav(ok);}
+function std_s10(){var v=S.v;var h='<h2>'+t('checkout')+'</h2><div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'</div>';
+ var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
+ h+='<button class="btn" '+((v.endSelfieIds||[]).length&&!n?'':'disabled')+' onclick="submitStd()">'+t('submit')+'</button><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button>';return h;}
+function mins(){return (Date.now()+OFF-new Date(S.v.startTime.replace(' ','T')))/60000;}
+function submitStd(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<30&&!confirm(t('minTime')))return;
+ var ans={};Object.keys(v.answers).forEach(function(k){if(k.indexOf('fix_')===0)return;var a=v.answers[k];ans[k]={level:a.level,note:a.note||'',red:!!a.red,photos:(a.photoIds||[]).map(murl)};});
+ var cs=['C.0','C.1','C.3','C.4','C.5','C.6','C.7'],e=0,p=0;cs.forEach(function(c){var a=v.answers[c];if(a&&a.level&&a.level!=='NA'){var pts=Number(item(c).pts);e+=pts*Number(a.level)/100;p+=pts;}});
+ var s=v.sales||{};
+ var payload={visitId:v.visitId,storeId:v.storeId,startTime:v.startTime,startGeo:v.startGeo||null,startDist:v.startDist,startSelfie:(v.startSelfieIds||[]).map(murl).concat((v.frontIds||[]).map(murl)).join('\n'),
+  endGeo:v.endGeo||null,endSelfie:(v.endSelfieIds||[]).map(murl).join('\n'),answers:ans,hints:v.ctx.hints,openIssues:v.ctx.openIssues.map(function(o){return {issueId:o.issueId,result:o.result}}),
+  sales:{staff:s.staff,learned:s.learned,gaps:s.gaps||[],quiz:v.ctx.quiz,rec1:murl((v.rec.rec1||{}).id),rec2:murl((v.rec.rec2||{}).id),rec3:murl((v.rec.rec3||{}).id),coached:cLow(),coachTopics:s.coachTopics||[],coachResult:s.coachResult||'',comment:s.comment,groupPhoto:(v.groupIds||[]).map(murl).join('\n'),cTotal:p?e/p*100:undefined},
+  issues:failing().map(function(it){var x=v.fix[it.code]||{};return {code:it.code,desc:(v.answers[it.code].note||''),action:x.action,owner:x.owner||'',due:x.due||'',photo:((v.answers['fix_'+it.code]||{}).photoIds||[]).map(murl).join('\n')}}),
+  helped:v.helped,staffConfirm:v.staffConfirm,lang:L};
+ toast(t('loading'));run('submitStd',[S.token,payload],function(r){localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+t('score')+': <b>'+r.total+'</b> · '+esc(r.grade)+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags&&r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';});}
+
+// ---------- SPOT check ----------
+function scSpot(){var v=S.v;if(!v.visitId)return scCheckin();
+ if(!v.items.length)return '<div class="card">'+t('nosku')+'</div><button class="btn btn2" onclick="S.v=null;localStorage.removeItem(DRAFT_KEY);render()">'+t('home')+'</button>';
+ if(v.idx>=v.items.length)return spotEnd();
+ var it=v.items[v.idx],n=v.items.length,h='<div class="top"><span>'+t('sku')+' '+(v.idx+1)+'/'+n+'</span><span>'+esc(v.storeId)+'</span></div><div class="bar"><i style="width:'+((v.idx+1)/n*100)+'%"></i></div>';
+ h+='<div class="card"><h3>'+esc(it.name)+'</h3><div class="muted">'+esc(it.sku)+'</div>';
+ h+=photoBlock('g_'+v.idx,t('goods'),1,false,(v.answers['g_'+v.idx]||{}).photoIds);
+ h+='<label class="small">'+t('actual')+'</label><input type="number" inputmode="numeric" value="'+esc(it.actual==null?'':it.actual)+'" oninput="S.v.items['+v.idx+'].actual=this.value;saveDraft()">';
+ h+=photoBlock('p_'+v.idx,t('posphoto'),1,false,(v.answers['p_'+v.idx]||{}).photoIds);
+ h+='<label class="small">'+t('posqty')+'</label><input type="number" inputmode="numeric" value="'+esc(it.pos==null?'':it.pos)+'" oninput="S.v.items['+v.idx+'].pos=this.value;saveDraft();render()" onblur="render()">';
+ if(it.actual!==''&&it.actual!=null&&it.pos!==''&&it.pos!=null){var d=Number(it.actual)-Number(it.pos);h+='<div class="'+(d?'warn':'ok')+'" style="margin-top:8px">'+t('diff')+': '+(d>0?'+':'')+d+'</div>';
+  if(d)h+='<input type="number" placeholder="'+t('recount')+'" value="'+esc(it.recount||'')+'" oninput="S.v.items['+v.idx+'].recount=this.value;saveDraft()"><textarea placeholder="'+t('diffnote')+'" oninput="S.v.items['+v.idx+'].note=this.value;saveDraft()">'+esc(it.note||'')+'</textarea>';}
+ h+='</div>';var g=(v.answers['g_'+v.idx]||{}).photoIds||[],p=(v.answers['p_'+v.idx]||{}).photoIds||[];
+ var ok=g.length&&p.length&&it.actual!==''&&it.actual!=null&&it.pos!==''&&it.pos!=null&&(Number(it.actual)===Number(it.pos)||(it.recount!==undefined&&it.recount!==''&&(it.note||'').trim()));
+ return h+'<div class="row"><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button><button class="btn" onclick="spotGo(1,'+(ok?1:0)+')">'+t('next')+'</button></div>';}
+function spotGo(d,ok){if(d>0&&!ok)return toast(t('needAll'));S.v.idx=Math.max(0,S.v.idx+d);saveDraft();render();}
+function spotEnd(){var v=S.v,same=v.items.filter(function(i){return Number(i.actual)===Number(i.pos)}).length;
+ var h='<div class="card"><h2>'+same+'/'+v.items.length+' '+t('spotDone')+'</h2>'+v.items.map(function(i,k){var d=Number(i.actual)-Number(i.pos);return d?'<div class="small warn" onclick="S.v.idx='+k+';render()">'+esc(i.name)+': '+(d>0?'+':'')+d+'</div>':''}).join('')+'</div>';
+ h+='<div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'</div>';var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
+ return h+'<button class="btn" '+((v.endSelfieIds||[]).length&&!n?'':'disabled')+' onclick="submitSpot()">'+t('submit')+'</button><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button>';}
+function submitSpot(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<30&&!confirm(t('minTime')))return;
+ var p={visitId:v.visitId,storeId:v.storeId,startTime:v.startTime,startDist:v.startDist,startSelfie:(v.startSelfieIds||[]).map(murl).join('\n'),endSelfie:(v.endSelfieIds||[]).map(murl).join('\n'),
+  items:v.items.map(function(i,k){return {sku:i.sku,name:i.name,shared:i.shared,actual:i.actual,pos:i.pos,recount:i.recount||'',note:i.note||'',goodsPhoto:((v.answers['g_'+k]||{}).photoIds||[]).map(murl).join('\n'),posPhoto:((v.answers['p_'+k]||{}).photoIds||[]).map(murl).join('\n')}})};
+ toast(t('loading'));run('submitSpot',[S.token,p],function(r){localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+r.same+'/'+r.count+' '+t('spotDone')+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';});}
+
+window.addEventListener('beforeunload',function(e){if(S.v&&pending()){e.preventDefault();e.returnValue='';}});
+render();
+</script></body></html>
