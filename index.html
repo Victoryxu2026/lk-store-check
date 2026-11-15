@@ -242,7 +242,7 @@ function std_s4(){return '<h2>'+tt(T.sec[4])+'</h2>'+itemCard('B.1')+nav(codesDo
 function std_s5(){var c=S.v.ctx;var pc='<div class="guide"><b>'+t('pricecheck')+'</b>'+c.priceChecks.map(function(p){return '<div>'+esc(p.name)+' — <b>Rp'+Number(p.price).toLocaleString()+'</b></div>'}).join('')+'</div>';
  var kb='<div class="guide"><b>'+t('keybrands')+':</b> '+esc(S.boot.keyBrands)+'</div>';
  var pr='<div class="guide"><b>'+t('promos')+'</b>'+(c.promos||[]).map(function(p){return '<div class="small">• '+esc(p)+'</div>'}).join('')+'</div>';
- var cs=['B.3','B.4','B.5','B.6'];return '<h2>'+tt(T.sec[5])+'</h2>'+itemCard('B.3',pc)+itemCard('B.4')+itemCard('B.5',kb)+itemCard('B.6',pr)+nav(codesDone(cs));}
+ var cs=['B.3','B.4','B.5','B.6'];return '<h2>'+tt(T.sec[5])+'</h2>'+itemCard('B.3',pc)+itemCard('B.4')+itemCard('B.5',pr)+itemCard('B.6')+nav(codesDone(cs));}
 function b8Suggest(){var n1=0,n2=0;(S.v.ctx.hints||[]).forEach(function(x){(x.items||[]).forEach(function(it){if(x.key==='OOS'&&it.result==='notasked')n1++;if(x.key==='SLOW'&&it.result==='noshelf')n2++;});});
  var lv=n1>=3?'0':n1==2?'40':(n1==1||n2>=2)?'60':n2==1?'80':'100';return {lv:lv,n1:n1,n2:n2};}
 function std_s6(){var a=S.v.answers['B.8']=S.v.answers['B.8']||{};if(a.level==='NA')delete a.level;var g=b8Suggest();
