@@ -69,8 +69,9 @@ var T = {
  checkout:['Check-out','签退'], outselfie:['Selfie check-out: wajah jelas, latar belakang toko','签退自拍：正脸清楚，背景能看到门店'], submit:['Kirim hasil inspeksi','提交检查结果'],
  waitUp:['Tunggu sebentar, foto/rekaman masih di-upload. Jangan tutup halaman.','请稍等，照片或录音还在上传，不要关闭页面'], minTime:['Kamu belum 30 menit di toko. Tetap kirim? Hasil ini akan ditandai.','在店还不到 30 分钟，确定要提交吗？这次结果会被标记'],
  done:['Berhasil dikirim','提交成功'], score:['Nilai','得分'], minutes:['menit','分钟'], home:['Kembali ke menu utama','回到首页'],
- sku:['SKU','SKU'], goods:['1. Kumpulkan semua stok produk ini, lalu foto','1. 把这个商品的库存全部拿出来摆在一起拍照'], actual:['2. Jumlah stok fisik (hasil hitung)','2. 实际点数'], posphoto:['3. Foto layar stok produk ini di POS','3. 拍下 POS 里这个商品的库存画面'],
- posqty:['4. Jumlah stok di POS','4. POS 显示的库存数'], diff:['Selisih','差异'], recount:['Hitung ulang: jumlahnya berapa?','重新点一遍：是多少？'], diffnote:['Jelaskan kenapa ada selisih','说明差异原因'],
+ sku:['SKU','SKU'], goods:['1. Kumpulkan semua stok produk ini, susun dengan sisi depan menghadap kamera (nama produk & jumlah terlihat jelas), lalu foto','1. 把这个商品的库存全部拿出来摆在一起，正面朝向相机（看得清商品名字和数量），拍照'], actual:['2. Jumlah fisik (hasil hitung) — angka saja','2. 实际点数（只填数字）'], posphoto:['3. Foto layar stok produk ini di LK POS','3. 拍下 LK POS 里这个商品的库存页面'],
+ secA:['A. Stok fisik (hitung langsung)','A. 实物盘点（现场点数）'], secB:['B. Stok di LK POS (stok sistem)','B. LK POS 理论库存（系统数）'], exLbl:['Contoh foto','示例照片'],
+ posqty:['4. Jumlah stok di LK POS — angka saja','4. LK POS 显示的库存数（只填数字）'], diff:['Selisih','差异'], recount:['Hitung ulang: jumlahnya berapa?','重新点一遍：是多少？'], diffnote:['Jelaskan kenapa ada selisih','说明差异原因'],
  nosku:['Toko ini tidak punya data penjualan 14 hari terakhir, jadi tidak ada SKU untuk dicek.','这家店近 14 天没有销售数据，没有可抽查的 SKU'], spotDone:['SKU cocok','个 SKU 一致'],
  photoOld:['Foto harus diambil langsung sekarang, bukan dari galeri','照片必须现场拍，不能用相册里的旧照片'], loading:['Memuat…','加载中…'], err:['Gagal. Cek internet lalu coba lagi.','操作失败，请检查网络后重试'],
  expired:['Sesi sudah habis. Silakan masuk lagi.','登录已过期，请重新登录'], c3pick:['Minta staf menjelaskan 2 produk ini:','请店员介绍这 2 个商品：'], c3na:['Kartu produk belum ada, jadi C.3 otomatis "tidak berlaku"','卖点卡还没下发，C.3 自动按"不适用"处理'],
@@ -123,7 +124,7 @@ function getGeo(cb){if(!navigator.geolocation)return cb(null);var done=false;nav
 function zoom(id){var z=document.getElementById('zoom');z.innerHTML='<img src="'+S.thumbs[id]+'" style="max-width:100%;max-height:100%">';z.style.display='flex';}
 function tagLabel(k){var zh=L==='zh',m={selfie:zh?'签到自拍':'Selfie check-in',outselfie:zh?'签退自拍':'Selfie check-out',front:zh?'门头':'Tampak depan',group:zh?'店员合照':'Foto bersama staf'};
  if(m[k])return m[k];if(k.indexOf('fix_')===0)return (zh?'整改 ':'Perbaikan ')+k.slice(4);if(k.indexOf('bad_')===0)return (zh?'问题处 ':'Masalah ')+tagLabel(k.slice(4));
- var g=/^([gp])_(\d+)$/.exec(k);if(g&&S.v&&S.v.items){var it=S.v.items[+g[2]]||{};return (g[1]==='g'?(zh?'货品 ':'Barang '):'POS ')+(it.sku||'')+' '+(it.name||'');}
+ var g=/^([gp])_(\d+)$/.exec(k);if(g&&S.v&&S.v.items){var it=S.v.items[+g[2]]||{};return (g[1]==='g'?(zh?'货品 ':'Barang '):'LK POS ')+(it.sku||'')+' '+(it.name||'');}
  var it=S.boot&&S.boot.items?S.boot.items.find(function(i){return i.code===k}):null;return it?k+' '+f(it,'title'):k;}
 function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在定位…':'Mencari lokasi…');if(g)return '📍 '+(L==='zh'?'已定位，精度约 ':'Lokasi tercatat, akurasi ±')+g.acc+' m';
  return '⚠️ '+(L==='zh'?'没拿到定位。请允许浏览器使用位置，然后 ':'Lokasi belum terbaca. Izinkan akses lokasi di browser, lalu ')+'<a href="#" onclick="askGeo();return false">'+(L==='zh'?'点这里重试':'coba lagi')+'</a>';}
@@ -356,18 +357,20 @@ function submitStd(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<
  busyOn(t('submitting'));run('submitStd',[S.token,payload],function(r){busyOff();localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+t('score')+': <b>'+r.total+'</b> · '+esc(r.grade)+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags&&r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';},function(e){busyOff();toast(t('err')+': '+e);});}
 
 // ---------- SPOT check ----------
+var SPOT_EX={goods:'',pos:''};   // 示例照片：放进仓库 img/ 后填路径
 function scSpot(){var v=S.v;if(!v.visitId)return scCheckin();
  if(!v.items.length)return '<div class="card">'+t('nosku')+'</div><button class="btn btn2" onclick="S.v=null;localStorage.removeItem(DRAFT_KEY);render()">'+t('home')+'</button>';
  if(v.idx>=v.items.length)return spotEnd();
  var it=v.items[v.idx],n=v.items.length,h='<div class="top"><span>'+t('sku')+' '+(v.idx+1)+'/'+n+'</span><span>'+esc(v.storeName||v.storeId)+'</span></div><div class="bar"><i style="width:'+((v.idx+1)/n*100)+'%"></i></div>';
- h+='<div class="card"><h3>'+esc(it.name)+'</h3><div class="muted">'+esc(it.sku)+'</div>';
- h+=photoBlock('g_'+v.idx,t('goods'),1,false,(v.answers['g_'+v.idx]||{}).photoIds);
- h+='<label class="small">'+t('actual')+'</label><input type="number" inputmode="numeric" value="'+esc(it.actual==null?'':it.actual)+'" oninput="S.v.items['+v.idx+'].actual=this.value;saveDraft()">';
- h+=photoBlock('p_'+v.idx,t('posphoto'),1,false,(v.answers['p_'+v.idx]||{}).photoIds);
- h+='<label class="small">'+t('posqty')+'</label><input type="number" inputmode="numeric" value="'+esc(it.pos==null?'':it.pos)+'" oninput="S.v.items['+v.idx+'].pos=this.value;saveDraft();render()" onblur="render()">';
- if(it.actual!==''&&it.actual!=null&&it.pos!==''&&it.pos!=null){var d=Number(it.actual)-Number(it.pos);h+='<div class="'+(d?'warn':'ok')+'" style="margin-top:8px">'+t('diff')+': '+(d>0?'+':'')+d+'</div>';
-  if(d)h+='<input type="number" placeholder="'+t('recount')+'" value="'+esc(it.recount||'')+'" oninput="S.v.items['+v.idx+'].recount=this.value;saveDraft()"><textarea placeholder="'+t('diffnote')+'" oninput="S.v.items['+v.idx+'].note=this.value;saveDraft()">'+esc(it.note||'')+'</textarea>';}
- h+='</div>';var g=(v.answers['g_'+v.idx]||{}).photoIds||[],p=(v.answers['p_'+v.idx]||{}).photoIds||[];
+ var num=function(f,val,rr){return '<input type="text" inputmode="numeric" pattern="[0-9]*" value="'+esc(val==null?'':val)+'" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');S.v.items['+v.idx+'].'+f+'=this.value;saveDraft()"'+(rr?' onblur="render()"':'')+'>';};
+ var ex=function(k){return SPOT_EX[k]?'<div class="small muted" style="margin-top:6px">'+t('exLbl')+'</div><img src="'+SPOT_EX[k]+'" style="width:100%;max-width:260px;border-radius:8px;border:1px solid #ddd">':'';};
+ h+='<div class="card"><h3>'+esc(it.name)+'</h3><div class="muted">'+esc(it.sku)+'</div></div>';
+ h+='<div class="card" style="border-left:5px solid #2e7d32"><h3>'+t('secA')+'</h3>'+ex('goods')+photoBlock('g_'+v.idx,t('goods'),1,false,(v.answers['g_'+v.idx]||{}).photoIds)+'<label class="small" style="display:block;margin-top:8px">'+t('actual')+'</label>'+num('actual',it.actual,1)+'</div>';
+ h+='<div class="card" style="border-left:5px solid #1565c0"><h3>'+t('secB')+'</h3>'+ex('pos')+photoBlock('p_'+v.idx,t('posphoto'),1,false,(v.answers['p_'+v.idx]||{}).photoIds)+'<label class="small" style="display:block;margin-top:8px">'+t('posqty')+'</label>'+num('pos',it.pos,1)+'</div>';
+ if(it.actual!==''&&it.actual!=null&&it.pos!==''&&it.pos!=null){var d=Number(it.actual)-Number(it.pos);h+='<div class="card"><div class="'+(d?'warn':'ok')+'" style="font-size:17px"><b>'+t('diff')+'（A − B）: '+(d>0?'+':'')+d+'</b></div>';
+  if(d)h+=num('recount',it.recount,0).replace('<input ','<input placeholder="'+t('recount')+'" ')+'<textarea placeholder="'+t('diffnote')+'" oninput="S.v.items['+v.idx+'].note=this.value;saveDraft()">'+esc(it.note||'')+'</textarea>';
+  h+='</div>';}
+ var g=(v.answers['g_'+v.idx]||{}).photoIds||[],p=(v.answers['p_'+v.idx]||{}).photoIds||[];
  var ok=g.length&&p.length&&it.actual!==''&&it.actual!=null&&it.pos!==''&&it.pos!=null&&(Number(it.actual)===Number(it.pos)||(it.recount!==undefined&&it.recount!==''&&(it.note||'').trim()));
  return h+'<div class="row"><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button><button class="btn" onclick="spotGo(1,'+(ok?1:0)+')">'+t('next')+'</button></div>';}
 function spotGo(d,ok){if(d>0&&!ok)return toast(t('needAll'));S.v.idx=Math.max(0,S.v.idx+d);saveDraft();render();}
