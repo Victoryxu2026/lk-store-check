@@ -39,7 +39,7 @@ var T = {
  resume:['Lanjutkan inspeksi yang belum selesai','继续上次没做完的检查'], discard:['Hapus dan mulai baru','删除草稿，重新开始'], logout:['Keluar','退出登录'],
  city:['Pilih kota','选择城市'], store:['Pilih toko','选择门店'], next:['Lanjut','下一步'], back:['Kembali','上一步'],
  checkin:['Check-in','签到'], selfie:['Selfie: wajah terlihat jelas, latar belakang toko','自拍：正脸清楚，背景能看到门店'], front:['Foto tampak depan toko (seluruh fasad)','门头正面照（拍全整个门头）'],
- takephoto:['Ambil foto','拍照'], retake:['Foto ulang','重拍'], gps:['Lokasi tercatat','已记录定位'], gpsfail:['Lokasi tidak terbaca. Tetap bisa lanjut.','没拿到定位，不影响继续'],
+ takephoto:['Ambil foto','拍照'], retake:['Foto ulang','重拍'], rerec:['Rekam ulang','重录'], gps:['Lokasi tercatat','已记录定位'], gpsfail:['Lokasi tidak terbaca. Tetap bisa lanjut.','没拿到定位，不影响继续'],
  far:['Lokasimu jauh dari toko. Ini hanya dicatat, tetap bisa lanjut.','你离门店较远，只做记录，可以继续'], saved:['Semua tersimpan','已全部保存'], waitCheckin:['Dikirim setelah check-in:','签到后上传：'], signingIn:['Sedang masuk…','正在登录…'], checkingIn:['Sedang check-in dan memuat data toko. Tunggu sebentar…','正在签到并加载门店数据，请稍等…'], submitting:['Sedang mengirim hasil…','正在提交结果…'], uploading:['Sedang upload:','正在上传：'],
  na:['Tidak berlaku (self-check PIC)','不适用（店长自查时）'], autoNaNote:['Item ini belum dinilai bulan ini, tidak perlu diisi.','这一项本月暂不评分，不用填写。'], note:['Tulis masalahnya: apa yang kurang, di mana','写清楚问题：哪里不达标、在哪个位置'], noteReq:['wajib diisi kalau tidak 100%','没到 100% 必须填写'],
  red:['Pelanggaran berat: nilai langsung 0 dan dilaporkan','红线问题：直接 0 分，并上报'], photosReq:['Foto wajib','必拍照片'], badPhoto:['Foto dekat bagian yang bermasalah (setiap masalah 1 foto, minimal 1)','问题处近照（每个问题拍 1 张，至少 1 张）'], addBad:['Foto masalah lagi','再拍一处问题'],
@@ -141,7 +141,7 @@ function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id)
 // ================= audio =================
 var REC=null;
 function recUI(key,min,max){var r=S.v.rec[key]||{};var html='<div class="card"><h3>'+t(key)+'</h3>';
- if(r.id&&!REC)html+='<div class="ok">✓ '+t('recok')+' ('+Math.round(r.sec/60*10)/10+' '+t('minutes')+')</div><button class="btn btn2" onclick="recStart(\''+key+'\','+min+','+max+')">'+t('retake')+'</button>';
+ if(r.id&&!REC)html+='<div class="ok">✓ '+t('recok')+' ('+Math.round(r.sec/60*10)/10+' '+t('minutes')+')</div><button class="btn btn2" onclick="recStart(\''+key+'\','+min+','+max+')">'+t('rerec')+'</button>';
  else if(REC&&REC.key===key)html+='<div class="rec" id="rtime">0:00</div><div class="row"><button class="btn btn2" onclick="recPause()" id="rpause">'+t('pause')+'</button><button class="btn" onclick="recStop()">'+t('stop')+'</button></div>';
  else html+='<button class="btn btnY" onclick="recStart(\''+key+'\','+min+','+max+')">● '+t('start')+'</button>';
  return html+'</div>';}
