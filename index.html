@@ -22,6 +22,8 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .rec{font-size:28px;font-weight:700;text-align:center;margin:8px 0}.row{display:flex;gap:8px}.row>*{flex:1}
 .q{border-top:1px solid #eee;padding-top:8px;margin-top:8px}.ans{color:#1d7a3a;font-size:13px;margin-top:4px}
 #busy{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:8}#busy div{background:#fff;padding:18px 22px;border-radius:12px;font-size:15px;max-width:80%;text-align:center}
+
+.missHL{outline:3px solid #b3261e!important;outline-offset:2px;border-radius:12px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;display:none;z-index:9}
 .sync{font-size:12px}
 </style></head><body>
@@ -85,7 +87,7 @@ var DRAFT_KEY='lk_draft_v1';
 function saveDraft(){if(S.v){localStorage.setItem(DRAFT_KEY,JSON.stringify(S.v));}setSync();}
 function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch(e){return null;}}
 var sess=JSON.parse(sessionStorage.getItem('lk_sess')||'null');if(sess){S.token=sess.token;S.user=sess.user;}
-function toast(m){var e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none'},2600);}
+function toast(m){var e=document.getElementById('toast');e.style.whiteSpace='';e.style.width='';e.style.bottom='';e.style.borderRadius='';e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none'},2600);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
 function busyOn(m){document.getElementById('busymsg').textContent=m;document.getElementById('busy').style.display='flex';}
 function busyOff(){document.getElementById('busy').style.display='none';}
@@ -140,7 +142,7 @@ function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id)
 
 // ================= audio =================
 var REC=null;
-function recUI(key,min,max){var r=S.v.rec[key]||{};var html='<div class="card"><h3>'+t(key)+'</h3>';
+function recUI(key,min,max){var r=S.v.rec[key]||{};var html='<div class="card" id="rq_'+key+'"><h3>'+t(key)+'</h3>';
  if(r.id&&!REC)html+='<div class="ok">✓ '+t('recok')+' ('+Math.round(r.sec/60*10)/10+' '+t('minutes')+')</div><button class="btn btn2" onclick="recStart(\''+key+'\','+min+','+max+')">'+t('rerec')+'</button>';
  else if(REC&&REC.key===key)html+='<div class="rec" id="rtime">'+Math.floor(recClock()/60)+':'+('0'+recClock()%60).slice(-2)+'</div><div class="row"><button class="btn btn2" onclick="recPause()" id="rpause">'+t('pause')+'</button><button class="btn" onclick="recStop()">'+t('stop')+'</button></div>';
  else html+='<button class="btn btnY" onclick="recStart(\''+key+'\','+min+','+max+')">● '+t('start')+'</button>';
@@ -208,7 +210,7 @@ function needBad(it,a){return a.level&&a.level!=='100'&&a.level!=='NA'&&(it.sec!
 function badBlock(code,ids){ids=ids||[];return '<div class="slot" style="border-color:#b3261e"><div>📷 '+t('badPhoto')+' ('+ids.length+')</div>'+thumbHtml(ids)+'<button class="btn btn2" onclick="snap(\'bad_'+code+'\',0)">'+(ids.length?t('addBad'):t('takephoto'))+'</button>'+(ids.length?'<button class="btn btn2" onclick="clearPh(\'bad_'+code+'\')">'+t('retake')+'</button>':'')+'</div>';}
 function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[code]||{};
  if(autoNA(code)){a.level='NA';return '<div class="card" style="opacity:.75"><h3>'+it.code+' '+esc(f(it,'title'))+'</h3>'+(extra||'')+'<div class="small muted">'+t('autoNaNote')+'</div></div>';}
- var h='<div class="card"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div><div class="small muted" style="margin-top:4px">'+t('lowest')+'</div>'+(extra||'');
+ var h='<div class="card" id="it_'+code.replace('.','_')+'"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div><div class="small muted" style="margin-top:4px">'+t('lowest')+'</div>'+(extra||'');
  LV.forEach(function(l){var txt=f(it,l[1]);if(txt==='—')return;h+='<div class="opt'+(a.level===l[0]?' sel':'')+'" onclick="setLv(\''+code+'\',\''+l[0]+'\')"><span>'+esc(txt)+'</span><span>'+l[0]+'%</span></div>';});
  if(naAllowed(it))h+='<div class="opt'+(a.level==='NA'?' sel':'')+'" onclick="setLv(\''+code+'\',\'NA\')"><span>'+t('na')+'</span><span></span></div>';
  if(it.red==='Y')h+='<label class="opt"><span>⚠ '+t('red')+'</span><input type="checkbox" style="width:auto" '+(a.red?'checked':'')+' onchange="setRed(\''+code+'\',this.checked)"></label>';
@@ -226,16 +228,55 @@ function scStd(){var v=S.v;if(!v.visitId)return scCheckin();
  h+=window['std_'+STEPS[n]]();
  return h;}
 function nav(ok){return '<div class="row"><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button><button class="btn" onclick="go(1,'+(ok?1:0)+')">'+t('next')+'</button></div>';}
-function go(d,ok){if(d>0&&!ok)return toast(t('needAll'));S.v.step=Math.max(1,Math.min(10,S.v.step+d));saveDraft();render();}
+function go(d,ok){if(d>0&&!ok)return showMiss(stepMiss(S.v.step));S.v.step=Math.max(1,Math.min(10,S.v.step+d));saveDraft();render();}
 function codesDone(cs){return cs.every(itemDone);}
+function M(zh,id){return L==='zh'?zh:id;}
+function itemMiss(code){var it=item(code),a=S.v.answers[code]||{},r=[];if(!a.level)return [M('没选档位','belum pilih nilai')];if(a.level==='NA')return r;
+ var need=Number(it.photos)||0,n=(a.photoIds||[]).length;if(!a.skipPhoto&&n<need)r.push(M('照片还差 '+(need-n)+' 张','foto kurang '+(need-n)));
+ if(needBad(it,a)&&!(a.badIds||[]).length)r.push(M('没拍问题特写','belum foto dekat masalah'));
+ if(a.level!=='100'&&!(a.note||'').trim())r.push(M('没写说明（不是 100% 要写原因）','belum isi keterangan (wajib jika bukan 100%)'));return r;}
+function codesMiss(cs){var out=[];cs.forEach(function(c){var r=itemMiss(c);if(r.length)out.push({id:'it_'+c.replace('.','_'),msg:c+' '+r.join('、')});});return out;}
+function stepMiss(n){var v=S.v,c=v.ctx,out=[];
+ if(n===1)return codesMiss(['C.0']);
+ if(n===2){c.openIssues.forEach(function(o,i){if(!o.result)out.push({id:'rq_oi'+i,msg:M('上次问题 '+o.code+' 没选是否已改','masalah lama '+o.code+' belum dipilih')});});
+  c.hints.forEach(function(x,i){if(x.mode==='skus')(x.items||[]).forEach(function(it,j){if(!it.result)out.push({id:'rq_h'+i+'_'+j,msg:M('「'+it.name+'」没选核实结果','"'+it.name+'" belum dipilih')});});else if(!x.result)out.push({id:'rq_h'+i,msg:M('数据提示「'+x.zh+'」没选结果','"'+x.id+'" belum dipilih')});});return out;}
+ if(n===3)return codesMiss(['A.1','A.2','A.3','A.4','A.5']);
+ if(n===4)return codesMiss(['B.1']);
+ if(n===5)return codesMiss(['B.3','B.4','B.5','B.6']);
+ if(n===6)return codesMiss(['B.8']);
+ if(n===7){var s=v.sales||{};if(!s.staff)out.push({id:'rq_staff',msg:M('没选被考核的店员','belum pilih staf')});
+  var lm=s.learnMap||{},nl=T.gaps.filter(function(o){return !lm[o[1]]});if(nl.length)out.push({id:'rq_staff',msg:M('学习情况还有 '+nl.length+' 项没选：'+nl.map(function(o){return o[1]}).join('、'),'status belajar belum dipilih: '+nl.map(function(o){return o[0]}).join(', '))});
+  if(!v.rec.rec1)out.push({id:'rq_rec1',msg:M('录音 1 没录','rekaman 1 belum ada')});
+  out=out.concat(codesMiss(['C.1','C.3','C.4','C.5','C.7']));
+  if(!v.rec.rec2)out.push({id:'rq_rec2',msg:M('录音 2 没录','rekaman 2 belum ada')});
+  out=out.concat(codesMiss(['C.6']));
+  if(!(v.groupIds||[]).length)out.push({id:'rq_group',msg:M('没拍和店员的合照','belum foto bersama staf')});
+  var cl=(s.comment||'').trim().length;if(cl<20)out.push({id:'rq_comment',msg:M('评语至少 20 个字，现在只有 '+cl+' 个','komentar minimal 20 karakter, sekarang '+cl)});
+  if(cLow()){if(!(s.coachTopics||[]).length)out.push({id:'rq_coach',msg:M('没选带教内容','belum pilih topik coaching')});if(!v.rec.rec3)out.push({id:'rq_rec3',msg:M('录音 3（带教）没录','rekaman 3 belum ada')});if(!s.coachResult)out.push({id:'rq_after',msg:M('没选带教后结果','belum pilih hasil coaching')});}
+  return out;}
+ if(n===8)return codesMiss(['D.1','D.2','D.3','D.6']);
+ if(n===9){v.fix=v.fix||{};failing().forEach(function(it){var x=v.fix[it.code]||{},id='rq_fix_'+it.code.replace('.','_');
+   if(!x.action)out.push({id:id,msg:it.code+M(' 没选「已解决 / 要整改」',' belum pilih selesai / perbaikan')});
+   else if(x.action==='solved'&&!((v.answers['fix_'+it.code]||{}).photoIds||[]).length)out.push({id:id,msg:it.code+M(' 没拍解决后的照片',' belum foto setelah diperbaiki')});
+   else if(x.action==='rectify'&&!(x.owner&&x.due))out.push({id:id,msg:it.code+M(' 没填负责人或完成日期',' PIC / tanggal belum diisi')});});
+  if(!(v.helped||'').trim())out.push({id:'rq_end',msg:M('没写「这次帮门店解决了什么」','belum isi apa yang dibantu')});
+  if(!(v.staffConfirm||'').trim())out.push({id:'rq_end',msg:M('没写今天在岗店员名字','belum isi nama staf bertugas')});return out;}
+ return out;}
+function showMiss(list){if(!list.length)return toast(t('needAll'));
+ var msg=M('还没填完（共 '+list.length+' 处）：\n','Belum lengkap ('+list.length+'):\n')+list.slice(0,3).map(function(x){return '• '+x.msg}).join('\n')+(list.length>3?M('\n…还有 '+(list.length-3)+' 处','\n…dan '+(list.length-3)+' lagi'):'');
+ var e=document.getElementById('toast');e.style.whiteSpace='pre-line';e.style.borderRadius='12px';e.style.width='88%';e.style.bottom='90px';e.textContent=msg;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none'},5000);
+ document.querySelectorAll('.missHL').forEach(function(x){x.classList.remove('missHL')});
+ list.forEach(function(x){var el=document.getElementById(x.id);if(el)el.classList.add('missHL');});
+ var f0=document.getElementById(list[0].id);if(f0)f0.scrollIntoView({behavior:'smooth',block:'center'});}
+
 function std_s1(){var h='<h2>'+tt(T.sec[1])+'</h2>'+itemCard('C.0');return h+nav(codesDone(['C.0']));}
 function std_s2(){var v=S.v,c=v.ctx,h='<h2>'+t('s1')+'</h2><div class="card">';
  if(!c.openIssues.length)h+='<div class="muted">'+t('noissue')+'</div>';
- c.openIssues.forEach(function(o,i){h+='<div class="q"><b>'+esc(o.code)+'</b> '+esc(o.desc)+'<div class="row"><div class="opt'+(o.result==='fixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'fixed\';saveDraft();render()">'+t('fixed')+'</div><div class="opt'+(o.result==='notfixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'notfixed\';saveDraft();render()">'+t('notfixed')+'</div></div></div>';});
+ c.openIssues.forEach(function(o,i){h+='<div class="q" id="rq_oi'+i+'"><b>'+esc(o.code)+'</b> '+esc(o.desc)+'<div class="row"><div class="opt'+(o.result==='fixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'fixed\';saveDraft();render()">'+t('fixed')+'</div><div class="opt'+(o.result==='notfixed'?' sel':'')+'" onclick="S.v.ctx.openIssues['+i+'].result=\'notfixed\';saveDraft();render()">'+t('notfixed')+'</div></div></div>';});
  h+='</div><div class="card">';
  if(!c.hints.length)h+='<div class="muted">'+t('nohint')+'</div>';
- c.hints.forEach(function(x,i){h+='<div class="q"><b>'+esc(L==='zh'?x.zh:x.id)+'</b>';
-  if(x.mode==='skus'){(x.items||[]).forEach(function(it,j){h+='<div style="margin-top:10px"><div><b>'+esc(it.name)+'</b> <span class="muted small">'+esc(L==='zh'?it.info_zh:it.info_id)+'</span></div>'+x.opts.map(function(o){return '<div class="opt'+(it.result===o[0]?' sel':'')+'" onclick="S.v.ctx.hints['+i+'].items['+j+'].result=\''+o[0]+'\';saveDraft();render()"><span>'+(L==='zh'?o[2]:o[1])+'</span></div>'}).join('')+'</div>';});}
+ c.hints.forEach(function(x,i){h+='<div class="q" id="rq_h'+i+'"><b>'+esc(L==='zh'?x.zh:x.id)+'</b>';
+  if(x.mode==='skus'){(x.items||[]).forEach(function(it,j){h+='<div style="margin-top:10px" id="rq_h'+i+'_'+j+'"><div><b>'+esc(it.name)+'</b> <span class="muted small">'+esc(L==='zh'?it.info_zh:it.info_id)+'</span></div>'+x.opts.map(function(o){return '<div class="opt'+(it.result===o[0]?' sel':'')+'" onclick="S.v.ctx.hints['+i+'].items['+j+'].result=\''+o[0]+'\';saveDraft();render()"><span>'+(L==='zh'?o[2]:o[1])+'</span></div>'}).join('')+'</div>';});}
   else if(x.mode==='reason')h+='<select onchange="S.v.ctx.hints['+i+'].result=this.value;saveDraft()"><option value="">'+t('reason')+'</option>'+T.reasons.map(function(r){return '<option'+(x.result===r[1]?' selected':'')+' value="'+r[1]+'">'+tt(r)+'</option>'}).join('')+'</select>';
   else h+='<div class="row">'+[['true_','属实'],['false_','不属实'],['explained','已说明原因']].map(function(o){return '<div class="opt'+(x.result===o[1]?' sel':'')+'" onclick="S.v.ctx.hints['+i+'].result=\''+o[1]+'\';saveDraft();render()">'+t(o[0])+'</div>'}).join('')+'</div>';
   h+='<textarea placeholder="'+t('note')+'" oninput="S.v.ctx.hints['+i+'].note=this.value;saveDraft()">'+esc(x.note||'')+'</textarea></div>';});
@@ -253,16 +294,16 @@ function std_s6(){var a=S.v.answers['B.8']=S.v.answers['B.8']||{};if(a.level==='
  return '<h2>'+tt(T.sec[6])+'</h2>'+itemCard('B.8','<div class="guide">'+tip+'</div>')+nav(codesDone(['B.8']));}
 function cLow(){return ['C.0','C.1','C.3','C.4','C.5','C.6','C.7'].some(function(c){var l=(S.v.answers[c]||{}).level;return l&&l!=='NA'&&Number(l)<80});}
 function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3']=v.answers['C.3']||{};if(a3.level==='NA')delete a3.level;
- var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card"><label class="small">'+t('staff')+'</label>';
+ var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card" id="rq_staff"><label class="small">'+t('staff')+'</label>';
  if(c.staff&&c.staff.length)h+='<select onchange="S.v.sales.staff=this.value;saveDraft()"><option value="">—</option>'+c.staff.map(function(n){return '<option'+(s.staff===n?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
  else h+='<input placeholder="'+t('staffname')+'" value="'+esc(s.staff||'')+'" oninput="S.v.sales.staff=this.value;saveDraft()">';
  h+='<div class="q">'+t('learnedQ')+'</div>'+T.gaps.map(function(o,i){var v=(s.learnMap||{})[o[1]];return '<div style="margin-top:8px"><b>'+tt(o)+'</b><div class="row"><div class="opt'+(v==='Y'?' sel':'')+'" onclick="setLearn('+i+',\'Y\')">'+t('learnY')+'</div><div class="opt'+(v==='N'?' sel':'')+'" onclick="setLearn('+i+',\'N\')">'+t('learnN')+'</div></div></div>'}).join('');
  h+='</div><div class="guide">'+t('roleplayTip')+'</div>'+recUI('rec1',3,10);
  h+=itemCard('C.1')+itemCard('C.3',(c.c3&&c.c3.length?'<div class="guide"><b>'+t('c3pick')+'</b>'+c.c3.map(function(p){return '<div>'+esc(p.name)+' — Rp'+Number(p.price).toLocaleString()+'</div>'}).join('')+'</div>':''))+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
  h+='<div class="card"><h3>'+t('quiz')+'</h3>'+(c.quiz||[]).map(function(q){return '<div class="q">'+esc(L==='zh'?q.q_zh:q.q_id)+'<div class="ans">'+t('answer')+': '+esc(L==='zh'?q.a_zh:q.a_id)+'</div></div>'}).join('')+'</div>'+recUI('rec2',1,5)+itemCard('C.6');
- h+='<div class="card">'+photoBlock('group',t('groupphoto'),1,false,v.groupIds)+'<textarea placeholder="'+t('comment')+'" oninput="S.v.sales.comment=this.value;saveDraft()">'+esc(s.comment||'')+'</textarea></div>';
- if(cLow()){h+='<div class="card" style="border:2px solid #b26a00"><h3>'+t('coach')+'</h3><div class="small">'+t('coachWhy')+'</div><div class="row" style="flex-wrap:wrap">'+T.topics.map(function(o){var on=(s.coachTopics||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togTopic(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div></div>'+recUI('rec3',3,15)+
-  '<div class="card"><b>'+t('after')+'</b><div class="row">'+T.afterA.map(function(o){return '<div class="opt'+(s.coachResult===o[1]?' sel':'')+'" onclick="S.v.sales.coachResult=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div></div>';}
+ h+='<div class="card" id="rq_group">'+photoBlock('group',t('groupphoto'),1,false,v.groupIds)+'<textarea id="rq_comment" placeholder="'+t('comment')+'" oninput="S.v.sales.comment=this.value;saveDraft();var c=document.getElementById(\'cmtN\');if(c)c.textContent=this.value.trim().length">'+esc(s.comment||'')+'</textarea><div class="small muted">'+(L==='zh'?'至少 20 个字，现在 ':'Minimal 20 karakter, sekarang ')+'<b id="cmtN">'+(s.comment||'').trim().length+'</b></div></div>';
+ if(cLow()){h+='<div class="card" id="rq_coach" style="border:2px solid #b26a00"><h3>'+t('coach')+'</h3><div class="small">'+t('coachWhy')+'</div><div class="row" style="flex-wrap:wrap">'+T.topics.map(function(o){var on=(s.coachTopics||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togTopic(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div></div>'+recUI('rec3',3,15)+
+  '<div class="card" id="rq_after"><b>'+t('after')+'</b><div class="row">'+T.afterA.map(function(o){return '<div class="opt'+(s.coachResult===o[1]?' sel':'')+'" onclick="S.v.sales.coachResult=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div></div>';}
  var ok=s.staff&&s.learned&&v.rec.rec1&&v.rec.rec2&&codesDone(['C.1','C.3','C.4','C.5','C.6','C.7'])&&(v.groupIds||[]).length&&(s.comment||'').trim().length>=20;
  if(cLow())ok=ok&&(s.coachTopics||[]).length&&v.rec.rec3&&s.coachResult;
  return h+nav(ok);}
@@ -272,12 +313,12 @@ function togTopic(g){var s=S.v.sales;s.coachTopics=s.coachTopics||[];var i=s.coa
 function std_s8(){var cs=['D.1','D.2','D.3','D.6'];return '<h2>'+tt(T.sec[8])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
 function failing(){return S.boot.items.filter(function(it){var a=S.v.answers[it.code];return a&&a.level&&a.level!=='NA'&&a.level!=='100'});}
 function std_s9(){var v=S.v;v.fix=v.fix||{};var h='<h2>'+t('summary')+'</h2>';
- failing().forEach(function(it){var x=v.fix[it.code]=v.fix[it.code]||{};h+='<div class="card"><b>'+it.code+' '+esc(f(it,'title'))+'</b> <span class="tag">'+v.answers[it.code].level+'%</span><div class="small">'+esc(v.answers[it.code].note||'')+'</div><div class="row">'+
+ failing().forEach(function(it){var x=v.fix[it.code]=v.fix[it.code]||{};h+='<div class="card" id="rq_fix_'+it.code.replace('.','_')+'"><b>'+it.code+' '+esc(f(it,'title'))+'</b> <span class="tag">'+v.answers[it.code].level+'%</span><div class="small">'+esc(v.answers[it.code].note||'')+'</div><div class="row">'+
   '<div class="opt'+(x.action==='solved'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'solved\';saveDraft();render()">'+t('solved')+'</div><div class="opt'+(x.action==='rectify'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'rectify\';saveDraft();render()">'+t('rectify')+'</div></div>';
   if(x.action==='solved')h+=photoBlock('fix_'+it.code,t('solved'),1,false,(v.answers['fix_'+it.code]||{}).photoIds);
   if(x.action==='rectify')h+='<input placeholder="'+t('owner')+'" value="'+esc(x.owner||'')+'" oninput="S.v.fix[\''+it.code+'\'].owner=this.value;saveDraft()"><input type="date" value="'+esc(x.due||'')+'" oninput="S.v.fix[\''+it.code+'\'].due=this.value;saveDraft()">';
   h+='</div>';});
- h+='<div class="card"><textarea placeholder="'+t('helped')+'" oninput="S.v.helped=this.value;saveDraft()">'+esc(v.helped||'')+'</textarea><input placeholder="'+t('confirm')+'" value="'+esc(v.staffConfirm||'')+'" oninput="S.v.staffConfirm=this.value;saveDraft()"></div>';
+ h+='<div class="card" id="rq_end"><textarea placeholder="'+t('helped')+'" oninput="S.v.helped=this.value;saveDraft()">'+esc(v.helped||'')+'</textarea><input placeholder="'+t('confirm')+'" value="'+esc(v.staffConfirm||'')+'" oninput="S.v.staffConfirm=this.value;saveDraft()"></div>';
  var ok=failing().every(function(it){var x=v.fix[it.code]||{};return x.action==='rectify'?(x.owner&&x.due):x.action==='solved'?((v.answers['fix_'+it.code]||{}).photoIds||[]).length:false})&&(v.helped||'').trim()&&(v.staffConfirm||'').trim();
  return h+nav(ok);}
 function std_s10(){var v=S.v;var h='<h2>'+t('checkout')+'</h2><div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';
