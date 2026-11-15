@@ -257,7 +257,7 @@ function stepMiss(n){var v=S.v,c=v.ctx,out=[];
   return out;}
  if(n===8)return codesMiss(['D.1','D.2','D.3','D.6']);
  if(n===9){v.fix=v.fix||{};var s9=v.sales||{};
-  if(cTrain().length){if(!(s9.coachTopics||[]).length)out.push({id:'rq_coach',msg:M('没选培训了哪些','belum pilih topik pelatihan')});if(!v.rec.rec3)out.push({id:'rq_rec3',msg:M('培训后的录音 3 没录','rekaman 3 belum ada')});if(!s9.coachResult)out.push({id:'rq_after',msg:M('没选培训后店员会不会','belum pilih hasil pelatihan')});}
+  if(cTrain().length){if(!(s9.coachTopics||[]).length)out.push({id:'rq_coach',msg:M('没选培训了哪些','belum pilih topik pelatihan')});if(!v.rec.rec3)out.push({id:'rq_rec3',msg:M('培训后的录音 3 没录','rekaman 3 belum ada')});if(s9.coachResult!=='已经会了')out.push({id:'rq_after',msg:M('还没确认店员培训后已达标','belum konfirmasi staf sudah sesuai standar')});}
   otherFail().forEach(function(it){var x=v.fix[it.code]||{},id='rq_fix_'+it.code.replace('.','_');
    if(!x.action)out.push({id:id,msg:it.code+M(' 没选「现场已解决 / 需要整改」',' belum pilih selesai / perbaikan')});
    else if(x.action==='solved'&&!((v.answers['fix_'+it.code]||{}).photoIds||[]).length)out.push({id:id,msg:it.code+M(' 没拍解决后的照片',' belum foto setelah diperbaiki')});
@@ -323,7 +323,7 @@ function std_s9(){var v=S.v,s=v.sales=v.sales||{};v.fix=v.fix||{};var h='<h2>'+t
  var tr=cTrain();
  if(tr.length){h+='<div class="card" id="rq_coach" style="border:2px solid #b26a00"><h3>'+t('coach')+'</h3><div class="small">'+t('coachWhy')+'</div>'+tr.map(function(c){var it=item(c),a=v.answers[c];return '<div class="q"><b>'+c+' '+esc(f(it,'title'))+'</b> <span class="tag">'+a.level+'%</span><div class="small muted">'+esc(a.note||'')+'</div></div>'}).join('')+
   '<div class="small" style="margin-top:8px">'+(L==='zh'?'这次培训了哪些（可多选）：':'Yang dilatih (boleh pilih lebih dari 1):')+'</div><div class="row" style="flex-wrap:wrap">'+T.topics.map(function(o){var on=(s.coachTopics||[]).indexOf(o[1])>=0;return '<div class="opt'+(on?' sel':'')+'" onclick="togTopic(\''+o[1]+'\')">'+tt(o)+'</div>'}).join('')+'</div></div>'+recUI('rec3',1,15)+
-  '<div class="card" id="rq_after"><b>'+t('after')+'</b><div class="row">'+T.afterA.map(function(o){return '<div class="opt'+(s.coachResult===o[1]?' sel':'')+'" onclick="S.v.sales.coachResult=\''+o[1]+'\';saveDraft();render()">'+tt(o)+'</div>'}).join('')+'</div></div>';}
+  '<div class="card" id="rq_after"><label class="opt"><span>'+(L==='zh'?'我确认：店员培训后重新讲 / 演示，已经达到标准（没达标就继续教，再点「重录」）':'Saya konfirmasi: setelah dilatih, staf mengulang dan sudah sesuai standar (kalau belum, latih lagi lalu "Rekam ulang")')+'</span><input type="checkbox" style="width:auto" '+(s.coachResult==='已经会了'?'checked':'')+' onchange="S.v.sales.coachResult=this.checked?\'已经会了\':\'\';saveDraft();render()"></label></div>';}
  var of=otherFail();if(of.length)h+='<h3 style="margin-top:14px">'+t('otherFix')+'</h3>';
  of.forEach(function(it){var x=v.fix[it.code]=v.fix[it.code]||{};h+='<div class="card" id="rq_fix_'+it.code.replace('.','_')+'"><b>'+it.code+' '+esc(f(it,'title'))+'</b> <span class="tag">'+v.answers[it.code].level+'%</span><div class="small">'+esc(v.answers[it.code].note||'')+'</div><div class="row">'+
   '<div class="opt'+(x.action==='solved'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'solved\';saveDraft();render()">'+t('solved')+'</div><div class="opt'+(x.action==='rectify'?' sel':'')+'" onclick="S.v.fix[\''+it.code+'\'].action=\'rectify\';saveDraft();render()">'+t('rectify')+'</div></div>';
