@@ -128,10 +128,10 @@ function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在
  return '⚠️ '+(L==='zh'?'没拿到定位。请允许浏览器使用位置，然后 ':'Lokasi belum terbaca. Izinkan akses lokasi di browser, lalu ')+'<a href="#" onclick="askGeo();return false">'+(L==='zh'?'点这里重试':'coba lagi')+'</a>';}
 function askGeo(){S.geoBusy=1;render();getGeo(function(g){S.geoBusy=0;if(g){S.lastGeo=g;S.lastGeoAt=Date.now();}render();});}
 function takePhoto(tag,front,cb,album){var inp=document.createElement('input');inp.type='file';inp.accept='image/*';if(!album)inp.setAttribute('capture',front?'user':'environment');
- inp.onchange=function(){var file=inp.files[0];if(!file)return;if(file.lastModified&&Date.now()-file.lastModified>5*60000){toast(t('photoOld'));return;}
+ inp.onchange=function(){var file=inp.files[0];if(!file)return;var lim=album?30:5;if(file.lastModified&&Date.now()-file.lastModified>lim*60000){toast(album?(L==='zh'?'这张照片超过 30 分钟了，请用 30 分钟内收到或截的图':'Foto ini lebih dari 30 menit. Pakai foto/screenshot dalam 30 menit terakhir'):t('photoOld'));return;}
   var img=new Image();img.onload=function(){var max=1280,w=img.width,h=img.height,r=Math.min(1,max/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);
    var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(img,0,0,w,h);
-   var g=S.lastGeo,lines=[nowStr(),(S.v?S.v.storeId+' '+(S.v.storeName||''):''),(S.user?S.user.nick:'')+' · '+tagLabel(tag),g?('GPS '+g.lat.toFixed(5)+', '+g.lng.toFixed(5)):'GPS -'];
+   var g=S.lastGeo,lines=[nowStr(),(S.v?S.v.storeId+' '+(S.v.storeName||''):''),(S.user?S.user.nick:'')+' · '+tagLabel(tag)+(album?(L==='zh'?' · 相册上传':' · dari galeri'):''),g?('GPS '+g.lat.toFixed(5)+', '+g.lng.toFixed(5)):'GPS -'];
    var fs=Math.max(16,Math.round(w/40));x.font='bold '+fs+'px Arial';var bh=(fs+6)*lines.length+10;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,h-bh,w,bh);x.fillStyle='#FDCD17';
    lines.forEach(function(l,i){x.fillText(l,10,h-bh+fs+6+i*(fs+6))});
    var data=c.toDataURL('image/jpeg',0.72);var id='p'+Date.now()+Math.floor(Math.random()*1000);
@@ -193,7 +193,7 @@ function scCheckin(){if(!S.geoAsked){S.geoAsked=1;setTimeout(askGeo,50);}var v=S
   h+='<button class="btn" '+(ok?'':'disabled')+' onclick="doCheckin()">'+t('next')+'</button>';}
  return h+'<button class="btn btn2" onclick="S.v=null;localStorage.removeItem(DRAFT_KEY);render()">'+t('back')+'</button>';}
 function pickStore(id){var s=S.boot.stores.find(function(x){return x.id===id});S.v.storeId=id;S.v.storeName=s?s.name:'';S.v.storeType=s?s.type:'';saveDraft();render();}
-function photoBlock(key,label,n,front,ids,album){ids=ids||[];return '<div class="slot"><div>📷 '+esc(label)+' ('+ids.length+'/'+n+')</div>'+thumbHtml(ids)+(ids.length<n?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+')">'+t('takephoto')+'</button>'+(album?'<button class="btn btn2" onclick="snap(\''+key+'\',0,1)">'+(L==='zh'?'上传截图':'Upload screenshot')+'</button>':''):'<button class="btn btn2" onclick="clearPh(\''+key+'\')">'+t('retake')+'</button>')+'</div>';}
+function photoBlock(key,label,n,front,ids,album){ids=ids||[];return '<div class="slot"><div>📷 '+esc(label)+' ('+ids.length+'/'+n+')</div>'+thumbHtml(ids)+(ids.length<n?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+')">'+t('takephoto')+'</button>'+(album?'<button class="btn btn2" onclick="snap(\''+key+'\',0,1)">'+(L==='zh'?'从相册上传照片':'Upload foto dari galeri')+'</button>':''):'<button class="btn btn2" onclick="clearPh(\''+key+'\')">'+t('retake')+'</button>')+'</div>';}
 var PH={selfie:'startSelfieIds',front:'frontIds',outselfie:'endSelfieIds',group:'groupIds'};
 function snap(key,front,album){if(key==='selfie'&&S.lastGeo)S.v.startGeo=S.lastGeo;if(key==='outselfie'&&S.lastGeo)S.v.endGeo=S.lastGeo;getGeo(function(g){if(g){S.lastGeo=g;S.lastGeoAt=Date.now();if(key==='selfie')S.v.startGeo=g;if(key==='outselfie')S.v.endGeo=g;saveDraft();}});
  takePhoto(key,!!front,function(id){var p=PH[key];if(key.indexOf('bad_')===0){var b=S.v.answers[key.slice(4)];b.badIds=(b.badIds||[]).concat(id);}else if(p){S.v[p]=(S.v[p]||[]).concat(id);}else{var a=S.v.answers[key]=S.v.answers[key]||{};a.photoIds=(a.photoIds||[]).concat(id);}saveDraft();render();},!!album);}
