@@ -21,11 +21,12 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .guide{background:#fff8d6;border-left:4px solid #FDCD17;padding:10px;border-radius:6px;font-size:13px;margin-bottom:10px}
 .rec{font-size:28px;font-weight:700;text-align:center;margin:8px 0}.row{display:flex;gap:8px}.row>*{flex:1}
 .q{border-top:1px solid #eee;padding-top:8px;margin-top:8px}.ans{color:#1d7a3a;font-size:13px;margin-top:4px}
+#busy{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:8}#busy div{background:#fff;padding:18px 22px;border-radius:12px;font-size:15px;max-width:80%;text-align:center}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;display:none;z-index:9}
 .sync{font-size:12px}
 </style></head><body>
 <header><div><b>LK</b> Store Check</div><div><span id="sync" class="sync"></span> <button class="lang" onclick="toggleLang()">ID | 中文</button></div></header>
-<main id="app"></main><div id="toast"></div>
+<main id="app"></main><div id="toast"></div><div id="busy"><div id="busymsg"></div></div>
 <script>
 // ================= i18n =================
 var L = localStorage.getItem('lk_lang') || 'id';
@@ -39,7 +40,7 @@ var T = {
  city:['Kota','城市'], store:['Kode toko','门店编号'], next:['Lanjut','下一步'], back:['Kembali','上一步'],
  checkin:['Check-in','签到'], selfie:['Foto selfie (wajah jelas + latar toko)','自拍（看得到正脸 + 门店背景）'], front:['Foto tampak depan toko','门头正面全景'],
  takephoto:['Ambil foto','拍照'], retake:['Ulang','重拍'], gps:['Lokasi','定位'], gpsfail:['Lokasi tidak didapat (tetap bisa lanjut)','拿不到定位（可以继续）'],
- far:['Lokasi jauh dari toko (hanya catatan)','离门店较远（只做记录）'], saved:['Tersimpan','已保存'], uploading:['Mengirim','上传中'],
+ far:['Lokasi jauh dari toko (hanya catatan)','离门店较远（只做记录）'], saved:['Tersimpan','已保存'], waitCheckin:['Menunggu check-in','签到后上传'], signingIn:['Sedang masuk…','正在登录…'], checkingIn:['Sedang check-in, memuat data toko…','签到中，正在加载门店数据…'], submitting:['Mengirim…','提交中…'], uploading:['Mengirim','上传中'],
  na:['Tidak berlaku','不适用'], note:['Keterangan masalah','问题说明'], noteReq:['Wajib diisi jika nilai < 100%','低于 100% 必填'],
  red:['Pelanggaran berat (langsung 0 + lapor)','红线（直接 0 分并上报）'], photosReq:['Foto wajib','必拍照片'],
  step:['Langkah','第'], of:['dari','步，共'], needAll:['Lengkapi dulu semua isian dan foto','先把选项和照片补齐'],
@@ -86,6 +87,8 @@ function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'nul
 var sess=JSON.parse(sessionStorage.getItem('lk_sess')||'null');if(sess){S.token=sess.token;S.user=sess.user;}
 function toast(m){var e=document.getElementById('toast');e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none'},2600);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
+function busyOn(m){document.getElementById('busymsg').textContent=m;document.getElementById('busy').style.display='flex';}
+function busyOff(){document.getElementById('busy').style.display='none';}
 var API='https://script.google.com/macros/s/AKfycbxPxspsZC9VBAmycgwoYaAdzPRe_t3LzAP9js9Aon7GgJNAtoAmdg4KShmHbCPGl0I/exec';
 function run(fn,args,ok,fail){var onFail=function(e){if(String(e).indexOf('SESSION_EXPIRED')>=0){toast(t('expired'));logout();return;}(fail||function(){toast(t('err'))})(e);};
  if(window.google&&google.script&&google.script.run){var r=google.script.run.withSuccessHandler(ok).withFailureHandler(onFail);r[fn].apply(r,args);return;}
@@ -106,7 +109,7 @@ function pump(){if(busy||!S.v||!S.token||!S.v.visitId){setSync();return;}var ids
    function(){busy=false;setTimeout(pump,15000);});});}
 setInterval(pump,20000);
 function pending(){return S.v?Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url}).length:0;}
-function setSync(){var e=document.getElementById('sync');if(!e)return;var n=pending();e.innerHTML=S.v?(n?'<span class="warn">⟳ '+t('uploading')+' '+n+'</span>':'<span class="ok">✓ '+t('saved')+'</span>'):'';}
+function setSync(){var e=document.getElementById('sync');if(!e)return;var n=pending();e.innerHTML=S.v?(n?'<span class="warn">⟳ '+(S.v.visitId?t('uploading'):t('waitCheckin'))+' '+n+'</span>':'<span class="ok">✓ '+t('saved')+'</span>'):'';}
 function murl(id){return S.v&&S.v.media[id]?S.v.media[id].url||'':'';}
 
 // ================= GPS =================
@@ -152,7 +155,7 @@ function render(){var a=document.getElementById('app');setSync();
  if(S.v.type==='STD')return a.innerHTML=scStd();
  a.innerHTML=scSpot();window.scrollTo(0,0);}
 function scLogin(){return '<div class="card"><h2>'+t('login')+'</h2><input id="nick" placeholder="'+t('nick')+'" autocapitalize="none"><input id="pw" type="password" placeholder="'+t('pw')+'"><button class="btn" onclick="doLogin()">'+t('login')+'</button></div>';}
-function doLogin(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var n=document.getElementById('nick').value,p=document.getElementById('pw').value;run('login',[n,p],function(r){if(!r.ok)return toast(t('wrong'));S.token=r.token;S.user=r.user;S.mustChange=r.mustChange;if(!localStorage.getItem('lk_lang')){L=r.lang;localStorage.setItem('lk_lang',L);}sessionStorage.setItem('lk_sess',JSON.stringify({token:r.token,user:r.user}));render();});}
+function doLogin(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var n=document.getElementById('nick').value,p=document.getElementById('pw').value;busyOn(t('signingIn'));run('login',[n,p],function(r){busyOff();if(!r.ok)return toast(t('wrong'));if(r.boot){S.boot=r.boot;OFF=new Date(r.boot.serverTime.replace(' ','T'))-Date.now();}S.token=r.token;S.user=r.user;S.mustChange=r.mustChange;if(!localStorage.getItem('lk_lang')){L=r.lang;localStorage.setItem('lk_lang',L);}sessionStorage.setItem('lk_sess',JSON.stringify({token:r.token,user:r.user}));render();},function(e){busyOff();toast(t('err'));});}
 function scChangePw(){return '<div class="card"><h2>'+t('mustchange')+'</h2><input id="p1" type="password" placeholder="'+t('newpw')+'"><input id="p2" type="password" placeholder="'+t('newpw2')+'"><button class="btn" onclick="doChange()">'+t('save')+'</button></div>';}
 function doChange(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var a=document.getElementById('p1').value,b=document.getElementById('p2').value;if(a!==b||a.length<6)return toast(t('pwdiff'));run('changePassword',[S.token,a],function(r){if(!r.ok)return toast(t('pwdiff'));S.mustChange=false;render();});}
 function logout(){S={token:null,user:null,boot:null,v:null,thumbs:{}};sessionStorage.removeItem('lk_sess');render();}
@@ -168,7 +171,7 @@ function newVisit(type){S.v={type:type,nick:S.user.nick,step:0,media:{},rec:{},a
 // ---------- shared: store select + check-in (step 0) ----------
 function scCheckin(){var v=S.v,stores=S.boot.stores,cities=[];stores.forEach(function(s){if(cities.indexOf(s.city)<0)cities.push(s.city)});
  var h='<div class="card"><h2>'+t('checkin')+' · '+(v.type==='STD'?t('std'):t('spot'))+'</h2><label class="small">'+t('city')+'</label><select id="city" onchange="S.v.city=this.value;S.v.storeId=\'\';render()"><option value="">—</option>'+cities.map(function(c){return '<option'+(v.city===c?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select>';
- if(v.city)h+='<label class="small">'+t('store')+'</label><select onchange="pickStore(this.value)"><option value="">—</option>'+stores.filter(function(s){return s.city===v.city}).map(function(s){return '<option value="'+s.id+'"'+(v.storeId===s.id?' selected':'')+'>'+s.id+'</option>'}).join('')+'</select>';
+ if(v.city)h+='<label class="small">'+t('store')+'</label><select onchange="pickStore(this.value)"><option value="">—</option>'+stores.filter(function(s){return s.city===v.city}).sort(function(a,b){return a.name<b.name?-1:1}).map(function(s){return '<option value="'+s.id+'"'+(v.storeId===s.id?' selected':'')+'>'+esc(s.name)+' · '+s.id+'</option>'}).join('')+'</select>';
  if(v.storeId)h+='<div style="margin-top:6px"><b>'+esc(v.storeName)+'</b></div>';
  h+='</div>';
  if(v.storeId){h+='<div class="card">'+photoBlock('selfie',t('selfie'),1,true,v.startSelfieIds)+(v.type==='STD'?photoBlock('front',t('front'),1,false,v.frontIds):'')+'<div class="small" id="gpsline">'+(v.startGeo?'📍 '+t('gps')+' ±'+v.startGeo.acc+'m':'')+'</div></div>';
@@ -181,9 +184,9 @@ var PH={selfie:'startSelfieIds',front:'frontIds',outselfie:'endSelfieIds',group:
 function snap(key,front){getGeo(function(g){if(g){S.lastGeo=g;if(key==='selfie')S.v.startGeo=g;if(key==='outselfie')S.v.endGeo=g;}});
  takePhoto(key,!!front,function(id){var p=PH[key];if(p){S.v[p]=(S.v[p]||[]).concat(id);}else{var a=S.v.answers[key]=S.v.answers[key]||{};a.photoIds=(a.photoIds||[]).concat(id);}saveDraft();render();});}
 function clearPh(key){var p=PH[key];if(p)S.v[p]=[];else S.v.answers[key].photoIds=[];saveDraft();render();}
-function doCheckin(){var v=S.v;toast(t('loading'));run('startVisit',[S.token,v.type,v.storeId,v.startGeo||null],function(r){v.visitId=r.visitId;v.startTime=r.startTime;v.startDist=r.dist;v.ctx=r;v.step=1;
+function doCheckin(){var v=S.v;if(S.inCheckin)return;S.inCheckin=1;busyOn(t('checkingIn'));run('startVisit',[S.token,v.type,v.storeId,v.startGeo||null],function(r){S.inCheckin=0;busyOff();v.visitId=r.visitId;v.startTime=r.startTime;v.startDist=r.dist;v.ctx=r;v.step=1;
  if(v.type==='SPOT'){v.items=r.skus.map(function(s){return {sku:s.sku,name:s.name,shared:s.shared}});v.idx=0;}
- if(r.dist!==''&&r.dist>500)toast(t('far'));saveDraft();render();pump();});}
+ if(r.dist!==''&&r.dist>500)toast(t('far'));saveDraft();render();pump();},function(e){S.inCheckin=0;busyOff();toast(t('err')+': '+e);});}
 
 // ---------- item card ----------
 var LV=[['100','l100'],['80','l80'],['60','l60'],['40','l40'],['0','l0']];
@@ -269,7 +272,7 @@ function submitStd(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<
   sales:{staff:s.staff,learned:s.learned,gaps:s.gaps||[],quiz:v.ctx.quiz,rec1:murl((v.rec.rec1||{}).id),rec2:murl((v.rec.rec2||{}).id),rec3:murl((v.rec.rec3||{}).id),coached:cLow(),coachTopics:s.coachTopics||[],coachResult:s.coachResult||'',comment:s.comment,groupPhoto:(v.groupIds||[]).map(murl).join('\n'),cTotal:p?e/p*100:undefined},
   issues:failing().map(function(it){var x=v.fix[it.code]||{};return {code:it.code,desc:(v.answers[it.code].note||''),action:x.action,owner:x.owner||'',due:x.due||'',photo:((v.answers['fix_'+it.code]||{}).photoIds||[]).map(murl).join('\n')}}),
   helped:v.helped,staffConfirm:v.staffConfirm,lang:L};
- toast(t('loading'));run('submitStd',[S.token,payload],function(r){localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+t('score')+': <b>'+r.total+'</b> · '+esc(r.grade)+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags&&r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';});}
+ busyOn(t('submitting'));run('submitStd',[S.token,payload],function(r){busyOff();localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+t('score')+': <b>'+r.total+'</b> · '+esc(r.grade)+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags&&r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';},function(e){busyOff();toast(t('err')+': '+e);});}
 
 // ---------- SPOT check ----------
 function scSpot(){var v=S.v;if(!v.visitId)return scCheckin();
@@ -294,7 +297,7 @@ function spotEnd(){var v=S.v,same=v.items.filter(function(i){return Number(i.act
 function submitSpot(){var v=S.v;if(pending())return toast(t('waitUp'));if(mins()<30&&!confirm(t('minTime')))return;
  var p={visitId:v.visitId,storeId:v.storeId,startTime:v.startTime,startDist:v.startDist,startSelfie:(v.startSelfieIds||[]).map(murl).join('\n'),endSelfie:(v.endSelfieIds||[]).map(murl).join('\n'),
   items:v.items.map(function(i,k){return {sku:i.sku,name:i.name,shared:i.shared,actual:i.actual,pos:i.pos,recount:i.recount||'',note:i.note||'',goodsPhoto:((v.answers['g_'+k]||{}).photoIds||[]).map(murl).join('\n'),posPhoto:((v.answers['p_'+k]||{}).photoIds||[]).map(murl).join('\n')}})};
- toast(t('loading'));run('submitSpot',[S.token,p],function(r){localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+r.same+'/'+r.count+' '+t('spotDone')+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';});}
+ busyOn(t('submitting'));run('submitSpot',[S.token,p],function(r){busyOff();localStorage.removeItem(DRAFT_KEY);S.v=null;document.getElementById('app').innerHTML='<div class="card"><h2>✓ '+t('done')+'</h2><div>'+r.same+'/'+r.count+' '+t('spotDone')+'</div><div class="small">'+Math.round(r.minutes)+' '+t('minutes')+(r.flags.length?' · <span class="warn">'+esc(r.flags.join(', '))+'</span>':'')+'</div><button class="btn" onclick="render()">'+t('home')+'</button></div>';},function(e){busyOff();toast(t('err')+': '+e);});}
 
 window.addEventListener('beforeunload',function(e){if(S.v&&pending()){e.preventDefault();e.returnValue='';}});
 render();
