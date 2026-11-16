@@ -27,6 +27,10 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .missHL{outline:3px solid #b3261e!important;outline-offset:2px;border-radius:12px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;display:none;z-index:9}
 .sync{font-size:12px}
+.back{display:inline-flex;align-items:center;gap:4px;padding:6px 12px 6px 9px;margin:0 0 10px;border-radius:999px;background:#f1f1f1;color:#111;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer}
+.back:active{background:#e4e4e4}
+.more{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;padding:11px;border:1px solid #ddd;border-radius:12px;background:#fff;color:#333;font-size:14px;font-weight:600;text-align:center;cursor:pointer}
+.off{background:#f1f1f1!important;color:#999;border-style:dashed!important}.off h3{color:#999}
 </style></head><body>
 <header><div style="display:flex;align-items:center;gap:8px"><span id="homeBtn"></span><b>LK</b> Hub</div><div><span id="sync" class="sync"></span> <button class="lang" onclick="toggleLang()">ID | 中文</button></div></header>
 <main id="app"></main><div id="toast"></div><div id="zoom" onclick="this.style.display='none'" style="position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:9"></div><div id="busy"><div id="busymsg"></div></div>
@@ -170,8 +174,8 @@ function render(){var a=document.getElementById('app');setSync();
  if(S.mustChange)return a.innerHTML=scChangePw();
  if(S.myPw&&!S.v)return a.innerHTML=scMyPw();
  if(!S.boot||S.bootStale){if(!S.booting){S.booting=1;var bk='lk_boot_'+String((S.user||{}).nick||'').toLowerCase();
-  if(!S.boot){try{var cb=JSON.parse(localStorage.getItem(bk)||'null');if(cb&&cb.serverTime){S.boot=cb;S.bootStale=1;}}catch(e){}}
-  run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;S.bootStale=0;OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();try{localStorage.setItem(bk,JSON.stringify(b));}catch(e){}if(!S.v)render();},function(){S.booting=0;if(!S.bootStale)toast(t('err'));});}
+  if(!S.boot){try{var cb=JSON.parse(localStorage.getItem(bk)||'null');if(cb&&cb.serverTime){S.boot=cb;S.bootStale=1;if(cb.entries)S.user.entries=cb.entries;}}catch(e){}}
+  run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;S.bootStale=0;if(b.entries){S.user.entries=b.entries;try{var ss=sessStore(),o=JSON.parse(ss.getItem('lk_sess')||'null');if(o){o.user.entries=b.entries;ss.setItem('lk_sess',JSON.stringify(o));}}catch(e){}}OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();try{localStorage.setItem(bk,JSON.stringify(b));}catch(e){}if(!S.v)render();},function(){S.booting=0;if(!S.bootStale)toast(t('err'));});}
   if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';return;}}
  if(!S.v){if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='fin')return a.innerHTML=scFin();return a.innerHTML=scHome();}
  if(S.v.type==='STD')return a.innerHTML=scStd();
@@ -230,18 +234,19 @@ function profileCard(){var u=S.user||{},m=(S.boot&&S.boot.me)||{},nm=titleCase(m
 function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.boot.pc)||{},tiles=[];
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6;padding:10px 14px;cursor:pointer" onclick="resume()"><b>'+(zh?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc((d.storeName||d.storeId||'')+' · '+(d.type==='STD'?t('std'):t('spot')))+' · <u>'+(zh?'继续':'Lanjutkan')+' ›</u></div></div>';
  var core=!!((S.boot&&S.boot.me)||{}).core,hasChk=(S.user.entries||[]).length>0;
- tiles.push(['check','📋',zh?'门店检查':'Cek Toko',hasChk?(S.user.entries.length)+(zh?' 项检查':' menu'):(zh?'你的岗位暂不需要':'Tidak untuk jabatanmu'),hasChk]);
+ tiles.push(['check','📋',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Cek stok'):(zh?'门店巡检':'Inspeksi toko'),hasChk]);
  tiles.push(['fin','💰',zh?'财务':'Keuangan',pc.has?(pc.bal!=null?(zh?'备用金 ':'Petty cash ')+rp(pc.bal):(zh?'备用金':'Petty cash')):(zh?'暂无备用金记录':'Belum ada petty cash'),!!pc.has]);
- if(!core)tiles=tiles.filter(function(x){return x[4]});
- h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">'+tiles.map(function(x){var on=x[4];return '<div class="card" style="margin:0;min-height:96px;cursor:pointer;'+(on?'':'background:#f1f1f1;color:#999;border-style:dashed')+'" onclick="'+(on?'openMod(\''+x[0]+'\')':'toast(\''+(zh?'你的岗位暂时用不到这个功能':'Fitur ini belum untuk jabatanmu')+'\')')+'"><div style="font-size:24px;'+(on?'':'filter:grayscale(1);opacity:.5')+'">'+x[1]+'</div><div style="font-weight:700;font-size:16px;margin-top:4px">'+x[2]+'</div><div class="small'+(on?' muted':'')+'" style="margin-top:2px">'+esc(x[3])+'</div></div>';}).join('')+'</div>';
+ if(core)tiles.forEach(function(x){x[4]=true});else tiles=tiles.filter(function(x){return x[4]});
+ h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">'+tiles.map(function(x){return '<div class="card" style="margin:0;min-height:96px;cursor:pointer" onclick="openMod(\''+x[0]+'\')"><div style="font-size:24px">'+x[1]+'</div><div style="font-weight:700;font-size:16px;margin-top:4px">'+x[2]+'</div><div class="small muted" style="margin-top:2px">'+esc(x[3])+'</div></div>';}).join('')+'</div>';
  return h+a2hsMini()+'<div style="text-align:center;margin:14px 0 4px"><a href="#" class="small" style="color:#555" onclick="S.myPw=1;render();return false">🔑 '+(zh?'修改密码':'Ganti password')+'</a></div><button class="btn btn2" onclick="logout()">'+t('logout')+'</button>';}
 function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
 function openMod(m){S.mod=m;if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
+function offToast(){toast(L==='zh'?'你的岗位暂时用不到这个功能':'Fitur ini belum untuk jabatanmu');}
 function scCheckMod(){var d=loadDraft(),h='<h2 style="margin:4px 0 10px">📋 '+(L==='zh'?'门店检查':'Cek Toko')+'</h2><div class="guide" style="border-left-color:#b3261e;background:#fdecea"><b>⚠ '+t('honestyTitle')+'</b><br>'+t('honesty')+'</div>';
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+(L==='zh'?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc(d.storeId+' '+d.storeName)+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div>';
- if(S.user.entries.indexOf('STD')>=0)h+='<div class="card" onclick="newVisit(\'STD\')"><h3>📋 '+t('std')+'</h3><div class="muted">'+t('stdsub')+'</div></div>';
- if(S.user.entries.indexOf('SPOT')>=0)h+='<div class="card" onclick="newVisit(\'SPOT\')"><h3>📦 '+t('spot')+'</h3><div class="muted">'+t('spotsub')+'</div></div>';
+ var core=!!((S.boot&&S.boot.me)||{}).core;
+ [['STD','📋',t('std'),t('stdsub')],['SPOT','📦',t('spot'),t('spotsub')]].forEach(function(x){var on=(S.user.entries||[]).indexOf(x[0])>=0;if(!on&&!core)return;h+='<div class="card'+(on?'':' off')+'" style="cursor:pointer" onclick="'+(on?'newVisit(\''+x[0]+'\')':'offToast()')+'"><h3>'+x[1]+' '+x[2]+'</h3><div class="muted">'+x[3]+'</div></div>';});
  return h;}
 function loadFin(who){if(!who)S.finLoading=1;S.finWhoC=S.finWhoC||{};run('getPettyCash',who?[S.token,who]:[S.token],function(r){if(who){S.finWhoC[who]=r;if(S.finWhoName===who)S.finWho=r;}else{S.finLoading=0;S.fin=r;S.finErr=0;try{localStorage.setItem(finKey(),JSON.stringify(r));}catch(e){}}if(S.mod==='fin')render();},function(){if(!who)S.finLoading=0;if(S.mod==='fin'&&!(who?S.finWho:S.fin)){S.finErr=1;render();}});}
 function pLabel(p){var zh=L==='zh',m=/^(\d{4})(\d{2})$/.exec(p),mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];if(m)return zh?m[1]+'年'+Number(m[2])+'月':mn[Number(m[2])-1]+' '+m[1];if(/26H1/.test(p))return zh?'2026 上半年':'Jan–Jun 2026';var y=/(\d{4})/.exec(p);return y?y[1]:p;}
@@ -277,20 +282,22 @@ function pcDetail(me,title){var zh=L==='zh',d=me&&me.det;if(!me||!d||!d.ok)retur
   if(m!==cur&&d.ends&&d.ends[m]!=null)c+=row(mLabelEnd(m),rp(d.ends[m]),'#111',1);});
  c+='<div style="display:flex;justify-content:space-between;padding:10px 0 2px;border-top:2px solid #111;margin-top:6px;font-size:15px"><b>'+(zh?'当前余额':'Saldo saat ini')+'</b><b>'+rp(me.bal)+'</b></div></div>';
  var old=(me.hist||[]).filter(function(x){return !/^\d{6}$/.test(x.p)||x.p<d.from});
- if(old.length)c+=S.finOld?pcHist({bal:me.bal,hist:old}).replace(/^<div class="card">[\s\S]*?<\/div><\/div>/,'').replace(zh?'历史记录（按月）':'Riwayat per bulan',zh?'更早的月度汇总':'Ringkasan bulan sebelumnya'):'<div class="small" style="text-align:center;margin:4px 0 14px"><a href="#" onclick="S.finOld=1;render();return false">'+(zh?'查看更早的月度汇总 ›':'Lihat ringkasan bulan sebelumnya ›')+'</a></div>';
+ if(old.length)c+=S.finOld?pcHist({bal:me.bal,hist:old}).replace(/^<div class="card">[\s\S]*?<\/div><\/div>/,'').replace(zh?'历史记录（按月）':'Riwayat per bulan',zh?'更早的月度汇总':'Ringkasan bulan sebelumnya'):'<div class="more" onclick="S.finOld=1;render()">'+(zh?'查看更早的月度汇总':'Lihat ringkasan bulan sebelumnya')+' ▾</div>';
  return h+c;}
 function finNote(f){var zh=L==='zh';return '<div class="guide" style="margin:0 0 10px">ℹ️ '+(zh?'数据来自 Finance，截至 ':'Data dari Finance, per ')+'<b>'+esc((f&&f.asOf)||'—')+'</b>'+(zh?'。Finance 每周更新；有疑问请联系 Finance。':'. Finance memperbarui tiap minggu; ada pertanyaan hubungi Finance.')+'</div>';}
-function finBack(){return '<div style="margin:0 0 8px"><a href="#" onclick="S.finSub=null;S.finWho=null;render();window.scrollTo(0,0);return false">‹ '+(L==='zh'?'返回财务':'Kembali ke Keuangan')+'</a></div>';}
+function finBack(){return '<div><span class="back" onclick="S.finSub=null;S.finWho=null;render();window.scrollTo(0,0)">‹ '+(L==='zh'?'财务':'Keuangan')+'</span></div>';}
 function scFin(){var zh=L==='zh',f=S.fin,pc=(S.boot&&S.boot.pc)||{},h='';
  var wait=function(){return '<div class="card">'+(S.finErr?(zh?'读取失败，请稍后再试':'Gagal memuat, coba lagi nanti'):t('loading'))+'</div>';};
  if(S.finSub==='mine')return finBack()+'<h2 style="margin:4px 0 10px">'+(zh?'我的备用金':'Petty cash saya')+'</h2>'+(f?finNote(f)+pcDetail(f.me):wait());
- if(S.finSub==='who'){var bk='<div style="margin:0 0 8px"><a href="#" onclick="S.finSub=\'all\';S.finWho=null;render();return false">‹ '+(zh?'返回全员列表':'Kembali ke daftar')+'</a></div><h2 style="margin:4px 0 10px">'+esc(S.finWhoName||'')+'</h2>';return bk+(S.finWho?finNote(S.finWho)+pcDetail(S.finWho.me,zh?'备用金余额':'Saldo petty cash'):wait());}
+ if(S.finSub==='who'){var bk='<div><span class="back" onclick="S.finSub=\'all\';S.finWho=null;render();window.scrollTo(0,0)">‹ '+(zh?'全员备用金':'Semua staf')+'</span></div><h2 style="margin:4px 0 10px">'+esc(S.finWhoName||'')+'</h2>';return bk+(S.finWho?finNote(S.finWho)+pcDetail(S.finWho.me,zh?'备用金余额':'Saldo petty cash'):wait());}
  if(S.finSub==='all')return finBack()+'<h2 style="margin:4px 0 10px">'+(zh?'全员备用金':'Petty cash semua staf')+'</h2>'+(f?finNote(f)+pcChk()+'<div class="card"><div class="small muted">'+(zh?'按余额从高到低，点名字看明细':'Urut dari saldo terbesar; ketuk nama untuk detail')+'</div>'+(f.list||[]).map(function(x,i){return '<div onclick="finWhoOpen('+i+')" style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #eee;font-size:14px;cursor:pointer"><span>'+esc(x.name)+'</span><b'+(x.bal<0?' style="color:#2e7d32"':'')+'>'+rp(x.bal)+' ›</b></div>';}).join('')+'</div>':wait());
  h='<h2 style="margin:4px 0 10px">💰 '+(zh?'财务':'Keuangan')+'</h2>';
  var card=function(go,icon,title,sub){return '<div class="card" style="cursor:pointer;display:flex;align-items:center;gap:12px" onclick="S.finSub=\''+go+'\';render();window.scrollTo(0,0)"><div style="font-size:26px">'+icon+'</div><div style="flex:1"><h3 style="margin:0">'+title+'</h3><div class="muted small">'+sub+'</div></div><div style="font-size:20px;color:#999">›</div></div>';};
  var bal=f?(f.me?f.me.bal:null):pc.bal,canAll=f?f.canAll:pc.canAll,n=f&&f.list?f.list.length:pc.n;
  h+=card('mine','👛',zh?'我的备用金':'Petty cash saya',bal!=null?(zh?'余额 ':'Saldo ')+rp(bal):(zh?'暂无记录':'Belum ada catatan'));
+ var core=!!((S.boot&&S.boot.me)||{}).core;
  if(canAll)h+=card('all','👥',zh?'全员备用金':'Petty cash semua staf',(n||0)+(zh?' 人 · 按余额排序':' orang · urut saldo'));
+ else if(core)h+='<div class="card off" style="cursor:pointer;display:flex;align-items:center;gap:12px" onclick="offToast()"><div style="font-size:26px;filter:grayscale(1);opacity:.5">👥</div><div style="flex:1"><h3 style="margin:0">'+(zh?'全员备用金':'Petty cash semua staf')+'</h3><div class="small">'+(zh?'仅 Finance 可看':'Khusus Finance')+'</div></div></div>';
  return h;}
 function pcChk(){var zh=L==='zh',c=S.pcChk;if(!c){if(!S.pcChkIng){S.pcChkIng=1;run('pcCheck',[S.token],function(r){S.pcChk=r;if(S.mod==='fin')render();},function(){S.pcChk={err:1};});}return '';}
  if(c.err)return '';var bad=c.bad||[];return '<div class="small" style="margin:0 0 10px;padding:8px 10px;border-radius:10px;background:'+(bad.length?'#fdecea':'#e8f5e9')+'">'+(bad.length?'⚠ '+(zh?'逐笔明细与汇总表对不上：':'Rincian tidak cocok dengan ringkasan: ')+'<b>'+bad.map(esc).join('、')+'</b>'+(zh?'（这些人先显示月度汇总，请 Finance 核对）':' (sementara tampil ringkasan bulanan; mohon Finance cek)'):'✓ '+(zh?'全部 '+c.good+' 人的逐笔明细和汇总表一致':'Rincian '+c.good+' orang cocok dengan ringkasan'))+(c.orphan&&c.orphan.length?'<br>'+(zh?'明细里有、汇总表里没有的名字：':'Nama di rincian tapi tidak di ringkasan: ')+c.orphan.map(esc).join('、'):'')+'</div>';}
