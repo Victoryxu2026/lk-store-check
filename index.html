@@ -59,6 +59,7 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .sl-r1{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.sl-nm{font-weight:700;font-size:14.5px}
 .sl-pc{font-weight:800;font-size:17px;white-space:nowrap}.sl-go{color:#c8c8c4;font-weight:400;margin-left:6px}
 .sl-meta{font-size:12.5px;color:#777}.sl-flag{display:inline-block;background:#fdecea;color:#b3261e;font-size:11.5px;padding:2px 8px;border-radius:6px;margin:6px 4px 0 0}
+.sl-ty{display:flex;gap:6px;margin:0 0 10px}.sl-ty span{padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #ddd;font-size:13px;font-weight:600;color:#555;cursor:pointer;white-space:nowrap}.sl-ty span i{font-style:normal;color:#aaa;font-weight:500;margin-left:2px}.sl-ty span.on{background:#FDCD17;border-color:#FDCD17;color:#111}.sl-ty span.on i{color:#6b5500}
 .sl-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:7;display:flex;align-items:flex-end;justify-content:center}
 .sl-sheet{background:#fff;width:100%;max-width:560px;border-radius:16px 16px 0 0;padding:16px 12px 26px}
 .sl-sheet .it{padding:13px 12px;border-radius:10px;font-size:16px;display:flex;justify-content:space-between;cursor:pointer}.sl-sheet .it.on{background:#fff8d6;font-weight:700}
@@ -419,7 +420,7 @@ function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},h='<h2 style
  return h;}
 // 打开时先显示手机里存的上一次结果（标「更新中」），同时去后台取最新的，取到就替换
 function slLsKey(k){return 'lk_sv_'+((S.user&&S.user.nick)||'')+'_'+k;}
-function slOpen(k){var ek='sv_'+k;S.dc=S.dc||{};if(S.dc[ek]&&S.dc[ek].err)delete S.dc[ek];S.slK=k;S.slPick=0;S.slSort=k==='grab'?{k:'days',d:1}:{k:'ach',d:1};
+function slOpen(k){var ek='sv_'+k;S.dc=S.dc||{};if(S.slTy==null){try{S.slTy=localStorage.getItem('lk_slty')||'';}catch(e){S.slTy='';}}if(S.dc[ek]&&S.dc[ek].err)delete S.dc[ek];S.slK=k;S.slPick=0;S.slSort=k==='grab'?{k:'days',d:1}:{k:'ach',d:1};
  if(!S.dc[ek]){try{var c=JSON.parse(localStorage.getItem(slLsKey(k))||'null');if(c&&c.stores){c._stale=1;S.dc[ek]=c;}}catch(e){}}
  navTo(k==='store'?'salesS':'salesG');
  if(!S.dc[ek]||S.dc[ek]._stale)run('salesView',[S.token,k,'cur'],function(r){S.dc[ek]=r;try{localStorage.setItem(slLsKey(k),JSON.stringify(r));}catch(e){}if(/^sales[SGD]$/.test(S.mod))render();},function(e){var c=S.dc[ek];if(c&&c._stale)c._failed=1;else S.dc[ek]={err:1,msg:String(e&&e.message||e||'').slice(0,120)};if(/^sales[SGD]$/.test(S.mod))render();});}
@@ -460,6 +461,11 @@ function slHd(title,R){var zh=L==='zh',h='<div class="sl-hd"><h2>'+title+'</h2>'
  return h;}
 // 重试：删掉这一页失败的读取，重新读
 function slRetry(){var k=S.slK||'store',b=(S.dc||{})['sv_'+k],sel=S.slym||(b&&b.cur);Object.keys(S.dc||{}).forEach(function(x){if(S.dc[x]&&S.dc[x].err&&/^(sv_|ss_)/.test(x))delete S.dc[x];});if(!S.dc['sv_'+k])fetchD('sv_'+k,'salesView',[S.token,k,'cur'],S.mod);render();}
+// 门店类型：LK VAPE / RS·RVS（老数据没有 ty 时按店名开头判断）
+function slTy(x){return x.ty||(/^(RS|RVS)\b/i.test(x.sn||'')?'RS':'LK');}
+function slTyBar(stores){var zh=L==='zh',n={LK:0,RS:0};stores.forEach(function(x){n[slTy(x)]++;});if(!n.LK||!n.RS){S.slTy='';return '';}var cur=S.slTy||'';
+ return '<div class="sl-ty">'+[['',zh?'全部':'Semua',n.LK+n.RS],['LK','LK VAPE',n.LK],['RS','RS / RVS',n.RS]].map(function(o){return '<span class="'+(cur===o[0]?'on':'')+'" onclick="S.slTy=\''+o[0]+'\';try{localStorage.setItem(\'lk_slty\',S.slTy)}catch(e){};render()">'+o[1]+' <i>'+o[2]+'</i></span>';}).join('')+'</div>';}
+function slBench(R){var f=S.slTy||'',m={},ord=[];(R.bench||[]).forEach(function(x){if(f&&!x.ty)return;if(f&&x.ty!==f)return;if(!m[x.r]){m[x.r]={r:x.r,a:0,t:0};ord.push(x.r);}m[x.r].a+=x.a;m[x.r].t+=x.t;});return ord.map(function(r){return m[r];});}
 function ymPrev(y){var t=Number(y.slice(0,4))*12+Number(y.slice(5,7))-2;return Math.floor(t/12)+'-'+('0'+(t%12+1)).slice(-2);}
 function slBar(fill,col,mark,thin){return '<div class="sl-track'+(thin?' thin':'')+'"><i style="width:'+Math.max(0,Math.min(100,(fill||0)*100))+'%;background:'+col+'"></i>'+(mark!=null?'<b style="left:'+Math.min(100,mark*100)+'%"></b>':'')+'</div>';}
 function slKpi(l,v,c){return '<div class="sl-kpi"><div class="l">'+l+'</div><div class="v"'+(c?' style="color:'+c+'"':'')+'>'+v+'</div></div>';}
@@ -474,7 +480,8 @@ function scSales(){var zh=L==='zh',k=S.slK||(S.mod==='salesG'?'grab':'store'),b=
  var R=slData(k);if(R.wait)return backBtn()+slHd(title,R.R)+loadingCard(R.err?{err:1,msg:R.msg}:null,'slRetry()');
  var h=backBtn()+slHd(title,R),cur=R.m==='cur';
  if(cur&&R.e<1)return h+'<div class="card muted">'+(zh?'这个月 POS 还没有数据':'Belum ada data POS bulan ini')+'</div>';
- var rows=R.stores.map(function(x){return {x:x,o:slCalc(x,R)};});
+ h+=slTyBar(R.stores);var f=S.slTy||'';
+ var rows=R.stores.filter(function(x){return !f||slTy(x)===f;}).map(function(x){return {x:x,o:slCalc(x,R)};});
  return h+(k==='grab'?slGrab(R,rows):slStore(R,rows));}
 function slStore(R,rows){var zh=L==='zh',cur=R.m==='cur',A=0,T=0,AA=0,PA=0,G=0,tier=[0,0,0,0],nt=0;
  rows.forEach(function(w){var o=w.o;AA+=o.a;G+=o.g;PA+=cur?w.x.c.pa:w.x.p.pa;if(o.t>0){A+=o.a;T+=o.t;var p=o.proj;tier[p<0.85?0:p<1?1:p<1.2?2:3]++;}else nt++;});
@@ -483,7 +490,7 @@ function slStore(R,rows){var zh=L==='zh',cur=R.m==='cur',A=0,T=0,AA=0,PA=0,G=0,t
   +(cur?'<div style="text-align:right"><div class="small muted">'+(zh?'剩余每天要卖':'Sisa target / hari')+'</div><div style="font-size:20px;font-weight:800">'+(need>0?jt(need):'✓')+'</div></div>':'')+'</div>';
  if(T>0)h+=slBar(ach,achCol(proj),cur?R.e/R.dim:null)+'<div class="small muted">'+(zh?'已完成目标 ':'Tercapai ')+pc1(ach)+(cur?' · '+(zh?'时间进度 ':'waktu berjalan ')+pc1(R.e/R.dim)+(zh?'（竖线）':' (garis)'):'')+'</div>';
  h+='<div class="sl-kpis">'+slKpi(zh?'累计销售':'Total penjualan',jt(AA))+slKpi(cur?(zh?'比上月同期':'vs periode sama'):(zh?'比上月':'vs bulan lalu'),sgn(mom),grCol(mom))+slKpi(zh?'GrabMart 占比':'Porsi GrabMart',pc1(AA>0?G/AA:null))+'</div>';
- var bb=(R.bench||[]).filter(function(x){return x.t>0;});if(bb.length)h+='<div class="small muted" style="margin-top:10px">'+bb.map(function(x){var v=cur?x.a/R.e*R.dim/x.t:x.a/x.t;return (x.r==='West'?(zh?'西区':'Barat'):(zh?'东区':'Timur'))+(zh?'整体 ':' keseluruhan ')+'<b style="color:'+achCol(v)+'">'+pc1(v)+'</b>';}).join(' · ')+'</div>';
+ var bb=slBench(R).filter(function(x){return x.t>0;});if(bb.length)h+='<div class="small muted" style="margin-top:10px">'+bb.map(function(x){var v=cur?x.a/R.e*R.dim/x.t:x.a/x.t;return (x.r==='West'?(zh?'西区':'Barat'):(zh?'东区':'Timur'))+(zh?'整体 ':' keseluruhan ')+'<b style="color:'+achCol(v)+'">'+pc1(v)+'</b>';}).join(' · ')+'</div>';
  var cols=['#b3261e','#e0a100','#3fa35b','#1d6b3a'],lb=['<85%','85–100%','100–120%','≥120%'],n=tier[0]+tier[1]+tier[2]+tier[3];
  if(n)h+='<div class="sl-dist">'+tier.map(function(c,i){return c?'<i style="flex:'+c+';background:'+cols[i]+'"></i>':'';}).join('')+'</div><div class="sl-leg">'+tier.map(function(c,i){return '<span style="--c:'+cols[i]+'">'+lb[i]+' <b>'+c+'</b>'+(zh?' 家':'')+'</span>';}).join('')+(nt?'<span style="--c:#ccc">'+(zh?'无目标 ':'Tanpa target ')+'<b>'+nt+'</b></span>':'')+'</div>';
  h+='</div>';
