@@ -126,10 +126,24 @@ function mdel(id){idb(function(db){db.transaction('m','readwrite').objectStore('
 var busy=false;
 function pump(){if(busy||!S.v||!S.token||!S.v.visitId){setSync();return;}var ids=Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url});setSync();if(!ids.length)return;busy=true;var id=ids[0],m=S.v.media[id];
  mget(id,function(data){if(!data){delete S.v.media[id];busy=false;saveDraft();return pump();}
-  run('uploadFile',[S.token,S.v.visitId,m.name,m.mime,data.split(',')[1]],function(res){S.v.media[id].url=res.url;mdel(id);busy=false;saveDraft();if(document.getElementById('subBtn'))render();pump();},
-   function(){busy=false;setTimeout(pump,15000);});});}
+  run('uploadFile',[S.token,S.v.visitId,m.name,m.mime,data.split(',')[1]],function(res){S.v.media[id].url=res.url;mdel(id);busy=false;saveDraft();if(!pending())upDone();if(document.getElementById('subBtn'))render();pump();},
+   function(){busy=false;if(S.v&&S.v.media[id]){S.v.media[id].fail=(S.v.media[id].fail||0)+1;saveDraft();}if(document.getElementById('upBox'))render();setTimeout(pump,15000);});});}
 setInterval(pump,20000);
 function pending(){return S.v?Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url}).length:0;}
+// 提交页的上传状态框：已等几秒；超过 1 分钟给提示和「重新上传」；超过 2 分钟自动记一笔给管理层
+function upInfo(ok){var v=S.v,w=S.upT0?Math.round((Date.now()-S.upT0)/1000):0,f=0;Object.keys(v.media).forEach(function(k){f=Math.max(f,v.media[k].fail||0)});
+ return {v:v.visitId,s:v.storeId,sn:v.storeName,t:v.type,w:w,f:f,net:(navigator.connection&&navigator.connection.effectiveType)||'',ok:ok?1:0};}
+function upLog(ok){run('logUpload',[S.token,upInfo(ok)],function(){},function(){});}
+function upDone(){if(S.v&&S.v.upStuck&&!S.v.upStuck.done){upLog(1);S.v.upStuck.done=1;saveDraft();}S.upT0=0;}
+function upBox(){var n=pending(),zh=L==='zh';if(!n){S.upT0=0;S.up60=0;return '';}if(!S.upT0)S.upT0=Date.now();
+ var w=Math.round((Date.now()-S.upT0)/1000),f=0;Object.keys(S.v.media).forEach(function(k){if(!S.v.media[k].url)f=Math.max(f,S.v.media[k].fail||0)});
+ var h='<div id="upBox" class="card warn">'+(zh?'正在上传 '+n+' 张照片/录音 · 已等 <span id="upSec">'+w+'</span> 秒':'Sedang upload '+n+' foto/rekaman · sudah <span id="upSec">'+w+'</span> detik')+'<div class="small" style="margin-top:4px">'+(zh?'传完按钮会自动变黑，不要关闭页面':'Tombol aktif otomatis setelah selesai. Jangan tutup halaman.')+'</div>';
+ if(f>=2)h+='<div class="small" style="margin-top:6px;color:#b3261e">'+(zh?'已经失败 '+f+' 次，多半是信号问题':'Sudah gagal '+f+' kali, kemungkinan sinyal lemah')+'</div>';
+ if(w>=60)h+='<div class="small" style="margin-top:6px;color:#111">'+(zh?'信号不好：走到门口或连上门店 Wi-Fi，再点「重新上传」':'Sinyal lemah: coba ke dekat pintu atau sambung ke Wi-Fi toko, lalu tekan "Upload ulang"')+'</div><button class="btn btn2" style="margin-top:8px" onclick="upRetry()">'+(zh?'重新上传':'Upload ulang')+'</button>';
+ return h+'</div>';}
+function upRetry(){busy=false;pump();toast(L==='zh'?'正在重新上传…':'Mengupload ulang…');}
+setInterval(function(){var e=document.getElementById('upSec');if(!e||!S.upT0)return;var w=Math.round((Date.now()-S.upT0)/1000);e.textContent=w;
+ if(w>=60&&!S.up60){S.up60=1;render();}if(w>=120&&S.v&&!S.v.upStuck){S.v.upStuck={at:w};saveDraft();upLog(0);}},1000);
 function setSync(){var hb=document.getElementById('homeBtn');if(hb)hb.innerHTML=(S.v||S.mod)?'<button class="lang" style="color:#fff;border-color:#666" onclick="goHome()">‹ '+(L==='zh'?'首页':'Menu')+'</button>':'';var e=document.getElementById('sync');if(!e)return;var n=pending();e.innerHTML=S.v&&(S.v.visitId||n)?(n?'<span class="warn">⟳ '+(S.v.visitId?t('uploading'):t('waitCheckin'))+' '+n+'</span>':'<span class="ok">✓ '+t('saved')+'</span>'):'';}
 function murl(id){return S.v&&S.v.media[id]?S.v.media[id].url||'':'';}
 
@@ -309,7 +323,7 @@ function scVisit(){var zh=L==='zh',r=S.vd,back='<div><span class="back" onclick=
  if((r.iss||[]).length)h+='<div class="card"><b>'+(zh?'整改项':'Perbaikan')+'</b>'+r.iss.map(function(i){return '<div style="padding:8px 0;border-top:1px solid #eee;font-size:14px"><div style="display:flex;justify-content:space-between;gap:8px"><span>'+esc(i.code)+' '+esc(i.desc)+'</span><span style="color:'+(i.st==='Closed'?'#2e7d32':'#b3261e')+'">'+(i.st==='Closed'?(zh?'已关闭':'Selesai'):(zh?'未关闭':'Terbuka'))+'</span></div><div class="small muted">'+(i.owner?esc(i.owner)+' · ':'')+(i.due?(zh?'截止 ':'Batas ')+md(i.due):'')+'</div></div>';}).join('')+'</div>';
  return back+h;}
 function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.boot.pc)||{},tiles=[];
- var hl=(S.boot&&S.boot.health)||[];if(hl.length)h+='<div class="card" style="background:#fdecea;border-color:#f3c1bd;padding:10px 14px;font-size:13px"><b style="color:#b3261e">⚠ '+(zh?'数据源读取异常（仅管理层可见）':'Sumber data bermasalah (hanya manajemen)')+'</b>'+hl.map(function(x){return '<div style="margin-top:4px">'+esc(x.src)+' · '+(zh?'正在用 ':'pakai cadangan ')+esc(x.bak)+(zh?' 的备份':'')+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'通常是表格改了名字或格式，把这条截图发给 Claude 处理':'Biasanya karena nama/format sheet berubah')+'</div></div>';
+ var ui=(S.boot&&S.boot.upIss)||[];if(ui.length)h+='<div class="card" style="background:#fff8e1;border-color:#f5d97a;padding:10px 14px;font-size:13px"><b>'+(zh?'近 7 天照片上传卡住（仅管理层可见）':'Upload foto macet 7 hari terakhir (hanya manajemen)')+'</b>'+ui.map(function(x){return '<div style="margin-top:4px">'+md(x.d)+' · '+esc(x.by)+' · '+esc(x.sn)+' · '+(zh?'等了 '+Math.ceil(x.w/60)+' 分钟':Math.ceil(x.w/60)+' menit')+' · '+(x.ok?(zh?'后来传完了':'akhirnya terkirim'):'<span style="color:#b3261e">'+(zh?'没传完':'belum terkirim')+'</span>')+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'同一家店反复出现，多半是店里信号差，可以考虑装 Wi-Fi':'Kalau toko yang sama sering muncul, kemungkinan sinyal toko lemah')+'</div></div>';var hl=(S.boot&&S.boot.health)||[];if(hl.length)h+='<div class="card" style="background:#fdecea;border-color:#f3c1bd;padding:10px 14px;font-size:13px"><b style="color:#b3261e">⚠ '+(zh?'数据源读取异常（仅管理层可见）':'Sumber data bermasalah (hanya manajemen)')+'</b>'+hl.map(function(x){return '<div style="margin-top:4px">'+esc(x.src)+' · '+(zh?'正在用 ':'pakai cadangan ')+esc(x.bak)+(zh?' 的备份':'')+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'通常是表格改了名字或格式，把这条截图发给 Claude 处理':'Biasanya karena nama/format sheet berubah')+'</div></div>';
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6;padding:10px 14px;cursor:pointer" onclick="resume()"><b>'+(zh?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc((d.storeName||d.storeId||'')+' · '+(d.type==='STD'?t('std'):t('spot')))+' · <u>'+(zh?'继续':'Lanjutkan')+' ›</u></div></div>';
  var hasChk=(S.user.entries||[]).length>0,soon=zh?'敬请期待':'Segera hadir';
 
@@ -556,7 +570,7 @@ function std_s9(){var v=S.v,s=v.sales=v.sales||{};v.fix=v.fix||{};var h='<h2>'+t
   dl.map(function(nm,i){return '<input placeholder="'+t('dutyName')+' '+(i+1)+'" value="'+esc(nm)+'" oninput="S.v.dutyNames['+i+']=this.value;saveDraft()">'}).join('')+'</div>';
  return h+nav(stepMiss(9).length===0);}
 function std_s10(){var v=S.v;var h='<h2>'+t('checkout')+'</h2><div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';
- var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
+ var n=pending();h+=upBox();
  h+='<button id="subBtn" class="btn" '+((v.endSelfieIds||[]).length&&!n?'':'disabled')+' onclick="submitStd()">'+t('submit')+'</button><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button>';return h;}
 function mins(){return (Date.now()+OFF-new Date(S.v.startTime.replace(' ','T')))/60000;}
 function submitStd(force){var v=S.v;if(pending())return toast(t('waitUp'));if(!force&&mins()<30){ask(t('minTime'),function(){submitStd(1)});return;}
@@ -599,7 +613,7 @@ function spotGrid(){var v=S.v;return '<div class="card"><div class="small muted"
 function spotGo(d){S.v.idx=Math.max(0,Math.min(S.v.items.length,S.v.idx+d));saveDraft();render();window.scrollTo(0,0);}
 function spotEnd(){var v=S.v,miss=v.items.map(function(x,k){return k}).filter(function(k){return !spotDone(k)}),same=v.items.filter(function(i){return Number(i.actual)===Number(i.pos)}).length;
  var h='<div class="card"><h2>'+same+'/'+v.items.length+' '+t('spotDone')+'</h2>'+v.items.map(function(i,k){var d=Number(i.actual)-Number(i.pos);return d?'<div class="small warn" onclick="S.v.idx='+k+';render()">'+esc(i.name)+': '+(d>0?'+':'')+d+'</div>':''}).join('')+'</div>';
- h+='<div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
+ h+='<div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';var n=pending();h+=upBox();
  if(miss.length)h='<div class="card" style="border:2px solid #b3261e"><b class="warn">'+(L==='zh'?'还有 '+miss.length+' 个 SKU 没填完，填完才能提交：':'Masih '+miss.length+' SKU belum lengkap, lengkapi dulu sebelum kirim:')+'</b>'+miss.map(function(k){return '<div class="opt" onclick="S.v.idx='+k+';saveDraft();render()"><span>'+(k+1)+'. '+esc(v.items[k].name)+'</span><span>›</span></div>'}).join('')+'</div>'+h;
  return spotGrid()+h+'<button id="subBtn" class="btn" '+((v.endSelfieIds||[]).length&&!n&&!miss.length?'':'disabled')+' onclick="submitSpot()">'+t('submit')+'</button><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button>';}
 function submitSpot(force){var v=S.v;if(v.items.some(function(x,k){return !spotDone(k)}))return toast(L==='zh'?'还有 SKU 没填完':'Masih ada SKU belum lengkap');if(pending())return toast(t('waitUp'));if(!force&&mins()<20){ask(t('minTimeSpot'),function(){submitSpot(1)});return;}
