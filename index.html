@@ -27,6 +27,14 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .missHL{outline:3px solid #b3261e!important;outline-offset:2px;border-radius:12px}
 #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;display:none;z-index:9}
 .sync{font-size:12px}
+.grid9{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:1fr;gap:8px;margin:12px 0}
+.t9{background:#fff;border:1px solid #e6e6e6;border-radius:14px;padding:12px 8px 10px;text-align:center;cursor:pointer;min-height:104px;box-sizing:border-box;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.t9:active{transform:scale(.98)}
+.t9 .ic{width:42px;height:42px;margin:0 auto 7px;border-radius:12px;background:#FDCD17;color:#111;display:flex;align-items:center;justify-content:center}
+.t9 .nm{font-weight:700;font-size:14px;color:#111;line-height:1.2}
+.t9 .sb{font-size:11px;color:#777;margin-top:3px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t9.soon{background:#f6f6f6;border-style:dashed;box-shadow:none}
+.t9.soon .ic{background:#e9e9e9;color:#aaa}.t9.soon .nm{color:#9a9a9a}.t9.soon .sb{color:#b0b0b0}
 .back{display:inline-flex;align-items:center;gap:4px;padding:6px 12px 6px 9px;margin:0 0 10px;border-radius:999px;background:#f1f1f1;color:#111;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer}
 .back:active{background:#e4e4e4}
 .more{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;padding:11px;border:1px solid #ddd;border-radius:12px;background:#fff;color:#333;font-size:14px;font-weight:600;text-align:center;cursor:pointer}
@@ -233,11 +241,13 @@ function profileCard(){var u=S.user||{},m=(S.boot&&S.boot.me)||{},nm=titleCase(m
  +'<div style="height:3px;background:#FDCD17;position:absolute;left:0;right:0;bottom:0"></div></div>';}
 function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.boot.pc)||{},tiles=[];
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6;padding:10px 14px;cursor:pointer" onclick="resume()"><b>'+(zh?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc((d.storeName||d.storeId||'')+' · '+(d.type==='STD'?t('std'):t('spot')))+' · <u>'+(zh?'继续':'Lanjutkan')+' ›</u></div></div>';
- var core=!!((S.boot&&S.boot.me)||{}).core,hasChk=(S.user.entries||[]).length>0;
- tiles.push(['check','📋',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Cek stok'):(zh?'门店巡检':'Inspeksi toko'),hasChk]);
- tiles.push(['fin','💰',zh?'财务':'Keuangan',pc.has?(pc.bal!=null?(zh?'备用金 ':'Petty cash ')+rp(pc.bal):(zh?'备用金':'Petty cash')):(zh?'暂无备用金记录':'Belum ada petty cash'),!!pc.has]);
- if(core)tiles.forEach(function(x){x[4]=true});else tiles=tiles.filter(function(x){return x[4]});
- h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0">'+tiles.map(function(x){return '<div class="card" style="margin:0;min-height:96px;cursor:pointer" onclick="openMod(\''+x[0]+'\')"><div style="font-size:24px">'+x[1]+'</div><div style="font-weight:700;font-size:16px;margin-top:4px">'+x[2]+'</div><div class="small muted" style="margin-top:2px">'+esc(x[3])+'</div></div>';}).join('')+'</div>';
+ var hasChk=(S.user.entries||[]).length>0,soon=zh?'敬请期待':'Segera hadir';
+ var I={ops:'M3 9l1.5-5h15L21 9M3 9h18M4 9v11h16V9M9 20v-6h6v6',sales:'M3 17l6-6 4 4 8-8M15 7h6v6',check:'M9 3h6v3H9zM7 4.5H5V21h14V4.5h-2M9 13.5l2 2 4-4',fin:'M3 7h15a3 3 0 013 3v8a2 2 0 01-2 2H3zM3 7l11-4v4M16 14h2',hr:'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3 2.7-5 6-5s6 2 6 5M16 5a3 3 0 010 6M18 15c2 .6 3 2.2 3 5',exp:'M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11zM12 7v6M9 10h6',fix:'M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.5 2.5-2.5-.5-.5-2.5z',school:'M2 9l10-5 10 5-10 5zM6 11v5c3 2 9 2 12 0v-5M22 9v6',info:'M3 11v2a1 1 0 001 1h3l6 4V6L7 10H4a1 1 0 00-1 1zM17 9a4 4 0 010 6'};
+ var finSub=pc.has&&pc.bal!=null?(zh?'备用金 ':'Petty cash ')+rp(pc.bal):(zh?'备用金':'Petty cash');
+ tiles=[['ops',zh?'门店运营':'Operasional Toko'],['sales',zh?'销售':'Penjualan'],['check',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Cek stok'):(zh?'门店巡检':'Inspeksi toko')],
+  ['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM'],['exp',zh?'拓展':'Ekspansi'],['fix',zh?'报修':'Perbaikan'],['school','LK School'],['info',zh?'公告':'Info']];
+ h+='<div class="grid9">'+tiles.map(function(x){var on=!!x[2],ic='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+I[x[0]]+'"/></svg>';
+  return '<div class="t9'+(on?'':' soon')+'" onclick="'+(on?'openMod(\''+x[0]+'\')':'toast(\''+soon+'\')')+'"><div class="ic">'+ic+'</div><div class="nm">'+esc(x[1])+'</div><div class="sb">'+esc(on?x[2]:soon)+'</div></div>';}).join('')+'</div>';
  return h+a2hsMini()+'<div style="text-align:center;margin:14px 0 4px"><a href="#" class="small" style="color:#555" onclick="S.myPw=1;render();return false">🔑 '+(zh?'修改密码':'Ganti password')+'</a></div><button class="btn btn2" onclick="logout()">'+t('logout')+'</button>';}
 function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
@@ -246,7 +256,7 @@ function offToast(){toast(L==='zh'?'你的岗位暂时用不到这个功能':'Fi
 function scCheckMod(){var d=loadDraft(),h='<h2 style="margin:4px 0 10px">📋 '+(L==='zh'?'门店检查':'Cek Toko')+'</h2><div class="guide" style="border-left-color:#b3261e;background:#fdecea"><b>⚠ '+t('honestyTitle')+'</b><br>'+t('honesty')+'</div>';
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+(L==='zh'?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc(d.storeId+' '+d.storeName)+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div>';
  var core=!!((S.boot&&S.boot.me)||{}).core;
- [['STD','📋',t('std'),t('stdsub')],['SPOT','📦',t('spot'),t('spotsub')]].forEach(function(x){var on=(S.user.entries||[]).indexOf(x[0])>=0;if(!on&&!core)return;h+='<div class="card'+(on?'':' off')+'" style="cursor:pointer" onclick="'+(on?'newVisit(\''+x[0]+'\')':'offToast()')+'"><h3>'+x[1]+' '+x[2]+'</h3><div class="muted">'+x[3]+'</div></div>';});
+ [['STD','📋',t('std'),t('stdsub')],['SPOT','📦',t('spot'),t('spotsub')]].forEach(function(x){var on=(S.user.entries||[]).indexOf(x[0])>=0;h+='<div class="card'+(on?'':' off')+'" style="cursor:pointer" onclick="'+(on?'newVisit(\''+x[0]+'\')':'offToast()')+'"><h3>'+x[1]+' '+x[2]+'</h3><div class="muted">'+x[3]+'</div></div>';});
  return h;}
 function loadFin(who){if(!who)S.finLoading=1;S.finWhoC=S.finWhoC||{};run('getPettyCash',who?[S.token,who]:[S.token],function(r){if(who){S.finWhoC[who]=r;if(S.finWhoName===who)S.finWho=r;}else{S.finLoading=0;S.fin=r;S.finErr=0;try{localStorage.setItem(finKey(),JSON.stringify(r));}catch(e){}}if(S.mod==='fin')render();},function(){if(!who)S.finLoading=0;if(S.mod==='fin'&&!(who?S.finWho:S.fin)){S.finErr=1;render();}});}
 function pLabel(p){var zh=L==='zh',m=/^(\d{4})(\d{2})$/.exec(p),mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];if(m)return zh?m[1]+'年'+Number(m[2])+'月':mn[Number(m[2])-1]+' '+m[1];if(/26H1/.test(p))return zh?'2026 上半年':'Jan–Jun 2026';var y=/(\d{4})/.exec(p);return y?y[1]:p;}
