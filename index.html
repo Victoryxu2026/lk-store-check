@@ -112,8 +112,9 @@ var API='https://script.google.com/macros/s/AKfycbxPxspsZC9VBAmycgwoYaAdzPRe_t3L
 try{fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'warm',args:[]})}).catch(function(){});}catch(e){}
 function run(fn,args,ok,fail){var onFail=function(e){if(String(e).indexOf('SESSION_EXPIRED')>=0){toast(t('expired'));logout();return;}(fail||function(){toast(t('err'))})(e);};
  if(window.google&&google.script&&google.script.run){var r=google.script.run.withSuccessHandler(ok).withFailureHandler(onFail);r[fn].apply(r,args);return;}
- fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:args})})
-  .then(function(x){return x.json()}).then(function(j){if(j.err)onFail(j.err);else ok(j.data);}).catch(onFail);}
+ var ac=window.AbortController?new AbortController():null,tm=ac?setTimeout(function(){ac.abort()},fn==='uploadFile'?90000:60000):0;
+ fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:args}),signal:ac?ac.signal:undefined})
+  .then(function(x){return x.json()}).then(function(j){clearTimeout(tm);if(j.err)onFail(j.err);else ok(j.data);}).catch(function(e){clearTimeout(tm);onFail(e);});}
 var OFF=0;function nowStr(){var d=new Date(Date.now()+OFF);function p(n){return(n<10?'0':'')+n}return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
 
 // ================= media store (IndexedDB) + upload queue =================
@@ -125,7 +126,7 @@ function mdel(id){idb(function(db){db.transaction('m','readwrite').objectStore('
 var busy=false;
 function pump(){if(busy||!S.v||!S.token||!S.v.visitId){setSync();return;}var ids=Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url});setSync();if(!ids.length)return;busy=true;var id=ids[0],m=S.v.media[id];
  mget(id,function(data){if(!data){delete S.v.media[id];busy=false;saveDraft();return pump();}
-  run('uploadFile',[S.token,S.v.visitId,m.name,m.mime,data.split(',')[1]],function(res){S.v.media[id].url=res.url;mdel(id);busy=false;saveDraft();pump();},
+  run('uploadFile',[S.token,S.v.visitId,m.name,m.mime,data.split(',')[1]],function(res){S.v.media[id].url=res.url;mdel(id);busy=false;saveDraft();if(document.getElementById('subBtn'))render();pump();},
    function(){busy=false;setTimeout(pump,15000);});});}
 setInterval(pump,20000);
 function pending(){return S.v?Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url}).length:0;}
@@ -556,7 +557,7 @@ function std_s9(){var v=S.v,s=v.sales=v.sales||{};v.fix=v.fix||{};var h='<h2>'+t
  return h+nav(stepMiss(9).length===0);}
 function std_s10(){var v=S.v;var h='<h2>'+t('checkout')+'</h2><div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';
  var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
- h+='<button class="btn" '+((v.endSelfieIds||[]).length&&!n?'':'disabled')+' onclick="submitStd()">'+t('submit')+'</button><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button>';return h;}
+ h+='<button id="subBtn" class="btn" '+((v.endSelfieIds||[]).length&&!n?'':'disabled')+' onclick="submitStd()">'+t('submit')+'</button><button class="btn btn2" onclick="go(-1)">'+t('back')+'</button>';return h;}
 function mins(){return (Date.now()+OFF-new Date(S.v.startTime.replace(' ','T')))/60000;}
 function submitStd(force){var v=S.v;if(pending())return toast(t('waitUp'));if(!force&&mins()<30){ask(t('minTime'),function(){submitStd(1)});return;}
  var ans={};Object.keys(v.answers).forEach(function(k){if(k.indexOf('fix_')===0)return;var a=v.answers[k];ans[k]={level:a.level,note:(a.skipPhoto?'['+(item(k)?f(item(k),'skip'):'skip')+'] ':'')+(a.note||''),red:!!a.red,photos:(a.photoIds||[]).concat(a.level!=='100'?(a.badIds||[]):[]).map(murl)};});
@@ -600,7 +601,7 @@ function spotEnd(){var v=S.v,miss=v.items.map(function(x,k){return k}).filter(fu
  var h='<div class="card"><h2>'+same+'/'+v.items.length+' '+t('spotDone')+'</h2>'+v.items.map(function(i,k){var d=Number(i.actual)-Number(i.pos);return d?'<div class="small warn" onclick="S.v.idx='+k+';render()">'+esc(i.name)+': '+(d>0?'+':'')+d+'</div>':''}).join('')+'</div>';
  h+='<div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';var n=pending();if(n)h+='<div class="card warn">'+t('waitUp')+' ('+n+')</div>';
  if(miss.length)h='<div class="card" style="border:2px solid #b3261e"><b class="warn">'+(L==='zh'?'还有 '+miss.length+' 个 SKU 没填完，填完才能提交：':'Masih '+miss.length+' SKU belum lengkap, lengkapi dulu sebelum kirim:')+'</b>'+miss.map(function(k){return '<div class="opt" onclick="S.v.idx='+k+';saveDraft();render()"><span>'+(k+1)+'. '+esc(v.items[k].name)+'</span><span>›</span></div>'}).join('')+'</div>'+h;
- return spotGrid()+h+'<button class="btn" '+((v.endSelfieIds||[]).length&&!n&&!miss.length?'':'disabled')+' onclick="submitSpot()">'+t('submit')+'</button><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button>';}
+ return spotGrid()+h+'<button id="subBtn" class="btn" '+((v.endSelfieIds||[]).length&&!n&&!miss.length?'':'disabled')+' onclick="submitSpot()">'+t('submit')+'</button><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button>';}
 function submitSpot(force){var v=S.v;if(v.items.some(function(x,k){return !spotDone(k)}))return toast(L==='zh'?'还有 SKU 没填完':'Masih ada SKU belum lengkap');if(pending())return toast(t('waitUp'));if(!force&&mins()<20){ask(t('minTimeSpot'),function(){submitSpot(1)});return;}
  var p={visitId:v.visitId,storeId:v.storeId,startTime:v.startTime,startDist:v.startDist,startGeo:v.startGeo||null,endGeo:v.endGeo||null,startSelfie:(v.startSelfieIds||[]).map(murl).join('\n'),endSelfie:(v.endSelfieIds||[]).map(murl).join('\n'),
   items:v.items.map(function(i,k){return {sku:i.sku,name:i.name,shared:i.shared,actual:i.actual,pos:i.pos,recount:i.recount||'',note:i.note||'',goodsPhoto:((v.answers['g_'+k]||{}).photoIds||[]).map(murl).join('\n'),posPhoto:((v.answers['p_'+k]||{}).photoIds||[]).map(murl).join('\n')}})};
