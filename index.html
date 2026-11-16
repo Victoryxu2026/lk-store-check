@@ -155,7 +155,12 @@ function tagLabel(k){var zh=L==='zh',m={selfie:zh?'签到自拍':'Selfie check-i
  if(m[k])return m[k];if(k.indexOf('fix_')===0)return (zh?'整改 ':'Perbaikan ')+k.slice(4);if(k.indexOf('bad_')===0)return (zh?'问题处 ':'Masalah ')+tagLabel(k.slice(4));
  var g=/^([gp])_(\d+)$/.exec(k);if(g&&S.v&&S.v.items){var it=S.v.items[+g[2]]||{};return (g[1]==='g'?(zh?'货品 ':'Barang '):'LK POS ')+(it.sku||'')+' '+(it.name||'');}
  var it=S.boot&&S.boot.items?S.boot.items.find(function(i){return i.code===k}):null;return it?k+' '+f(it,'title'):k;}
-function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在定位…':'Mencari lokasi…');if(g)return '📍 '+(L==='zh'?'已定位，精度约 ':'Lokasi tercatat, akurasi ±')+g.acc+' m';
+function distTo(st,g){var R=6371000,r=Math.PI/180,x=Math.sin((g.lat-st.lat)*r/2),y=Math.sin((g.lng-st.lng)*r/2),h=x*x+Math.cos(st.lat*r)*Math.cos(g.lat*r)*y*y;return Math.round(2*R*Math.asin(Math.sqrt(h)));}
+function fmtD(d){return d<1000?d+' m':(d<100000?(Math.round(d/100)/10)+' km':Math.round(d/1000)+' km');}
+function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在定位…':'Mencari lokasi…');if(g){var st=S.v&&((S.boot&&S.boot.stores)||[]).find(function(x){return x.id===S.v.storeId}),d=st&&st.lat&&st.lng?distTo(st,g):null,zh=L==='zh';
+  if(d===null)return '📍 '+(zh?'已定位，精度约 ':'Lokasi tercatat, akurasi ±')+g.acc+' m';
+  if(d<=500)return '📍 '+(zh?'已定位 · 离门店约 ':'Lokasi tercatat · jarak ke toko ±')+fmtD(d);
+  return '<span style="color:#b3261e">⚠️ '+(S.v.visitId?(zh?'离门店约 '+fmtD(d)+'，会记为「离门店较远」。（只做记录，可以继续）':'Jarak ke toko ±'+fmtD(d)+', akan dicatat "jauh dari toko". (Hanya dicatat, tetap bisa lanjut)'):(zh?'离 '+esc(st.name)+' 约 '+fmtD(d)+'，请确认门店没选错。（只做记录，可以继续）':'Jarak ke '+esc(st.name)+' ±'+fmtD(d)+'. Pastikan toko yang dipilih sudah benar. (Hanya dicatat, tetap bisa lanjut)'))+'</span>';}
  return '⚠️ '+(L==='zh'?'没拿到定位。请允许浏览器使用位置，然后 ':'Lokasi belum terbaca. Izinkan akses lokasi di browser, lalu ')+'<a href="#" onclick="askGeo();return false">'+(L==='zh'?'点这里重试':'coba lagi')+'</a>';}
 function askGeo(){S.geoBusy=1;render();getGeo(function(g){S.geoBusy=0;if(g){S.lastGeo=g;S.lastGeoAt=Date.now();}render();});}
 function takePhoto(tag,front,cb,album){var inp=document.createElement('input');inp.type='file';inp.accept='image/*';if(!album)inp.setAttribute('capture',front?'user':'environment');
