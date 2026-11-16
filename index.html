@@ -257,6 +257,10 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
  var finSub=zh?'备用金':'Petty cash';
  tiles=[['ops',zh?'门店运营':'Operasional Toko'],['sales',zh?'销售':'Penjualan'],['check',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Cek stok'):(zh?'门店巡检':'Inspeksi toko')],
   ['goods',zh?'货品':'Produk & Stok'],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM'],['exp',zh?'拓展':'Ekspansi'],['fix',zh?'报修':'Perbaikan'],['school','LK School']];
+ var core=!!((S.boot&&S.boot.me)||{}).core;
+ // 门店人员：只显示自己用得到的格子（未上线的、用不到的都不显示）；核心团队：全部显示，未上线的灰色
+ if(!core)tiles=tiles.filter(function(x){return (x[0]==='check'&&hasChk)||(x[0]==='fin'&&pc.has);});
+ if(!tiles.length)return h+'<div class="card muted" style="text-align:center;margin-top:12px">'+(zh?'目前还没有需要你操作的功能，有新功能会在这里出现。':'Belum ada fitur untukmu saat ini. Fitur baru akan muncul di sini.')+'</div>'+a2hsMini();
  h+='<div class="grid9">'+tiles.map(function(x){var on=!!x[2],ic='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+ICO[x[0]]+'"/></svg>';
   return '<div class="t9'+(on?'':' soon')+'" onclick="'+(on?'openMod(\''+x[0]+'\')':'toast(\''+soon+'\')')+'"><div class="ic">'+ic+'</div><div class="nm">'+esc(x[1])+'</div></div>';}).join('')+'</div>';
  return h+a2hsMini();}
@@ -267,7 +271,7 @@ function offToast(){toast(L==='zh'?'你的岗位暂时用不到这个功能':'Fi
 function scCheckMod(){var d=loadDraft(),h='<h2 style="margin:4px 0 10px">'+(L==='zh'?'门店检查':'Cek Toko')+'</h2><div class="guide" style="border-left-color:#b3261e;background:#fdecea"><b>⚠ '+t('honestyTitle')+'</b><br>'+t('honesty')+'</div>';
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+(L==='zh'?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc(d.storeId+' '+d.storeName)+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div>';
  var core=!!((S.boot&&S.boot.me)||{}).core;
- [['STD','check',t('std'),t('stdsub')],['SPOT','scan',t('spot'),t('spotsub')]].forEach(function(x){var on=(S.user.entries||[]).indexOf(x[0])>=0;h+=ecard(on,on?'newVisit(\''+x[0]+'\')':'offToast()',x[1],x[2],x[3]);});
+ [['STD','check',t('std'),t('stdsub')],['SPOT','scan',t('spot'),t('spotsub')]].forEach(function(x){var on=(S.user.entries||[]).indexOf(x[0])>=0;if(!on&&!core)return;h+=ecard(on,on?'newVisit(\''+x[0]+'\')':'offToast()',x[1],x[2],x[3]);});
  return h;}
 function loadFin(who){if(!who)S.finLoading=1;S.finWhoC=S.finWhoC||{};run('getPettyCash',who?[S.token,who]:[S.token],function(r){if(who){S.finWhoC[who]=r;if(S.finWhoName===who)S.finWho=r;}else{S.finLoading=0;S.fin=r;S.finErr=0;try{localStorage.setItem(finKey(),JSON.stringify(r));}catch(e){}}if(S.mod==='fin')render();},function(){if(!who)S.finLoading=0;if(S.mod==='fin'&&!(who?S.finWho:S.fin)){S.finErr=1;render();}});}
 function pLabel(p){var zh=L==='zh',m=/^(\d{4})(\d{2})$/.exec(p),mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];if(m)return zh?m[1]+'年'+Number(m[2])+'月':mn[Number(m[2])-1]+' '+m[1];if(/26H1/.test(p))return zh?'2026 上半年':'Jan–Jun 2026';var y=/(\d{4})/.exec(p);return y?y[1]:p;}
@@ -318,7 +322,6 @@ function scFin(){var zh=L==='zh',f=S.fin,pc=(S.boot&&S.boot.pc)||{},h='';
  h+=card('mine','fin',zh?'我的备用金':'Petty cash saya',bal!=null?(zh?'余额 ':'Saldo ')+rp(bal):(zh?'暂无记录':'Belum ada catatan'));
  var core=!!((S.boot&&S.boot.me)||{}).core;
  if(canAll)h+=card('all','user',zh?'全员备用金':'Petty cash semua staf',(n||0)+(zh?' 人 · 按余额排序':' orang · urut saldo'));
- else if(core)h+=ecard(0,'offToast()','user',zh?'全员备用金':'Petty cash semua staf',zh?'仅 Finance 可看':'Khusus Finance');
  return h;}
 function pcChk(){var zh=L==='zh',c=S.pcChk;if(!c){if(!S.pcChkIng){S.pcChkIng=1;run('pcCheck',[S.token],function(r){S.pcChk=r;if(S.mod==='fin')render();},function(){S.pcChk={err:1};});}return '';}
  if(c.err)return '';var bad=c.bad||[];return '<div class="small" style="margin:0 0 10px;padding:8px 10px;border-radius:10px;background:'+(bad.length?'#fdecea':'#e8f5e9')+'">'+(bad.length?'⚠ '+(zh?'逐笔明细与汇总表对不上：':'Rincian tidak cocok dengan ringkasan: ')+'<b>'+bad.map(esc).join('、')+'</b>'+(zh?'（这些人先显示月度汇总，请 Finance 核对）':' (sementara tampil ringkasan bulanan; mohon Finance cek)'):'✓ '+(zh?'全部 '+c.good+' 人的逐笔明细和汇总表一致':'Rincian '+c.good+' orang cocok dengan ringkasan'))+(c.orphan&&c.orphan.length?'<br>'+(zh?'明细里有、汇总表里没有的名字：':'Nama di rincian tapi tidak di ringkasan: ')+c.orphan.map(esc).join('、'):'')+'</div>';}
