@@ -215,7 +215,8 @@ function render(){var a=document.getElementById('app');setSync();
   if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';return;}}
  if(!S.v){if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
  if(S.v.type==='STD')return a.innerHTML=scStd();
- a.innerHTML=scSpot();window.scrollTo(0,0);}
+ var sk=S.v.visitId+'|'+S.v.idx+'|'+(S.v.guideSeen?1:0);a.innerHTML=scSpot();if(sk!==SPOT_KEY){SPOT_KEY=sk;window.scrollTo(0,0);}}
+var SPOT_KEY='';
 function standalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
 var A2HS_EVT=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();A2HS_EVT=e;try{render();}catch(x){}});
 function a2hsInstall(){if(!A2HS_EVT)return;A2HS_EVT.prompt();A2HS_EVT.userChoice.then(function(){A2HS_EVT=null;render();});}
@@ -650,8 +651,7 @@ function scSpot(){var v=S.v;if(!v.visitId)return scCheckin();
  h+='<div class="card" style="border-left:5px solid #2e7d32"><h3>'+t('secA')+'</h3>'+ex('goods')+photoBlock('g_'+v.idx,t('goods'),1,false,(v.answers['g_'+v.idx]||{}).photoIds)+'<label class="small" style="display:block;margin-top:8px">'+t('actual')+'</label>'+num('actual',it.actual,1)+'</div>';
  h+='<div class="card" style="border-left:5px solid #1565c0"><h3>'+t('secB')+'</h3>'+ex('pos')+photoBlock('p_'+v.idx,t('posphoto'),1,false,(v.answers['p_'+v.idx]||{}).photoIds)+'<label class="small" style="display:block;margin-top:8px">'+t('posqty')+'</label>'+num('pos',it.pos,1)+'</div>';
  if(it.actual!==''&&it.actual!=null&&it.pos!==''&&it.pos!=null){var d=Number(it.actual)-Number(it.pos);h+='<div class="card"><div class="'+(d?'warn':'ok')+'" style="font-size:17px"><b>'+t('diff')+'（A − B）: '+(d>0?'+':'')+d+'</b></div>';
-  if(d){h+='<label class="small" style="display:block;margin:8px 0 4px">'+(L==='zh'?'5. 差异原因（选一个）':'5. Penyebab selisih (pilih satu)')+'</label>'+spotRs(it).map(function(o,k){return '<div class="opt'+(it.reason===o[1]?' sel':'')+'" onclick="spotSetR('+k+')"><span>'+tt(o)+'</span><span>'+(it.reason===o[1]?'✓':'')+'</span></div>';}).join('');
-   if(it.reason===SPOT_OTHER)h+='<textarea placeholder="'+(L==='zh'?'写一下是什么原因、谁在跟进（必填）':'Tulis penyebabnya & siapa yang menindaklanjuti (wajib)')+'" oninput="S.v.items['+v.idx+'].note=this.value;saveDraft()">'+esc(it.note||'')+'</textarea>';}
+  if(d){h+='<label class="small" style="display:block;margin:8px 0 4px">'+(L==='zh'?'5. 差异原因（选一个）':'5. Penyebab selisih (pilih satu)')+'</label>'+spotRs(it).map(function(o,k){return '<div class="opt'+(it.reason===o[1]?' sel':'')+'" onclick="spotSetR('+k+')"><span>'+tt(o)+'</span><span>'+(it.reason===o[1]?'✓':'')+'</span></div>';}).join('');}
   h+='</div>';}
  var g=(v.answers['g_'+v.idx]||{}).photoIds||[],p=(v.answers['p_'+v.idx]||{}).photoIds||[];
   return h+'<div class="row"><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button><button class="btn" onclick="spotGo(1)">'+t('next')+'</button></div>';}
@@ -662,11 +662,11 @@ function spotGuide(){var zh=L==='zh',n=(S.v.items||[]).length,im=function(src,w)
  +step('#9e9e9e',zh?'② 打开 LK POS 查库存（不用拍）':'② Buka cek stok LK POS (tidak difoto)',zh?'Inventory Management → 第一个「Inventory inquiry」→ 搜索这个产品。':'Inventory Management → menu pertama "Inventory inquiry" → cari produk ini.',im('img/ex-pos-menu.jpg',60))
  +step('#1565c0',zh?'③ 拍 POS 这一行（要拍）':'③ Foto baris di POS (wajib)',zh?'拍到产品名、条码和 In stock → 填 POS 数量。':'Nama produk, barcode & In stock terlihat → isi angka POS.',im('img/ex-pos.jpg',100))
  +'</div><button class="btn" onclick="S.v.guideSeen=1;saveDraft();render();window.scrollTo(0,0)">'+(zh?'我知道了，开始抽检':'Mengerti, mulai')+'</button>';}
-var SPOT_LESS=[['Terjual tapi belum diinput di POS','卖了没录单'],['Salah input penjualan (produk atau jumlah)','销售单录错（商品或数量）'],['Sudah dicari tapi tidak ketemu (kemungkinan hilang)','找遍了还是找不到（疑似丢失）'],['Sudah ditransfer ke toko lain, belum diinput keluar di sistem','已调拨到别的门店，系统还没录出库'],['Sudah dikembalikan ke gudang, belum diinput keluar di sistem','已退回仓库，系统还没录出库'],['Lainnya, perlu ditindaklanjuti','其他，需要跟进']],
-SPOT_MORE=[['Salah input penjualan (produk atau jumlah)','销售单录错（商品或数量）'],['Kiriman dari gudang sudah sampai, belum klik terima di sistem','仓库补货已到店，系统里没点接收'],['Transfer dari toko lain sudah sampai, belum klik terima di sistem','别的门店调拨来的货已到店，系统里没点接收'],['Lainnya, perlu ditindaklanjuti','其他，需要跟进']],SPOT_OTHER='其他，需要跟进';
+var SPOT_LESS=[['Terjual tapi belum diinput di POS','卖了没录单'],['Salah input penjualan (produk atau jumlah)','销售单录错（商品或数量）'],['Sudah dicari tapi tidak ketemu (kemungkinan hilang)','找遍了还是找不到（疑似丢失）'],['Sudah ditransfer ke toko lain, belum diinput keluar di sistem','已调拨到别的门店，系统还没录出库'],['Sudah dikembalikan ke gudang, belum diinput keluar di sistem','已退回仓库，系统还没录出库'],['Penyebab tidak diketahui','原因不明']],
+SPOT_MORE=[['Salah input penjualan (produk atau jumlah)','销售单录错（商品或数量）'],['Kiriman dari gudang sudah sampai, belum klik terima di sistem','仓库补货已到店，系统里没点接收'],['Transfer dari toko lain sudah sampai, belum klik terima di sistem','别的门店调拨来的货已到店，系统里没点接收'],['Penyebab tidak diketahui','原因不明']];
 function spotRs(i){return Number(i.actual)<Number(i.pos)?SPOT_LESS:SPOT_MORE;}
-function spotWhy(i){if(!i.reason)return false;if(!spotRs(i).some(function(o){return o[1]===i.reason}))return false;return i.reason!==SPOT_OTHER||!!(i.note||'').trim();}
-function spotNote(i){return Number(i.actual)===Number(i.pos)?'':(i.reason===SPOT_OTHER?i.reason+'：'+(i.note||'').trim():(i.reason||''));}
+function spotWhy(i){if(!i.reason)return false;if(!spotRs(i).some(function(o){return o[1]===i.reason}))return false;return true;}
+function spotNote(i){return Number(i.actual)===Number(i.pos)?'':(i.reason||'');}
 function spotNoteTr(n){if(L==='zh'||!n)return n;var a=SPOT_LESS.concat(SPOT_MORE);for(var k=0;k<a.length;k++){if(n.indexOf(a[k][1])===0)return a[k][0]+n.slice(a[k][1].length).replace(/^：/,': ');}return n;}
 function spotSetR(k){var i=S.v.items[S.v.idx];i.reason=spotRs(i)[k][1];saveDraft();render();}
 function spotDone(k){var v=S.v,i=v.items[k],g=(v.answers['g_'+k]||{}).photoIds||[],p=(v.answers['p_'+k]||{}).photoIds||[];return !!(g.length&&p.length&&i.actual!==''&&i.actual!=null&&i.pos!==''&&i.pos!=null&&(Number(i.actual)===Number(i.pos)||spotWhy(i)));}
