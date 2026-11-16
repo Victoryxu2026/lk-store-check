@@ -214,8 +214,8 @@ function render(){var a=document.getElementById('app');setSync();if(!S.v||S.v.ty
   run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;S.bootStale=0;if(b.entries){S.user.entries=b.entries;try{var ss=sessStore(),o=JSON.parse(ss.getItem('lk_sess')||'null');if(o){o.user.entries=b.entries;ss.setItem('lk_sess',JSON.stringify(o));}}catch(e){}}OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();try{localStorage.setItem(bk,JSON.stringify(b));}catch(e){}if(!S.v)render();},function(){S.booting=0;if(!S.bootStale)toast(t('err'));});}
   if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';return;}}
  if(!S.v){if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
- if(S.v.type==='STD')return a.innerHTML=scStd();
- var sk=S.v.visitId+'|'+S.v.idx+'|'+(S.v.guideSeen?1:0);a.innerHTML=scSpot();if(sk!==SPOT_KEY){SPOT_KEY=sk;window.scrollTo(0,0);}}
+ if(S.v.type==='STD')return a.innerHTML=chkBack()+scStd();
+ var sk=S.v.visitId+'|'+S.v.idx+'|'+(S.v.guideSeen?1:0);a.innerHTML=chkBack()+scSpot();if(sk!==SPOT_KEY){SPOT_KEY=sk;window.scrollTo(0,0);}}
 var SPOT_KEY='';
 function standalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
 var A2HS_EVT=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();A2HS_EVT=e;try{render();}catch(x){}});
@@ -453,10 +453,11 @@ function flagTxt(f){var id={'时长不足':'Durasi kurang','签到定位偏差':
 function ask(msg,ok,okLbl){var zh=L==='zh',m=document.createElement('div');m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px';
  m.innerHTML='<div style="background:#fff;border-radius:14px;padding:18px;max-width:360px;width:100%"><div style="font-size:15px;line-height:1.5;margin-bottom:14px">'+esc(msg)+'</div><div class="row"><button class="btn btn2" id="askNo">'+(zh?'取消':'Batal')+'</button><button class="btn" id="askOk">'+(okLbl||(zh?'确定':'Ya, lanjut'))+'</button></div></div>';
  document.body.appendChild(m);m.querySelector('#askNo').onclick=function(){m.remove();};m.querySelector('#askOk').onclick=function(){m.remove();ok();};}
-function goHome(force){S.nav=[];var v=S.v;if(!v){S.mod=null;render();window.scrollTo(0,0);return;}S.mod=null;var zh=L==='zh';
+function chkBack(){return '<div><span class="back" onclick="goHome(0,\'check\')">‹ '+(L==='zh'?'门店检查':'Cek Toko')+'</span></div>';}
+function goHome(force,mod){mod=mod||null;S.nav=[];var v=S.v;if(!v){S.mod=mod;render();window.scrollTo(0,0);return;}S.mod=mod;var zh=L==='zh';
  if(!v.visitId){S.v=null;localStorage.removeItem(DRAFT_KEY);render();window.scrollTo(0,0);return;}
- var n=pending();if(n&&!force){ask(zh?'还有 '+n+' 个照片/录音没上传完。回首页后会暂停上传，回来继续这次检查时会接着传。确定回首页吗？':'Masih ada '+n+' foto/rekaman belum ter-upload. Upload berhenti sementara dan lanjut saat kamu melanjutkan inspeksi ini. Tetap ke menu?',function(){goHome(1)});return;}
- saveDraft();S.v=null;render();window.scrollTo(0,0);toast(zh?'已保存，可以在首页「继续上次没做完的检查」':'Tersimpan. Lanjutkan dari menu utama kapan saja');}
+ var n=pending();if(n&&!force){ask(zh?'还有 '+n+' 个照片/录音没上传完。离开后会暂停上传，回来继续这次检查时会接着传。确定离开吗？':'Masih ada '+n+' foto/rekaman belum ter-upload. Upload berhenti sementara dan lanjut saat kamu melanjutkan inspeksi ini. Tetap keluar?',function(){goHome(1,mod)});return;}
+ saveDraft();S.v=null;render();window.scrollTo(0,0);toast(zh?'已保存，回来时点「继续上次没做完的检查」':'Tersimpan. Lanjutkan kapan saja dari "Lanjutkan inspeksi"');}
 function resume(){S.v=loadDraft();render();pump();}
 function discard(){ask(L==='zh'?'确定删除这份没做完的检查吗？删除后不能恢复。':'Yakin hapus inspeksi yang belum selesai ini? Tidak bisa dikembalikan.',function(){localStorage.removeItem(DRAFT_KEY);render();},L==='zh'?'删除':'Hapus');}
 function newVisit(type,force){var d=loadDraft(),zh=L==='zh';if(!force&&d&&d.nick===S.user.nick&&d.visitId){ask(zh?'你还有一份没做完的检查（'+(d.storeName||d.storeId)+' · '+(d.type==='STD'?t('std'):t('spot'))+'）。开始新的检查会删除它，确定吗？':'Masih ada inspeksi yang belum selesai ('+(d.storeName||d.storeId)+'). Mulai baru akan menghapusnya. Lanjutkan?',function(){newVisit(type,1)});return;}S.v={type:type,nick:S.user.nick,step:0,media:{},rec:{},answers:{},storeId:'',storeName:''};render();}
