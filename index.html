@@ -116,7 +116,7 @@ function pump(){if(busy||!S.v||!S.token||!S.v.visitId){setSync();return;}var ids
    function(){busy=false;setTimeout(pump,15000);});});}
 setInterval(pump,20000);
 function pending(){return S.v?Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url}).length:0;}
-function setSync(){var hb=document.getElementById('homeBtn');if(hb)hb.innerHTML=S.v?'<button class="lang" style="color:#fff;border-color:#666" onclick="goHome()">‹ '+(L==='zh'?'首页':'Menu')+'</button>':'';var e=document.getElementById('sync');if(!e)return;var n=pending();e.innerHTML=S.v?(n?'<span class="warn">⟳ '+(S.v.visitId?t('uploading'):t('waitCheckin'))+' '+n+'</span>':'<span class="ok">✓ '+t('saved')+'</span>'):'';}
+function setSync(){var hb=document.getElementById('homeBtn');if(hb)hb.innerHTML=S.v?'<button class="lang" style="color:#fff;border-color:#666" onclick="goHome()">‹ '+(L==='zh'?'首页':'Menu')+'</button>':'';var e=document.getElementById('sync');if(!e)return;var n=pending();e.innerHTML=S.v&&(S.v.visitId||n)?(n?'<span class="warn">⟳ '+(S.v.visitId?t('uploading'):t('waitCheckin'))+' '+n+'</span>':'<span class="ok">✓ '+t('saved')+'</span>'):'';}
 function murl(id){return S.v&&S.v.media[id]?S.v.media[id].url||'':'';}
 
 // ================= GPS =================
@@ -228,7 +228,7 @@ function profileCard(){var u=S.user||{},m=(S.boot&&S.boot.me)||{},nm=titleCase(m
  +'<div style="min-width:0;flex:1"><div style="font-size:13px;color:#bbb">'+greet()+' 👋 · '+todayLine()+'</div><div style="font-size:22px;font-weight:800;line-height:1.25;margin-top:2px;overflow-wrap:anywhere">'+esc(nm)+'</div>'+(dl?'<div style="font-size:13px;color:#aaa;margin-top:4px;line-height:1.4">'+esc(dl)+'</div>':'')+'</div></div>'
  +'<div style="height:3px;background:#FDCD17;position:absolute;left:0;right:0;bottom:0"></div></div>';}
 function scHome(){var d=loadDraft(),h=profileCard()+'<div class="guide" style="border-left-color:#b3261e;background:#fdecea"><b>⚠ '+t('honestyTitle')+'</b><br>'+t('honesty')+'</div><h2>'+t('menu')+'</h2>';
- if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+t('resume')+'</b><div class="small">'+esc(d.storeId+' '+d.storeName)+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div>';
+ if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+(L==='zh'?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc(d.storeId+' '+d.storeName)+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div>';
  if(S.user.entries.indexOf('STD')>=0)h+='<div class="card" onclick="newVisit(\'STD\')"><h3>📋 '+t('std')+'</h3><div class="muted">'+t('stdsub')+'</div></div>';
  if(S.user.entries.indexOf('SPOT')>=0)h+='<div class="card" onclick="newVisit(\'SPOT\')"><h3>📦 '+t('spot')+'</h3><div class="muted">'+t('spotsub')+'</div></div>';
  return h+a2hsMini()+'<div style="text-align:center;margin:14px 0 4px"><a href="#" class="small" style="color:#555" onclick="S.myPw=1;render();return false">🔑 '+(L==='zh'?'修改密码':'Ganti password')+'</a></div><button class="btn btn2" onclick="logout()">'+t('logout')+'</button>';}
@@ -250,7 +250,7 @@ function scCheckin(){if(!S.geoAsked){S.geoAsked=1;setTimeout(askGeo,50);}var v=S
  if(v.storeId){h+='<div class="card">'+photoBlock('selfie',t('selfie'),1,true,v.startSelfieIds)+(v.type==='STD'?photoBlock('front',t('front'),1,false,v.frontIds):'')+'<div class="small" id="gpsline" style="margin-top:8px">'+geoLine()+'</div></div>';
   var ok=(v.startSelfieIds||[]).length&&(v.type!=='STD'||(v.frontIds||[]).length);
   h+='<button class="btn" '+(ok?'':'disabled')+' onclick="doCheckin()">'+t('next')+'</button>';}
- return h+'<button class="btn btn2" onclick="S.v=null;localStorage.removeItem(DRAFT_KEY);render()">'+t('home')+'</button>';}
+ return h;}
 function pickStore(id){var s=S.boot.stores.find(function(x){return x.id===id});S.v.storeId=id;S.v.storeName=s?s.name:'';S.v.storeType=s?s.type:'';saveDraft();render();}
 function photoBlock(key,label,n,front,ids,album){ids=ids||[];return '<div class="slot"><div>📷 '+esc(label)+' ('+ids.length+'/'+n+')</div>'+thumbHtml(ids)+(ids.length<n?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+')">'+t('takephoto')+'</button>'+(album?'<button class="btn btn2" onclick="snap(\''+key+'\',0,1)">'+(L==='zh'?'从相册上传照片':'Upload foto dari galeri')+'</button>':''):'<button class="btn btn2" onclick="clearPh(\''+key+'\')">'+t('retake')+'</button>')+'</div>';}
 var PH={selfie:'startSelfieIds',front:'frontIds',outselfie:'endSelfieIds',group:'groupIds'};
