@@ -1,9 +1,9 @@
-# LK Hub 后台刷新：雅加达时间 10、12、14、16、18、20 点各一次（非工作时间不刷新），调后台 refreshAll
+# LK Hub 后台刷新：雅加达时间 10、12、15、18 点和凌晨 2 点各一次，调后台 refreshAll
 # （重算 POS 销售汇总、提前算好销售页数据；用户打开时只读结果）
 name: LK Hub refresh
 on:
   schedule:
-    - cron: '0 3,5,7,9,11,13 * * *'   # UTC，对应雅加达 10、12、14、16、18、20 点
+    - cron: '0 3,5,8,11,19 * * *'   # UTC，对应雅加达 10、12、15、18 点和凌晨 2 点
   workflow_dispatch: {}
 jobs:
   refresh:
