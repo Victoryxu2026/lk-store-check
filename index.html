@@ -545,6 +545,7 @@ function scSalesD(){var zh=L==='zh',k=S.slK||'store',b=(S.dc||{})['sv_'+k];
  if(R.wait)return backBtn()+slHd(esc(nm),R.R)+loadingCard(R.err?{err:1,msg:R.msg}:null,'slRetry()');
  var x=R.stores.find(function(s){return s.s===S.slId;});if(!x)return backBtn()+'<div class="card">—</div>';
  var o=slCalc(x,R),cur=R.m==='cur',h=backBtn()+slHd(esc(x.sn),R),c=achCol(o.proj);
+ if(k==='grab')return h+slGrabD(x,o,R);
  h+='<div class="card">'+(o.t>0?slHero(o.a,o.t,o.proj,o.need,o.l7,R):'<div class="sl-big" style="color:#aaa">'+(zh?'无目标':'Tanpa target')+'</div>')
   +'<div class="sl-kpis">'+slKpi(zh?'累计销售':'Total penjualan',jt(o.a))+slKpi(cur?(zh?'同期增长':'Pertumbuhan'):(zh?'比上月':'vs bulan lalu'),sgn(o.mom),grCol(o.mom))+slKpi('GrabMart',jt(o.g)+'<span style="font-size:12px;color:#999;font-weight:600"> · '+pc1(o.share)+'</span>')+'</div>'
   +(function(){var fl=o.flags.filter(function(f){return !/剩余每天要卖|照现在速度|Sisa target|Laju sekarang/.test(f);});return fl.length?'<div style="margin-top:8px">'+fl.map(function(f){return '<span class="sl-flag">'+esc(f)+'</span>';}).join('')+'</div>':'';})()+'</div>';
@@ -555,19 +556,29 @@ function scSalesD(){var zh=L==='zh',k=S.slK||'store',b=(S.dc||{})['sv_'+k];
  h+=slChart(dd,R,o);
  return h;}
 // 每日销售图：整月格子（没到的日子浅灰）、虚线 = 每天要卖（已结束月份 = 日均目标）、点柱子看金额
-function slChart(dd,R,o){var zh=L==='zh',cur=R.m==='cur',n=cur?R.dim:dd.days.length,line=cur?(o.need>0?o.need:null):(o.t>0?o.t/n:null);
+// GrabMart 入口进来的单店页：只看 GrabMart（累计、有单天数、同期增长、占门店），图只画 GrabMart 每天的单
+function slGrabD(x,o,R){var zh=L==='zh',cur=R.m==='cur',days=o.days,half=Math.ceil(days/2),r=days>0?o.gd/days:0,c=o.gd>=half?'#1d7a3a':'#b3261e';
+ var h='<div class="card"><div class="small muted">'+(zh?'GrabMart 累计':'Total GrabMart')+'</div><div class="sl-big">'+jt(o.g)+'</div>'
+  +'<div class="sl-kpis">'+slKpi(zh?'有单天数':'Hari ada order','<span style="color:'+c+'">'+o.gd+'</span><span style="font-size:12px;color:#999;font-weight:600">/'+days+(zh?' 天':' hari')+'</span>')+slKpi(cur?(zh?'同期增长':'Pertumbuhan'):(zh?'比上月':'vs bulan lalu'),sgn(o.gmom),grCol(o.gmom))+slKpi(zh?'占门店销售':'Porsi dari toko',pc1(o.share))+'</div>'
+  +(cur?'<div class="small muted" style="margin-top:10px">'+(zh?'一半以上天数有单 = ≥'+half+' 天':'Target: order ≥ '+half+' hari')+(cur&&o.l7g<=0?' · <b style="color:#b3261e">'+(zh?'最近 7 天没有单':'7 hari terakhir tanpa order')+'</b>':'')+'</div>':'')+'</div>';
+ var key='ss_'+S.slId+'_'+R.sel,dd=(S.dc||{})[key];
+ if(!dd)fetchD(key,'salesStore',[S.token,S.slId,R.sel],'salesD');
+ if(!dd||dd.err)return h+loadingCard(dd,'slRetry()');
+ return h+slChart(dd,R,o,1);}
+function slChart(dd,R,o,gm){var zh=L==='zh',cur=R.m==='cur',n=cur?R.dim:dd.days.length,line=gm?null:(cur?(o.need>0?o.need:null):(o.t>0?o.t/n:null));
+ if(gm)dd={days:dd.days.map(function(v){return v?[v[1],v[1]]:v;}),prevDays:dd.prevDays.map(function(v){return v?[v[1],v[1]]:v;})};
  var mx=1;dd.days.concat(dd.prevDays).forEach(function(v){if(v&&v[0]>mx)mx=v[0];});if(line&&line*1.1>mx)mx=line*1.1;
  var last=0;dd.days.forEach(function(v,i){if(v)last=i;});var sel=S.slDay!=null&&S.slDay<dd.days.length?S.slDay:last;
  var md=function(i,ym){return Number(ym.slice(5,7))+'/'+(i+1);};
  var v=dd.days[sel],p=dd.prevDays[sel];
- var info='<div class="sl-day"><b>'+md(sel,R.sel)+'</b> · '+(v?jt(v[0]):'—')+(v&&v[1]>0?' <i>（GrabMart '+jt(v[1])+'）</i>':'')+(p?' <span>· '+md(sel,ymPrev(R.sel))+' '+jt(p[0])+'</span>':'')+'</div>';
- var h='<div class="card"><b>'+(zh?'每日销售':'Penjualan harian')+'</b><div class="sl-leg" style="margin:4px 0 0"><span style="--c:#FDCD17">'+ymLbl(R.sel)+'</span><span style="--c:#8a6d00">GrabMart</span><span style="--c:#999">'+(zh?'上月同一天':'hari sama bln lalu')+'</span>'+(line?'<span class="dash">'+(cur?(zh?'每天要卖 ':'target/hari ')+jt(line):(zh?'日均目标 ':'target rata-rata ')+jt(line))+'</span>':'')+'</div>'+info
+ var info='<div class="sl-day"><b>'+md(sel,R.sel)+'</b> · '+(v?jt(v[0]):'—')+(!gm&&v&&v[1]>0?' <i>（GrabMart '+jt(v[1])+'）</i>':'')+(p?' <span>· '+md(sel,ymPrev(R.sel))+' '+jt(p[0])+'</span>':'')+'</div>';
+ var h='<div class="card"><b>'+(gm?(zh?'每日 GrabMart 销售':'GrabMart harian'):(zh?'每日销售':'Penjualan harian'))+'</b><div class="sl-leg" style="margin:4px 0 0">'+(gm?'<span style="--c:#8a6d00">'+ymLbl(R.sel)+'</span>':'<span style="--c:#FDCD17">'+ymLbl(R.sel)+'</span><span style="--c:#8a6d00">GrabMart</span>')+'<span style="--c:#999">'+(zh?'上月同一天':'hari sama bln lalu')+'</span>'+(line?'<span class="dash">'+(cur?(zh?'每天要卖 ':'target/hari ')+jt(line):(zh?'日均目标 ':'target rata-rata ')+jt(line))+'</span>':'')+'</div>'+info
   +'<div style="position:relative;display:flex;align-items:flex-end;gap:2px;height:140px;margin-top:6px;border-bottom:1px solid #ddd">'
   +(line?'<div style="position:absolute;left:0;right:0;bottom:'+(line/mx*100)+'%;border-top:2px dashed #111;opacity:.55;z-index:2;pointer-events:none"></div>':'');
  for(var i=0;i<n;i++){var x=dd.days[i],future=i>=dd.days.length,a2=x?x[0]:0,g=x?x[1]:0,pp=dd.prevDays[i]?dd.prevDays[i][0]:null,on=i===sel;
-  h+='<div onclick="S.slDay='+i+';render()" style="flex:1;position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer'+(future?';background:#f4f4f1;border-radius:2px':'')+'">'
-   +(pp!=null&&!future?'<div style="position:absolute;left:0;right:0;bottom:'+(pp/mx*100)+'%;border-top:2px solid #999"></div>':'')
-   +(future?'':'<div style="background:'+(on?'#e8b900':'#FDCD17')+';border-radius:2px 2px 0 0;height:'+(Math.max(0,a2-g)/mx*100)+'%'+(on?';outline:2px solid #111;outline-offset:-1px':'')+'"></div><div style="background:#8a6d00;height:'+(g/mx*100)+'%"></div>')+'</div>';}
+  h+='<div onclick="S.slDay='+i+';render()" style="flex:1;position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;cursor:pointer'+(future?';background:#f4f4f1;border-radius:2px':'')+(on?';box-shadow:0 0 0 2px #111;border-radius:2px':'')+'">'
+   +(pp!=null&&pp>0&&!future?'<div style="position:absolute;left:0;right:0;bottom:'+(pp/mx*100)+'%;border-top:2px solid #999"></div>':'')
+   +(future?'':'<div style="background:'+(on?'#e8b900':'#FDCD17')+';border-radius:2px 2px 0 0;height:'+(Math.max(0,a2-g)/mx*100)+'%"></div><div style="background:#8a6d00;height:'+(g/mx*100)+'%"></div>')+'</div>';}
  return h+'</div><div style="display:flex;justify-content:space-between" class="small muted"><span>1</span><span>'+(zh?'点柱子看当天金额':'Ketuk batang untuk lihat angka')+'</span><span>'+n+'</span></div></div>';}
 function offToast(){toast(L==='zh'?'你的岗位暂时用不到这个功能':'Fitur ini belum untuk jabatanmu');}
 function scCheckMod(){var d=loadDraft(),h='<h2 style="margin:4px 0 10px">'+(L==='zh'?'门店检查':'Cek Toko')+'</h2><div class="guide" style="border-left-color:#b3261e;background:#fdecea"><b>⚠ '+t('honestyTitle')+'</b><br>'+t('honesty')+'</div>';
