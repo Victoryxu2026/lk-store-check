@@ -8,6 +8,7 @@ header b{color:#FDCD17}.lang{border:1px solid #FDCD17;color:#FDCD17;border-radiu
 main{padding:12px;max-width:560px;margin:0 auto}
 .card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid #e4e4e0}
 h2{font-size:18px;margin:4px 0 10px}h3{font-size:16px;margin:0 0 6px}.muted{color:#777;font-size:13px}.small{font-size:13px}
+select.ph{color:#9a9a9a}select option{color:#111}
 .btn{display:block;width:100%;padding:13px;border-radius:10px;border:0;background:#111;color:#FDCD17;font-size:16px;font-weight:600;margin-top:10px}
 .btn2{background:#fff;color:#111;border:1px solid #bbb}.btnY{background:#FDCD17;color:#111}.btn:disabled{opacity:.45}
 *{box-sizing:border-box}input[type=date]{-webkit-appearance:none;appearance:none;min-height:44px;display:block}
@@ -423,9 +424,9 @@ function discard(){ask(L==='zh'?'确定删除这份没做完的检查吗？删�
 function newVisit(type,force){var d=loadDraft(),zh=L==='zh';if(!force&&d&&d.nick===S.user.nick&&d.visitId){ask(zh?'你还有一份没做完的检查（'+(d.storeName||d.storeId)+' · '+(d.type==='STD'?t('std'):t('spot'))+'）。开始新的检查会删除它，确定吗？':'Masih ada inspeksi yang belum selesai ('+(d.storeName||d.storeId)+'). Mulai baru akan menghapusnya. Lanjutkan?',function(){newVisit(type,1)});return;}S.v={type:type,nick:S.user.nick,step:0,media:{},rec:{},answers:{},storeId:'',storeName:''};render();}
 
 // ---------- shared: store select + check-in (step 0) ----------
-function scCheckin(){if(!S.geoAsked){S.geoAsked=1;setTimeout(askGeo,50);}var v=S.v,stores=S.boot.stores,cities=[];stores.forEach(function(s){if(cities.indexOf(s.city)<0)cities.push(s.city)});
- var h='<div class="guide" style="border-left-color:#b3261e;background:#fdecea">⚠ '+t('honestyShort')+'</div><div class="card"><h2>'+t('checkin')+' · '+(v.type==='STD'?t('std'):t('spot'))+'</h2><label class="small">'+t('city')+'</label><select id="city" onchange="S.v.city=this.value;S.v.storeId=\'\';render()"><option value="">—</option>'+cities.map(function(c){return '<option'+(v.city===c?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select>';
- if(v.city)h+='<label class="small">'+t('store')+'</label><select onchange="pickStore(this.value)"><option value="">—</option>'+stores.filter(function(s){return s.city===v.city}).sort(function(a,b){return a.name<b.name?-1:1}).map(function(s){return '<option value="'+s.id+'"'+(v.storeId===s.id?' selected':'')+'>'+esc(s.name)+' · '+s.id+'</option>'}).join('')+'</select>';
+function scCheckin(){if(!S.geoAsked){S.geoAsked=1;setTimeout(askGeo,50);}var v=S.v,stores=S.boot.stores,cities=[];stores.forEach(function(s){if(cities.indexOf(s.city)<0)cities.push(s.city)});if(!v.city&&cities.length===1)v.city=cities[0];if(v.city&&!v.storeId){var one=stores.filter(function(x){return x.city===v.city});if(one.length===1){v.storeId=one[0].id;v.storeName=one[0].name;v.storeType=one[0].type;saveDraft();}}
+ var h='<div class="guide" style="border-left-color:#b3261e;background:#fdecea">⚠ '+t('honestyShort')+'</div><div class="card"><h2>'+t('checkin')+' · '+(v.type==='STD'?t('std'):t('spot'))+'</h2><label class="small">'+t('city')+'</label><select id="city" class="'+(v.city?'':'ph')+'" onchange="S.v.city=this.value;S.v.storeId=\'\';render()"><option value="" disabled hidden'+(v.city?'':' selected')+'>'+(L==='zh'?'请选择城市':'Pilih kota')+'</option>'+cities.map(function(c){return '<option'+(v.city===c?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select>';
+ if(v.city)h+='<label class="small" style="display:block;margin-top:10px">'+t('store')+'</label><select class="'+(v.storeId?'':'ph')+'" onchange="pickStore(this.value)"><option value="" disabled hidden'+(v.storeId?'':' selected')+'>'+(L==='zh'?'请选择门店':'Pilih toko')+'</option>'+stores.filter(function(s){return s.city===v.city}).sort(function(a,b){return a.name<b.name?-1:1}).map(function(s){return '<option value="'+s.id+'"'+(v.storeId===s.id?' selected':'')+'>'+esc(s.name)+' · '+s.id+'</option>'}).join('')+'</select>';
  if(v.storeId)h+='<div style="margin-top:6px"><b>'+esc(v.storeName)+'</b></div>';
  h+='</div>';
  if(v.storeId){h+='<div class="card">'+photoBlock('selfie',t('selfie'),1,true,v.startSelfieIds)+(v.type==='STD'?photoBlock('front',t('front'),1,false,v.frontIds):'')+'<div class="small" id="gpsline" style="margin-top:8px">'+geoLine()+'</div></div>';
@@ -546,7 +547,7 @@ function cTrain(){return CCODES.filter(function(c){var l=(S.v.answers[c]||{}).le
 function cLow(){return cTrain().length>0;}
 function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3']=v.answers['C.3']||{};if(a3.level==='NA')delete a3.level;
  var h='<h2>'+t('sales')+'</h2><div class="guide">'+t('guide')+'</div><div class="card" id="rq_staff"><label class="small">'+t('staff')+'</label>';
- if(c.staff&&c.staff.length)h+='<select onchange="S.v.sales.staff=this.value;saveDraft()"><option value="">—</option>'+c.staff.map(function(n){return '<option'+(s.staff===n?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
+ if(c.staff&&c.staff.length)h+='<select class="'+(s.staff?'':'ph')+'" onchange="S.v.sales.staff=this.value;this.className=\'\';saveDraft()"><option value="" disabled hidden'+(s.staff?'':' selected')+'>'+(L==='zh'?'请选择店员':'Pilih staf')+'</option>'+c.staff.map(function(n){return '<option'+(s.staff===n?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
  else h+='<input placeholder="'+t('staffname')+'" value="'+esc(s.staff||'')+'" oninput="S.v.sales.staff=this.value;saveDraft()">';
  h+='<div class="q">'+t('learnedQ')+'</div>'+T.gaps.map(function(o,i){var v=(s.learnMap||{})[o[1]];return '<div style="margin-top:8px"><b>'+tt(o)+'</b><div class="row"><div class="opt'+(v==='Y'?' sel':'')+'" onclick="setLearn('+i+',\'Y\')">'+t('learnY')+'</div><div class="opt'+(v==='N'?' sel':'')+'" onclick="setLearn('+i+',\'N\')">'+t('learnN')+'</div></div></div>'}).join('');
  h+='</div><div class="guide">'+t('roleplayTip')+'</div>'+recUI('rec1',3,10);
