@@ -411,7 +411,8 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
  h+='<div class="grid9">'+tiles.map(function(x){var on=!!x[2],ic='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+ICO[x[0]]+'"/></svg>';
   return '<div class="t9'+(on?'':' soon')+'" onclick="'+(on?'openMod(\''+x[0]+'\')':(x[0]==='sales'?'offToast()':'toast(\''+soon+'\')'))+'"><div class="ic">'+ic+'</div><div class="nm">'+esc(x[1])+'</div></div>';}).join('')+'</div>';
  return h+myArea()+a2hsMini();}
-function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+// 金额统一格式（规则 R231）：逗号千分位、点只做小数点，中印文一样
+function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');}
 function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
 function openMod(m){S.mod=m;if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
 
@@ -427,7 +428,7 @@ function slOpen(k){var ek='sv_'+k;S.dc=S.dc||{};if(S.slTy==null){try{S.slTy=loca
  if(!S.dc[ek]){try{var c=JSON.parse(localStorage.getItem(slLsKey(k))||'null');if(c&&c.stores){c._stale=1;S.dc[ek]=c;}}catch(e){}}
  navTo(k==='store'?'salesS':'salesG');
  if(!S.dc[ek]||S.dc[ek]._stale)run('salesView',[S.token,k,'cur'],function(r){S.dc[ek]=r;try{localStorage.setItem(slLsKey(k),JSON.stringify(r));}catch(e){}if(/^sales[SGD]$/.test(S.mod))render();},function(e){var c=S.dc[ek];if(c&&c._stale)c._failed=1;else S.dc[ek]={err:1,msg:String(e&&e.message||e||'').slice(0,120)};if(/^sales[SGD]$/.test(S.mod))render();});}
-function jt(n){n=Number(n)||0;var a=Math.abs(n)/1e6,v;if(a>=100){v=String(Math.round(a)).replace(/\B(?=(\d{3})+(?!\d))/g,L==='zh'?',':'.');}else{v=a>0&&a<1?a.toFixed(2):a.toFixed(1);if(L!=='zh')v=v.replace('.',',');}return (n<0?'-':'')+v+'jt';}
+function jt(n){n=Number(n)||0;var a=Math.abs(n)/1e6,v;if(a>=10){v=String(Math.round(a)).replace(/\B(?=(\d{3})+(?!\d))/g,',');}else{v=a>0&&a<1?a.toFixed(2):a.toFixed(1);}return (n<0?'-':'')+v+'jt';}
 function pc1(x){return x==null||!isFinite(x)?'—':Math.round(x*100)+'%';}
 function sgn(x){if(x==null||!isFinite(x))return '—';var v=Math.round(x*100);return (v>0?'+':'')+v+'%';}
 function achCol(x){return x==null?'#888':x<0.85?'#b3261e':x<1?'#b26a00':'#1d7a3a';}
@@ -471,10 +472,10 @@ function slTyBar(stores){var zh=L==='zh',n={LK:0,RS:0};stores.forEach(function(x
 function slBench(R){var f=S.slTy||'',m={},ord=[];(R.bench||[]).forEach(function(x){if(f&&!x.ty)return;if(f&&x.ty!==f)return;if(!m[x.r]){m[x.r]={r:x.r,a:0,t:0};ord.push(x.r);}m[x.r].a+=x.a;m[x.r].t+=x.t;});return ord.map(function(r){return m[r];});}
 function ymPrev(y){var t=Number(y.slice(0,4))*12+Number(y.slice(5,7))-2;return Math.floor(t/12)+'-'+('0'+(t%12+1)).slice(-2);}
 // 总览大字：已完成目标 + 对比时间进度；下面是剩余每天要卖 vs 最近 7 天日均；预计月达成只作参考小字
-function slHero(A,T,proj,need,L7,R){var zh=L==='zh',cur=R.m==='cur',ach=T>0?A/T:null,c=achCol(proj);
+function slHero(A,T,proj,need,L7,R,exact){var zh=L==='zh',cur=R.m==='cur',ach=T>0?A/T:null,c=achCol(proj);
  if(!(T>0))return '<div class="small muted">'+(zh?'没有目标':'Tanpa target')+'</div>';
  var h='<div class="small muted">'+(cur?(zh?'已完成目标':'Pencapaian target'):(zh?'月达成':'Pencapaian bulan ini'))+'</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div class="sl-big" style="color:'+c+'">'+pc1(ach)+'</div>'+slGap(A,T,R,1)+'</div>';
- h+=slBar(ach,c,cur?R.e/R.dim:null)+'<div class="small muted">'+jt(A)+' / '+jt(T)+(cur?' · '+(zh?'时间进度 ':'waktu berjalan ')+pc1(R.e/R.dim)+(zh?'（竖线）':' (garis)'):'')+'</div>';
+ h+=slBar(ach,c,cur?R.e/R.dim:null)+'<div class="small muted">'+(exact?rp(A)+' / '+rp(T):jt(A)+' / '+jt(T))+(cur?' · '+(zh?'时间进度 ':'waktu berjalan ')+pc1(R.e/R.dim)+(zh?'（竖线）':' (garis)'):'')+'</div>';
  if(cur){var a7=L7/7,c7=need>0&&a7<need?'#b3261e':'#1d7a3a';h+='<div class="sl-need"><div><div class="l">'+(zh?'剩余每天要卖':'Sisa target / hari')+'</div><div class="v">'+(need>0?jt(need):'✓')+'</div></div><div><div class="l">'+(zh?'最近 7 天日均':'Rata-rata 7 hari')+'</div><div class="v" style="color:'+c7+'">'+jt(a7)+'</div></div></div>'
   +'<div class="small muted" style="margin-top:6px">'+(zh?'照现在的速度，月底约 ':'Dengan laju sekarang, akhir bulan ±')+'<b style="color:'+c+'">'+pc1(proj)+'</b></div>';}
  return h;}
@@ -546,7 +547,7 @@ function scSalesD(){var zh=L==='zh',k=S.slK||'store',b=(S.dc||{})['sv_'+k];
  var x=R.stores.find(function(s){return s.s===S.slId;});if(!x)return backBtn()+'<div class="card">—</div>';
  var o=slCalc(x,R),cur=R.m==='cur',h=backBtn()+slHd(esc(x.sn),R),c=achCol(o.proj);
  if(k==='grab')return h+slGrabD(x,o,R);
- h+='<div class="card">'+(o.t>0?slHero(o.a,o.t,o.proj,o.need,o.l7,R):'<div class="sl-big" style="color:#aaa">'+(zh?'无目标':'Tanpa target')+'</div>')
+ h+='<div class="card">'+(o.t>0?slHero(o.a,o.t,o.proj,o.need,o.l7,R,1):'<div class="sl-big" style="color:#aaa">'+(zh?'无目标':'Tanpa target')+'</div>')
   +'<div class="sl-kpis">'+slKpi(zh?'累计销售':'Total penjualan',jt(o.a))+slKpi(cur?(zh?'同期增长':'Pertumbuhan'):(zh?'比上月':'vs bulan lalu'),sgn(o.mom),grCol(o.mom))+slKpi('GrabMart',jt(o.g)+'<span style="font-size:12px;color:#999;font-weight:600"> · '+pc1(o.share)+'</span>')+'</div>'
   +(function(){var fl=o.flags.filter(function(f){return !/剩余每天要卖|Sisa target/.test(f);});return fl.length?'<div style="margin-top:8px">'+fl.map(function(f){return '<span class="sl-flag">'+esc(f)+'</span>';}).join('')+'</div>':'';})()+'</div>';
  var key='ss_'+S.slId+'_'+R.sel,dd=(S.dc||{})[key];
@@ -769,7 +770,7 @@ function hintOk(x){if(x.mode==='skus')return (x.items||[]).every(function(it){re
 function togCause(i,k){var x=S.v.ctx.hints[i],lab=causeList(x)[k][1];x.result=Array.isArray(x.result)?x.result:[];var j=x.result.indexOf(lab);j<0?x.result.push(lab):x.result.splice(j,1);x.resultZh=x.result.join('；');saveDraft();render();}
 function std_s3(){var cs=['A.1','A.2','A.3','A.4','A.5'];return '<h2>'+tt(T.sec[3])+'</h2>'+cs.map(function(c){return itemCard(c)}).join('')+nav(codesDone(cs));}
 function std_s4(){return '<h2>'+tt(T.sec[4])+'</h2>'+itemCard('B.1')+nav(codesDone(['B.1']));}
-function std_s5(){var c=S.v.ctx;var pc='<div class="guide"><b>'+t('pricecheck')+'</b>'+c.priceChecks.map(function(p){return '<div>'+esc(p.name)+' — <b>Rp'+Number(p.price).toLocaleString()+'</b></div>'}).join('')+'</div>';
+function std_s5(){var c=S.v.ctx;var pc='<div class="guide"><b>'+t('pricecheck')+'</b>'+c.priceChecks.map(function(p){return '<div>'+esc(p.name)+' — <b>'+rp(p.price)+'</b></div>'}).join('')+'</div>';
  var kb='<div class="guide"><b>'+t('keybrands')+':</b> '+esc(S.boot.keyBrands)+'</div>';
  var pr='<div class="guide"><b>'+t('promos')+'</b>'+(c.promos||[]).map(function(p){return '<div class="small">• '+esc(p)+'</div>'}).join('')+'</div>';
  var cs=['B.3','B.4','B.5','B.6'];return '<h2>'+tt(T.sec[5])+'</h2>'+itemCard('B.3',pc)+itemCard('B.4')+itemCard('B.5',pr)+itemCard('B.6')+nav(codesDone(cs));}
@@ -787,7 +788,7 @@ function std_s7(){var v=S.v,c=v.ctx,s=v.sales=v.sales||{};var a3=v.answers['C.3'
  else h+='<input placeholder="'+t('staffname')+'" value="'+esc(s.staff||'')+'" oninput="S.v.sales.staff=this.value;saveDraft()">';
  h+='<div class="q">'+t('learnedQ')+'</div>'+T.gaps.map(function(o,i){var v=(s.learnMap||{})[o[1]];return '<div style="margin-top:8px"><b>'+tt(o)+'</b><div class="row"><div class="opt'+(v==='Y'?' sel':'')+'" onclick="setLearn('+i+',\'Y\')">'+t('learnY')+'</div><div class="opt'+(v==='N'?' sel':'')+'" onclick="setLearn('+i+',\'N\')">'+t('learnN')+'</div></div></div>'}).join('');
  h+='</div><div class="guide">'+t('roleplayTip')+'</div>'+recUI('rec1',3,10);
- h+=itemCard('C.1')+itemCard('C.3',(c.c3&&c.c3.length?'<div class="guide"><b>'+t('c3pick')+'</b>'+c.c3.map(function(p){return '<div>'+esc(p.name)+' — Rp'+Number(p.price).toLocaleString()+'</div>'}).join('')+'</div>':''))+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
+ h+=itemCard('C.1')+itemCard('C.3',(c.c3&&c.c3.length?'<div class="guide"><b>'+t('c3pick')+'</b>'+c.c3.map(function(p){return '<div>'+esc(p.name)+' — '+rp(p.price)+'</div>'}).join('')+'</div>':''))+itemCard('C.4')+itemCard('C.5')+itemCard('C.7');
  h+='<div class="card"><h3>'+t('quiz')+'</h3>'+(c.quiz||[]).map(function(q){return '<div class="q">'+esc(L==='zh'?q.q_zh:q.q_id)+'<div class="ans">'+t('answer')+': '+esc(L==='zh'?q.a_zh:q.a_id)+'</div></div>'}).join('')+'</div>'+recUI('rec2',1,5)+itemCard('C.6');
  h+='<div class="card" id="rq_group">'+photoBlock('group',t('groupphoto'),1,false,v.groupIds)+'<textarea id="rq_comment" placeholder="'+t('comment')+'" oninput="S.v.sales.comment=this.value;saveDraft();var c=document.getElementById(\'cmtN\');if(c)c.textContent=this.value.trim().length">'+esc(s.comment||'')+'</textarea><div class="small muted">'+(L==='zh'?'至少 20 个字，现在 ':'Minimal 20 karakter, sekarang ')+'<b id="cmtN">'+(s.comment||'').trim().length+'</b></div></div>';
 
