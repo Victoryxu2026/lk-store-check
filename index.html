@@ -17,7 +17,7 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .bar{height:5px;background:#ddd;border-radius:3px;margin:6px 0 10px}.bar i{display:block;height:5px;background:#FDCD17;border-radius:3px}
 .top{display:flex;justify-content:space-between;font-size:13px;color:#555}.ok{color:#1d7a3a}.warn{color:#b26a00}.err{color:#b3261e}
 .slot{border:1px dashed #999;border-radius:9px;padding:10px;text-align:center;margin-top:8px;color:#555;position:relative}
-.thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.thumbs img{width:96px;height:128px;object-fit:contain;background:#000;border-radius:6px;border:1px solid #ccc}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;margin-top:6px}.thumbs .tag{background:#fff;white-space:nowrap}.thumbs img{width:96px;height:128px;object-fit:contain;background:#000;border-radius:6px;border:1px solid #ccc}
 .tag{display:inline-block;padding:2px 8px;border-radius:10px;background:#eee;font-size:12px;margin:2px}
 .guide{background:#fff8d6;border-left:4px solid #FDCD17;padding:10px;border-radius:6px;font-size:13px;margin-bottom:10px}
 .rec{font-size:28px;font-weight:700;text-align:center;margin:8px 0}.row{display:flex;gap:8px}.row>*{flex:1}
@@ -137,9 +137,9 @@ function upLog(ok){run('logUpload',[S.token,upInfo(ok)],function(){},function(){
 function upDone(){if(S.v&&S.v.upStuck&&!S.v.upStuck.done){upLog(1);S.v.upStuck.done=1;saveDraft();}S.upT0=0;}
 function upBox(){var n=pending(),zh=L==='zh';if(!n){S.upT0=0;S.up60=0;return '';}if(!S.upT0)S.upT0=Date.now();
  var w=Math.round((Date.now()-S.upT0)/1000),f=0;Object.keys(S.v.media).forEach(function(k){if(!S.v.media[k].url)f=Math.max(f,S.v.media[k].fail||0)});
- var h='<div id="upBox" class="card warn">'+(zh?'正在上传 '+n+' 张照片/录音 · 已等 <span id="upSec">'+w+'</span> 秒':'Sedang upload '+n+' foto/rekaman · sudah <span id="upSec">'+w+'</span> detik')+'<div class="small" style="margin-top:4px">'+(zh?'传完按钮会自动变黑，不要关闭页面':'Tombol aktif otomatis setelah selesai. Jangan tutup halaman.')+'</div>';
- if(f>=2)h+='<div class="small" style="margin-top:6px;color:#b3261e">'+(zh?'已经失败 '+f+' 次，多半是信号问题':'Sudah gagal '+f+' kali, kemungkinan sinyal lemah')+'</div>';
- if(w>=60)h+='<div class="small" style="margin-top:6px;color:#111">'+(zh?'信号不好：走到门口或连上门店 Wi-Fi，再点「重新上传」':'Sinyal lemah: coba ke dekat pintu atau sambung ke Wi-Fi toko, lalu tekan "Upload ulang"')+'</div><button class="btn btn2" style="margin-top:8px" onclick="upRetry()">'+(zh?'重新上传':'Upload ulang')+'</button>';
+ var h='<div id="upBox" class="card warn">'+(zh?'正在上传 '+n+' 个照片或录音 · 已等 <span id="upSec">'+w+'</span> 秒':'Sedang upload '+n+' foto/rekaman · <span id="upSec">'+w+'</span> detik')+'<div class="small" style="margin-top:4px">'+(zh?'传完后下面的提交按钮会自动变成可点，不要关闭页面':'Setelah selesai, tombol kirim di bawah otomatis aktif. Jangan tutup halaman.')+'</div>';
+ if(f>=2)h+='<div class="small" style="margin-top:6px;color:#b3261e">'+(zh?'已经失败 '+f+' 次，多半是网络不好':'Sudah gagal '+f+' kali, kemungkinan internet lemah')+'</div>';
+ if(w>=60)h+='<div class="small" style="margin-top:6px;color:#111">'+(zh?'网络不好时：换个位置（比如门口）或换个网络，再点「重新上传」':'Kalau internet lemah: pindah posisi (misalnya dekat pintu) atau ganti jaringan, lalu tekan "Upload ulang"')+'</div><button class="back" style="margin:8px 0 0;font-size:14px" onclick="upRetry()">⟳ '+(zh?'重新上传':'Upload ulang')+'</button>';
  return h+'</div>';}
 function upRetry(){busy=false;pump();toast(L==='zh'?'正在重新上传…':'Mengupload ulang…');}
 setInterval(function(){var e=document.getElementById('upSec');if(!e||!S.upT0)return;var w=Math.round((Date.now()-S.upT0)/1000);e.textContent=w;
@@ -171,7 +171,8 @@ function takePhoto(tag,front,cb,album){var inp=document.createElement('input');i
   img.src=URL.createObjectURL(file);};
  getGeo(function(g){if(g)S.lastGeo=g;});inp.click();}
 S.thumbs={};
-function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id){var src=S.thumbs[id]||murl(id);return src&&S.thumbs[id]?'<img src="'+S.thumbs[id]+'" onclick="zoom(\''+id+'\')">':'<span class="tag ok">✓ foto</span>'}).join('')+'</div>';}
+function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id){var src=S.thumbs[id]||murl(id);return src&&S.thumbs[id]?(murl(id)?'<img src="'+S.thumbs[id]+'" onclick="zoom(\''+id+'\')">':'<span style="position:relative;display:inline-block;line-height:0"><img src="'+S.thumbs[id]+'" onclick="zoom(\''+id+'\')"><span style="position:absolute;left:4px;bottom:6px;line-height:normal">'+chip(id)+'</span></span>'):''+chip(id)}).join('')+'</div>';}
+function chip(id){var zh=L==='zh',m=S.v&&S.v.media[id]||{};if(m.url)return '<span class="tag ok">✓ '+(zh?'已上传':'Terkirim')+'</span>';if((m.fail||0)>=2)return '<span class="tag err">✕ '+(zh?'上传失败':'Gagal')+'</span>';return '<span class="tag warn">⟳ '+(zh?'上传中':'Upload…')+'</span>';}
 
 // ================= audio =================
 var REC=null;
@@ -615,7 +616,7 @@ function spotEnd(){var v=S.v,miss=v.items.map(function(x,k){return k}).filter(fu
  var h='<div class="card"><h2>'+same+'/'+v.items.length+' '+t('spotDone')+'</h2>'+v.items.map(function(i,k){var d=Number(i.actual)-Number(i.pos);return d?'<div class="small warn" onclick="S.v.idx='+k+';render()">'+esc(i.name)+': '+(d>0?'+':'')+d+'</div>':''}).join('')+'</div>';
  h+='<div class="card">'+photoBlock('outselfie',t('outselfie'),1,true,v.endSelfieIds)+'<div class="small" style="margin-top:8px">'+geoLine()+'</div></div>';var n=pending();h+=upBox();
  if(miss.length)h='<div class="card" style="border:2px solid #b3261e"><b class="warn">'+(L==='zh'?'还有 '+miss.length+' 个 SKU 没填完，填完才能提交：':'Masih '+miss.length+' SKU belum lengkap, lengkapi dulu sebelum kirim:')+'</b>'+miss.map(function(k){return '<div class="opt" onclick="S.v.idx='+k+';saveDraft();render()"><span>'+(k+1)+'. '+esc(v.items[k].name)+'</span><span>›</span></div>'}).join('')+'</div>'+h;
- return spotGrid()+h+'<button id="subBtn" class="btn" '+((v.endSelfieIds||[]).length&&!n&&!miss.length?'':'disabled')+' onclick="submitSpot()">'+t('submit')+'</button><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button>';}
+ return spotGrid()+h+'<button id="subBtn" class="btn" '+((v.endSelfieIds||[]).length&&!n&&!miss.length?'':'disabled')+' onclick="submitSpot()">'+(L==='zh'?'提交抽检结果':'Kirim hasil cek stok')+'</button><button class="btn btn2" onclick="spotGo(-1)">'+t('back')+'</button>';}
 function submitSpot(force){var v=S.v;if(v.items.some(function(x,k){return !spotDone(k)}))return toast(L==='zh'?'还有 SKU 没填完':'Masih ada SKU belum lengkap');if(pending())return toast(t('waitUp'));if(!force&&mins()<20){ask(t('minTimeSpot'),function(){submitSpot(1)});return;}
  var p={visitId:v.visitId,storeId:v.storeId,startTime:v.startTime,startDist:v.startDist,startGeo:v.startGeo||null,endGeo:v.endGeo||null,startSelfie:(v.startSelfieIds||[]).map(murl).join('\n'),endSelfie:(v.endSelfieIds||[]).map(murl).join('\n'),
   items:v.items.map(function(i,k){return {sku:i.sku,name:i.name,shared:i.shared,actual:i.actual,pos:i.pos,recount:i.recount||'',note:i.note||'',goodsPhoto:((v.answers['g_'+k]||{}).photoIds||[]).map(murl).join('\n'),posPhoto:((v.answers['p_'+k]||{}).photoIds||[]).map(murl).join('\n')}})};
