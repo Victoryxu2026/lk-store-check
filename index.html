@@ -123,11 +123,15 @@ function mput(id,val){idb(function(db){db.transaction('m','readwrite').objectSto
 function mget(id,cb){idb(function(db){var q=db.transaction('m').objectStore('m').get(id);q.onsuccess=function(){cb(q.result)}})}
 function mdel(id){idb(function(db){db.transaction('m','readwrite').objectStore('m').delete(id)})}
 // media registry in draft: S.v.media[id]={name,mime,url}
-var busy=false;
-function pump(){if(busy||!S.v||!S.token||!S.v.visitId){setSync();return;}var ids=Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url});setSync();if(!ids.length)return;busy=true;var id=ids[0],m=S.v.media[id];
- mget(id,function(data){if(!data){delete S.v.media[id];busy=false;saveDraft();return pump();}
-  run('uploadFile',[S.token,S.v.visitId,m.name,m.mime,data.split(',')[1]],function(res){S.v.media[id].url=res.url;mdel(id);busy=false;saveDraft();if(!pending())upDone();if(document.getElementById('subBtn'))render();pump();},
-   function(){busy=false;if(S.v&&S.v.media[id]){S.v.media[id].fail=(S.v.media[id].fail||0)+1;saveDraft();}if(document.getElementById('upBox'))render();setTimeout(pump,15000);});});}
+var busy=false,inflight={};
+// 上传队列：最多同时传 2 个；失败第一次 3 秒后重试，之后 15 秒
+function pump(){if(busy||!S.v||!S.token||!S.v.visitId){setSync();return;}setSync();
+ var ids=Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url&&!inflight[k]});
+ while(Object.keys(inflight).length<2&&ids.length)upOne(ids.shift());}
+function upOne(id){var v=S.v,m=v.media[id];inflight[id]=1;
+ mget(id,function(data){if(!data){delete v.media[id];delete inflight[id];saveDraft();return pump();}
+  run('uploadFile',[S.token,v.visitId,m.name,m.mime,data.split(',')[1]],function(res){delete inflight[id];if(v.media[id])v.media[id].url=res.url;mdel(id);saveDraft();if(S.v===v&&!pending())upDone();if(document.getElementById('subBtn'))render();pump();},
+   function(){delete inflight[id];var f=0;if(v.media[id]){f=v.media[id].fail=(v.media[id].fail||0)+1;saveDraft();}if(document.getElementById('upBox'))render();setTimeout(pump,f<=1?3000:15000);});});}
 setInterval(pump,20000);
 function pending(){return S.v?Object.keys(S.v.media).filter(function(k){return !S.v.media[k].url}).length:0;}
 // 提交页的上传状态框：已等几秒；超过 1 分钟给提示和「重新上传」；超过 2 分钟自动记一笔给管理层
@@ -140,7 +144,7 @@ function upBox(){var n=pending(),zh=L==='zh';if(!n){S.upT0=0;S.up60=0;return '';
  var h='<div id="upBox" class="card warn"><b>'+(zh?'正在上传 '+n+' 个照片/录音 · 已等 <span id="upSec">'+w+'</span> 秒':'Sedang upload '+n+' foto/rekaman · <span id="upSec">'+w+'</span> detik')+'</b><div class="small" style="margin-top:4px">'+(zh?'传完就能提交，请不要关闭页面。':'Setelah selesai bisa langsung dikirim. Jangan tutup halaman.')+'</div>';
  if(w>=60)h+='<div class="small" style="margin-top:8px;color:#111">'+(zh?'网络较慢：换个位置（比如门口）或换个网络，再点：':'Internet lambat: pindah posisi (mis. dekat pintu) atau ganti jaringan, lalu ketuk:')+'</div><button class="back" style="margin:8px 0 0;font-size:14px" onclick="upRetry()">⟳ '+(zh?'重新上传':'Upload ulang')+'</button>';
  return h+'</div>';}
-function upRetry(){busy=false;pump();toast(L==='zh'?'正在重新上传…':'Mengupload ulang…');}
+function upRetry(){busy=false;inflight={};pump();toast(L==='zh'?'正在重新上传…':'Mengupload ulang…');}
 setInterval(function(){var e=document.getElementById('upSec');if(!e||!S.upT0)return;var w=Math.round((Date.now()-S.upT0)/1000);e.textContent=w;
  if(w>=60&&!S.up60){S.up60=1;render();}if(w>=120&&S.v&&!S.v.upStuck){S.v.upStuck={at:w};saveDraft();upLog(0);}},1000);
 function setSync(){var hb=document.getElementById('homeBtn');if(hb)hb.innerHTML=(S.v||S.mod)?'<button class="lang" style="color:#fff;border-color:#666" onclick="goHome()">‹ '+(L==='zh'?'首页':'Menu')+'</button>':'';var e=document.getElementById('sync');if(!e)return;var n=pending();e.innerHTML=S.v&&(S.v.visitId||n)?(n?'<span class="warn">⟳ '+(S.v.visitId?t('uploading'):t('waitCheckin'))+' '+n+'</span>':'<span class="ok">✓ '+t('saved')+'</span>'):'';}
@@ -165,12 +169,12 @@ function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在
 function askGeo(){S.geoBusy=1;render();getGeo(function(g){S.geoBusy=0;if(g){S.lastGeo=g;S.lastGeoAt=Date.now();}render();});}
 function takePhoto(tag,front,cb,album){var inp=document.createElement('input');inp.type='file';inp.accept='image/*';if(!album)inp.setAttribute('capture',front?'user':'environment');
  inp.onchange=function(){var file=inp.files[0];if(!file)return;var lim=album?30:5;if(file.lastModified&&Date.now()-file.lastModified>lim*60000){toast(album?(L==='zh'?'这张照片超过 30 分钟了，请用 30 分钟内收到或截的图':'Foto ini lebih dari 30 menit. Pakai foto/screenshot dalam 30 menit terakhir'):t('photoOld'));return;}
-  var img=new Image();img.onload=function(){var max=1280,w=img.width,h=img.height,r=Math.min(1,max/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);
+  var img=new Image();img.onload=function(){var max=1080,w=img.width,h=img.height,r=Math.min(1,max/Math.max(w,h));w=Math.round(w*r);h=Math.round(h*r);
    var c=document.createElement('canvas');c.width=w;c.height=h;var x=c.getContext('2d');x.drawImage(img,0,0,w,h);
    var g=S.lastGeo,lines=[nowStr(),(S.v?S.v.storeId+' '+(S.v.storeName||''):''),(S.user?S.user.nick:'')+' · '+tagLabel(tag)+(album?(L==='zh'?' · 相册上传':' · dari galeri'):''),g?('GPS '+g.lat.toFixed(5)+', '+g.lng.toFixed(5)):'GPS -'];
    var fs=Math.max(16,Math.round(w/40));x.font='bold '+fs+'px Arial';var bh=(fs+6)*lines.length+10;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,h-bh,w,bh);x.fillStyle='#FDCD17';
    lines.forEach(function(l,i){x.fillText(l,10,h-bh+fs+6+i*(fs+6))});
-   var data=c.toDataURL('image/jpeg',0.72);var id='p'+Date.now()+Math.floor(Math.random()*1000);
+   var data=c.toDataURL('image/jpeg',0.7);var id='p'+Date.now()+Math.floor(Math.random()*1000);
    mput(id,data);S.v.media[id]={name:tag.replace(/[^\w.-]+/g,'_')+'_'+id+'.jpg',mime:'image/jpeg'};S.thumbs[id]=data;saveDraft();pump();cb(id);};
   img.src=URL.createObjectURL(file);};
  getGeo(function(g){if(g)S.lastGeo=g;});inp.click();}
