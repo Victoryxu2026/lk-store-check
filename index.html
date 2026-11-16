@@ -300,14 +300,14 @@ function myArea(){var zh=L==='zh',H=(S.boot&&S.boot.home)||{},h='';if(H.err)retu
  if(t)h+='<div class="card" style="margin-top:12px"><div class="small muted" style="margin-bottom:6px;letter-spacing:.5px">'+(zh?'待办':'TUGAS')+'</div>'+t+'</div>';
  // 看板
  var D=H.dash;if(D){var m=function(l,v,sub,red,n){var few=n!==undefined&&n<5;return '<div style="background:#f6f6f6;border-radius:10px;padding:9px 10px"><div class="small muted">'+l+'</div><div style="font-size:20px;font-weight:800;'+(few?'color:#aaa':'')+'">'+v+'</div><div class="small" style="color:'+(few?'#aaa':(red?'#b3261e':'#777'))+'">'+(few?(zh?'样本太少（'+n+' 次）':'Sampel sedikit ('+n+')'):sub)+'</div></div>';};
-  var low=(D.cov.regs||[]).filter(function(r){return r.p<60;});
+  var low=(D.cov.regs||[]).length>1?(D.cov.regs||[]).filter(function(r){return r.p<60;}):[];
   h+='<div class="card" style="margin-top:12px;cursor:pointer" onclick="S.nav=[];S.dashReg=\'\';navTo(\'dash\')"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:16px">'+(zh?'门店检查看板':'Dashboard cek toko')+'</b><span class="small muted">'+scopeTxt(D)+' ›</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
    +m(zh?'本期巡店覆盖':'Cakupan kunjungan',D.cov.all+'%',low.length?low.map(function(r){return rgn(r.r)+' '+r.p+'%';}).join(' · '):pd(D.half),low.length)
    +m(zh?'本月检查平均分':'Skor rata-rata',D.score.avg==null?'—':D.score.avg,(zh?'基于 ':'dari ')+D.score.n+(zh?' 次':' kali'),false,D.score.n)
-   +m(zh?'抽检准确率':'Akurasi cek stok',D.spot.acc==null?'—':D.spot.acc+'%',(zh?'基于 ':'dari ')+D.spot.n+(zh?' 次':' kali'),false,D.spot.n)
+   +m(zh?'库存抽检准确率':'Akurasi stock opname acak',D.spot.acc==null?'—':D.spot.acc+'%',(zh?'基于 ':'dari ')+D.spot.n+(zh?' 次':' kali'),false,D.spot.n)
    +m(zh?'未关闭整改':'Perbaikan terbuka',D.iss.open,(zh?'超期 ':'Lewat ')+D.iss.over,D.iss.over>0)+'</div></div>';}
  // 最近
- var R=H.recent||[];if(R.length)h+='<div class="card" style="margin-top:12px"><div class="small muted" style="margin-bottom:2px;letter-spacing:.5px">'+(zh?'我最近的检查':'CEK TERAKHIR SAYA')+'</div>'+R.map(function(x){var r=x.t==='STD'?(x.sc==null?'—':x.sc+(zh?' 分':'')):(x.acc==null?'—':(zh?'准确率 ':'Akurasi ')+x.acc+'%');if(x.iss)r='<span style="color:#b3261e">'+(zh?'整改 ':'Perbaikan ')+x.iss+'</span> · '+r;return row(md(x.d)+' · '+esc(x.sn)+(x.t==='SPOT'?(zh?' · 抽检':' · Cek stok'):''),r,'#555',(x.t==='STD'?'openVisit':'openSpotD')+'(\''+esc(x.id)+'\')');}).join('')+'</div>';
+ var R=H.recent||[];if(R.length)h+='<div class="card" style="margin-top:12px"><div class="small muted" style="margin-bottom:2px;letter-spacing:.5px">'+(zh?'我最近的检查':'CEK TERAKHIR SAYA')+'</div>'+R.map(function(x){var r=x.t==='STD'?(x.sc==null?'—':x.sc+(zh?' 分':'')):(x.acc==null?'—':(zh?'准确率 ':'Akurasi ')+x.acc+'%');if(x.iss)r='<span style="color:#b3261e">'+(zh?'整改 ':'Perbaikan ')+x.iss+'</span> · '+r;return row(md(x.d)+' · '+esc(x.sn)+(x.t==='SPOT'?(zh?' · 库存抽检':' · Stock Opname Acak'):''),r,'#555',(x.t==='STD'?'openVisit':'openSpotD')+'(\''+esc(x.id)+'\')');}).join('')+'</div>';
  return h;}
 function startAt(id,ty){var st=(S.boot.stores||[]).find(function(x){return x.id===id});newVisit(ty||'STD');if(S.v&&st){S.v.city=st.city;pickStore(id);}}
 // ---------- 看板 / 门店历史 / 检查明细 ----------
