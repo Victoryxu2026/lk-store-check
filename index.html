@@ -393,7 +393,7 @@ function scSpotD(){var zh=L==='zh',r=(S.dc||{})['s_'+S.vid];if(!r||r.err)return 
  h+='<div class="card"><b>'+(zh?'对不上的 SKU':'SKU yang tidak cocok')+'</b>'+(b.length?b.map(function(x){return '<div style="padding:9px 0;border-top:1px solid #eee;font-size:14px"><div style="display:flex;justify-content:space-between;gap:8px"><span>'+esc(x.name)+'</span><b style="color:#b3261e;white-space:nowrap">'+(x.diff>0?'+':'')+x.diff+'</b></div><div class="small muted" style="margin-top:2px">POS '+esc(String(x.pos))+' · '+(zh?'实盘 ':'Hitung ')+esc(String(x.act))+(x.rc!==''?' · '+(zh?'复数 ':'Hitung ulang ')+esc(String(x.rc)):'')+'</div>'+(x.note?'<div class="small muted">'+esc(spotNoteTr(x.note))+'</div>':'')+'</div>';}).join(''):'<div class="small muted" style="padding-top:6px">'+(zh?'全部一致 ✓':'Semua cocok ✓')+'</div>')+'</div>';
  return h;}
 function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.boot.pc)||{},tiles=[];
- var hl=(S.boot&&S.boot.health)||[];if(hl.length)h+='<div class="card" style="background:#fdecea;border-color:#f3c1bd;padding:10px 14px;font-size:13px"><b style="color:#b3261e">⚠ '+(zh?'数据源读取异常（仅管理层可见）':'Sumber data bermasalah (hanya manajemen)')+'</b>'+hl.map(function(x){return '<div style="margin-top:4px">'+esc(x.src)+' · '+(zh?'正在用 ':'pakai cadangan ')+esc(x.bak)+(zh?' 的备份':'')+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'通常是表格改了名字或格式，把这条截图发给 Claude 处理':'Biasanya karena nama/format sheet berubah')+'</div></div>';
+ var hl=(S.boot&&S.boot.health)||[];if(hl.length)h+='<div class="card" style="background:#fdecea;border-color:#f3c1bd;padding:10px 14px;font-size:13px"><b style="color:#b3261e">⚠ '+(zh?'数据源读取异常（仅管理层可见）':'Sumber data bermasalah (hanya manajemen)')+'</b>'+hl.map(function(x){return '<div style="margin-top:4px">'+esc(x.src)+' · '+(x.msg?esc(x.msg):(zh?'正在用 ':'pakai cadangan ')+esc(x.bak)+(zh?' 的备份':''))+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'通常是表格改了名字或格式，把这条截图发给 Claude 处理':'Biasanya karena nama/format sheet berubah')+'</div></div>';
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6;padding:10px 14px;cursor:pointer" onclick="resume()"><b>'+(zh?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc((d.storeName||d.storeId||'')+' · '+(d.type==='STD'?t('std'):t('spot')))+' · <u>'+(zh?'继续':'Lanjutkan')+' ›</u></div></div>';
  var hasChk=(S.user.entries||[]).length>0,soon=zh?'敬请期待':'Segera hadir';
 
@@ -417,7 +417,12 @@ function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},h='<h2 style
  h+=ecard(!!sa.grab,sa.grab?'slOpen(\'grab\')':'offToast()','sales',zh?'GrabMart 销售':'Penjualan GrabMart',zh?'每家店有销售天数 · 累计 · 同期':'Hari ada order · total · vs bulan lalu');
  h+=ecard(false,'toast(\''+(zh?'敬请期待':'Segera hadir')+'\')','fin',zh?'Tokopedia 销售':'Penjualan Tokopedia',zh?'敬请期待':'Segera hadir');
  return h;}
-function slOpen(k){var ek='sv_'+k;if(S.dc&&S.dc[ek]&&S.dc[ek].err)delete S.dc[ek];S.slK=k;S.slPick=0;S.slSort=k==='grab'?{k:'days',d:1}:{k:'ach',d:1};navTo(k==='store'?'salesS':'salesG');fetchD(ek,'salesView',[S.token,k,'cur'],S.mod);}
+// 打开时先显示手机里存的上一次结果（标「更新中」），同时去后台取最新的，取到就替换
+function slLsKey(k){return 'lk_sv_'+((S.user&&S.user.nick)||'')+'_'+k;}
+function slOpen(k){var ek='sv_'+k;S.dc=S.dc||{};if(S.dc[ek]&&S.dc[ek].err)delete S.dc[ek];S.slK=k;S.slPick=0;S.slSort=k==='grab'?{k:'days',d:1}:{k:'ach',d:1};
+ if(!S.dc[ek]){try{var c=JSON.parse(localStorage.getItem(slLsKey(k))||'null');if(c&&c.stores){c._stale=1;S.dc[ek]=c;}}catch(e){}}
+ navTo(k==='store'?'salesS':'salesG');
+ if(!S.dc[ek]||S.dc[ek]._stale)run('salesView',[S.token,k,'cur'],function(r){S.dc[ek]=r;try{localStorage.setItem(slLsKey(k),JSON.stringify(r));}catch(e){}if(/^sales[SGD]$/.test(S.mod))render();},function(e){var c=S.dc[ek];if(c&&c._stale)c._failed=1;else S.dc[ek]={err:1,msg:String(e&&e.message||e||'').slice(0,120)};if(/^sales[SGD]$/.test(S.mod))render();});}
 function jt(n){n=Number(n)||0;var v=(Math.abs(n)/1e6).toFixed(1);if(L!=='zh')v=v.replace('.',',');return (n<0?'-':'')+v+'jt';}
 function pc1(x){return x==null||!isFinite(x)?'—':Math.round(x*100)+'%';}
 function sgn(x){if(x==null||!isFinite(x))return '—';var v=Math.round(x*100);return (v>0?'+':'')+v+'%';}
@@ -440,7 +445,7 @@ function slCalc(x,R){var cur=R.m==='cur',d=cur?x.c:x.p,o={a:d.a,g:d.g,t:d.t,gd:d
  o.flags=f.slice(0,2);return o;}
 // 选中月份的数据：当月/上月用同一次读取；更早的月份单独读
 function slData(k){var b=(S.dc||{})['sv_'+k];if(!b||b.err||!b.stores)return b;var sel=S.slym||b.cur;
- var R={asOf:b.asOf,cur:b.cur,prev:b.prev,e:b.e,dim:b.dim,dimP:b.dimP,bench:b.bench,stores:b.stores,months:b.months||[b.cur,b.prev],sel:sel,m:'cur'};
+ var R={asOf:b.asOf,cur:b.cur,prev:b.prev,e:b.e,dim:b.dim,dimP:b.dimP,bench:b.bench,stores:b.stores,months:b.months||[b.cur,b.prev],sel:sel,m:'cur',stale:b._stale?(b._failed?2:1):0};
  if(R.months.indexOf(sel)<0){sel=R.sel=b.cur;S.slym=null;}
  if(sel===b.cur)return R;
  if(sel===b.prev){R.m='prev';R.bench=b.benchP||[];return R;}
@@ -450,7 +455,7 @@ function slData(k){var b=(S.dc||{})['sv_'+k];if(!b||b.err||!b.stores)return b;va
 function slPickSel(y){var k=S.slK||'store';S.slym=y;S.slPick=0;['sv_'+k+'_'+y,'ss_'+S.slId+'_'+y].forEach(function(x){if(S.dc&&S.dc[x]&&S.dc[x].err)delete S.dc[x];});render();window.scrollTo(0,0);}
 // 标题行：左边标题，右边月份按钮（点开选月份）
 function slHd(title,R){var zh=L==='zh',h='<div class="sl-hd"><h2>'+title+'</h2>'+(R?'<span class="sl-mon" onclick="S.slPick=1;render()">'+ymLbl(R.sel)+' <span style="font-size:10px">▼</span></span>':'')+'</div>';
- if(R)h+='<div class="sl-sub">'+(R.m==='cur'?(zh?'数据到 '+mdLbl(R.asOf)+'（POS 最近一次更新）· 同期 = '+Number(R.prev.slice(5))+'/1–'+Number(R.prev.slice(5))+'/'+Math.min(R.e,R.dimP):'Data s.d. '+mdLbl(R.asOf)+' (update POS terakhir) · dibanding tgl 1–'+Math.min(R.e,R.dimP)+' bulan lalu'):(zh?'整月 · 对比 '+ymLbl(ymPrev(R.sel))+' 整月':'Satu bulan penuh · dibanding '+ymLbl(ymPrev(R.sel))))+'</div>';
+ if(R)h+='<div class="sl-sub">'+(R.m==='cur'?(zh?'数据到 '+mdLbl(R.asOf)+'（POS 最近一次更新）· 同期 = '+Number(R.prev.slice(5))+'/1–'+Number(R.prev.slice(5))+'/'+Math.min(R.e,R.dimP):'Data s.d. '+mdLbl(R.asOf)+' (update POS terakhir) · dibanding tgl 1–'+Math.min(R.e,R.dimP)+' bulan lalu'):(zh?'整月 · 对比 '+ymLbl(ymPrev(R.sel))+' 整月':'Satu bulan penuh · dibanding '+ymLbl(ymPrev(R.sel))))+(R.stale===1?'<span style="color:#a07c00"> · '+(zh?'更新中…':'memperbarui…')+'</span>':R.stale===2?'<span style="color:#b3261e"> · '+(zh?'暂时没取到最新数据，显示的是上次的':'belum dapat data terbaru, tampil data terakhir')+'</span>':'')+'</div>';
  if(R&&S.slPick)h+='<div class="sl-mask" onclick="if(event.target===this){S.slPick=0;render()}"><div class="sl-sheet"><div style="font-weight:700;margin:2px 4px 8px">'+(zh?'选择月份':'Pilih bulan')+'</div>'+R.months.map(function(y){return '<div class="it'+(y===R.sel?' on':'')+'" onclick="slPickSel(\''+y+'\')"><span>'+ymLbl(y)+'</span><span class="muted">'+(y===R.cur?(zh?'进行中':'berjalan'):'')+(y===R.sel?' ✓':'')+'</span></div>';}).join('')+'<div class="small muted" style="margin:8px 4px 0">'+(zh?'LK POS 从 2026年9月开始，更早的月份没有数据':'LK POS mulai Sep 2026, bulan sebelumnya belum ada data')+'</div></div></div>';
  return h;}
 // 重试：删掉这一页失败的读取，重新读

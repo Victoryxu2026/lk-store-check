@@ -1,0 +1,19 @@
+# LK Hub 后台刷新：雅加达时间 6:00–22:00 每 2 小时调一次后台 refreshAll
+# （重算 POS 销售汇总、提前算好销售页数据；用户打开时只读结果）
+name: LK Hub refresh
+on:
+  schedule:
+    - cron: '0 23,1,3,5,7,9,11,13,15 * * *'   # UTC，对应雅加达 6,8,10,12,14,16,18,20,22 点
+  workflow_dispatch: {}
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Call refreshAll
+        run: |
+          curl -sS -L -m 420 -H 'Content-Type: text/plain;charset=utf-8' \
+            --data '{"fn":"refreshAll","args":[]}' \
+            'https://script.google.com/macros/s/AKfycbxPxspsZC9VBAmycgwoYaAdzPRe_t3LzAP9js9Aon7GgJNAtoAmdg4KShmHbCPGl0I/exec' | tee out.json
+          echo
+          grep -q '"data"' out.json
