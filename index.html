@@ -205,7 +205,7 @@ function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.t0=Date.no
 function recStop(force){if(!REC||REC.stopping)return;REC.sec=recClock();if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}REC.stopping=true;clearInterval(REC.timer);if(REC.paused){REC.mr.resume();}REC.mr.stop();}
 
 // ================= screens =================
-function render(){var a=document.getElementById('app');setSync();
+function render(){var a=document.getElementById('app');setSync();if(!S.v||S.v.type!=='SPOT')SPOT_KEY='';
  if(!S.token)return a.innerHTML=scLogin();
  if(S.mustChange)return a.innerHTML=scChangePw();
  if(S.myPw&&!S.v)return a.innerHTML=scMyPw();
