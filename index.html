@@ -397,14 +397,16 @@ function scSpotD(){var zh=L==='zh',r=(S.dc||{})['s_'+S.vid];if(!r||r.err)return 
  h+='<div class="card"><b>'+(zh?'对不上的 SKU':'SKU yang tidak cocok')+'</b>'+(b.length?b.map(function(x){return '<div style="padding:9px 0;border-top:1px solid #eee;font-size:14px"><div style="display:flex;justify-content:space-between;gap:8px"><span>'+esc(x.name)+'</span><b style="color:#b3261e;white-space:nowrap">'+(x.diff>0?'+':'')+x.diff+'</b></div><div class="small muted" style="margin-top:2px">POS '+esc(String(x.pos))+' · '+(zh?'实盘 ':'Hitung ')+esc(String(x.act))+(x.rc!==''?' · '+(zh?'复数 ':'Hitung ulang ')+esc(String(x.rc)):'')+'</div>'+(x.note?'<div class="small muted">'+esc(spotNoteTr(x.note))+'</div>':'')+'</div>';}).join(''):'<div class="small muted" style="padding-top:6px">'+(zh?'全部一致 ✓':'Semua cocok ✓')+'</div>')+'</div>';
  return h;}
 function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.boot.pc)||{},tiles=[];
- var hl=(S.boot&&S.boot.health)||[];if(hl.length)h+='<div class="card" style="background:#fdecea;border-color:#f3c1bd;padding:10px 14px;font-size:13px"><b style="color:#b3261e">⚠ '+(zh?'数据源读取异常（仅管理层可见）':'Sumber data bermasalah (hanya manajemen)')+'</b>'+hl.map(function(x){return '<div style="margin-top:4px">'+esc(x.src)+' · '+(x.msg?esc(x.msg):(zh?'正在用 ':'pakai cadangan ')+esc(x.bak)+(zh?' 的备份':''))+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'通常是表格改了名字或格式，把这条截图发给 Claude 处理':'Biasanya karena nama/format sheet berubah')+'</div></div>';
+ var hl=(S.boot&&S.boot.health)||[];if(hl.length)h+='<div class="card" style="background:#fdecea;border-color:#f3c1bd;padding:10px 14px;font-size:13px"><b style="color:#b3261e">⚠ '+(zh?'数据源读取异常（仅你可见）':'Sumber data bermasalah (hanya kamu)')+'</b>'+hl.map(function(x){return '<div style="margin-top:4px">'+esc(x.src)+' · '+(x.msg?esc(x.msg):(zh?'正在用 ':'pakai cadangan ')+esc(x.bak)+(zh?' 的备份':''))+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'通常是表格改了名字或格式，把这条截图发给 Claude 处理':'Biasanya karena nama/format sheet berubah')+'</div></div>';
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6;padding:10px 14px;cursor:pointer" onclick="resume()"><b>'+(zh?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc((d.storeName||d.storeId||'')+' · '+(d.type==='STD'?t('std'):t('spot')))+' · <u>'+(zh?'继续':'Lanjutkan')+' ›</u></div></div>';
  var hasChk=(S.user.entries||[]).length>0,soon=zh?'敬请期待':'Segera hadir';
 
  var finSub=zh?'备用金':'Petty cash';
- var sa=(S.boot&&S.boot.sales)||{};tiles=[['ops',zh?'门店运营':'Operasional Toko'],['sales',zh?'销售':'Penjualan',(sa.store||sa.grab)?' ':''],['check',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Cek stok'):(zh?'门店巡检':'Inspeksi toko')],
+ var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core;
+ // 核心人员：已上线的模块一律亮（模块里没权限的标准入口显示灰色）；门店人员：只显示用得到的
+ tiles=[['ops',zh?'门店运营':'Operasional Toko'],['sales',zh?'销售':'Penjualan',(core||sa.store||sa.grab)?' ':''],['check',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Cek stok'):(zh?'门店巡检':'Inspeksi toko')],
   ['goods',zh?'货品':'Produk & Stok'],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM'],['exp',zh?'拓展':'Ekspansi'],['fix',zh?'报修':'Perbaikan'],['school','LK School']];
- var core=!!((S.boot&&S.boot.me)||{}).core;
+
  // 门店人员：只显示自己用得到的格子（未上线的、用不到的都不显示）；核心团队：全部显示，未上线的灰色
  if(!core)tiles=tiles.filter(function(x){return (x[0]==='check'&&hasChk)||(x[0]==='fin'&&pc.has)||(x[0]==='sales'&&x[2]);});
  if(!tiles.length)return h+'<div class="card muted" style="text-align:center;margin-top:12px">'+(zh?'目前还没有需要你操作的功能，有新功能会在这里出现。':'Belum ada fitur untukmu saat ini. Fitur baru akan muncul di sini.')+'</div>'+a2hsMini();
@@ -417,10 +419,11 @@ function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
 function openMod(m){S.mod=m;if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
 
 // ---------- 销售 ----------
-function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},h='<h2 style="margin:4px 0 10px">'+(zh?'销售':'Penjualan')+'</h2>';
- h+=ecard(!!sa.store,sa.store?'slOpen(\'store\')':'offToast()','ops',zh?'门店销售':'Penjualan toko',zh?'目标进度 · 同期增长 · GrabMart 占比':'Progres target · Pertumbuhan · Porsi GrabMart');
- h+=ecard(!!sa.grab,sa.grab?'slOpen(\'grab\')':'offToast()','sales',zh?'GrabMart 销售':'Penjualan GrabMart',zh?'累计销售 · 同期增长 · 出单天数':'Total penjualan · Pertumbuhan · Hari ada order');
- h+=ecard(false,'toast(\''+(zh?'敬请期待':'Segera hadir')+'\')','fin',zh?'Tokopedia 销售':'Penjualan Tokopedia',zh?'敬请期待':'Segera hadir');
+function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,h='<h2 style="margin:4px 0 10px">'+(zh?'销售':'Penjualan')+'</h2>';
+ // 核心人员：没权限的标准入口显示灰色；门店人员：只显示自己能用的，灰色和未上线的都不显示
+ if(core||sa.store)h+=ecard(!!sa.store,sa.store?'slOpen(\'store\')':'offToast()','ops',zh?'门店销售':'Penjualan toko',zh?'目标进度 · 同期增长 · GrabMart 占比':'Progres target · Pertumbuhan · Porsi GrabMart');
+ if(core||sa.grab)h+=ecard(!!sa.grab,sa.grab?'slOpen(\'grab\')':'offToast()','sales',zh?'GrabMart 销售':'Penjualan GrabMart',zh?'累计销售 · 同期增长 · 出单天数':'Total penjualan · Pertumbuhan · Hari ada order');
+ if(core)h+=ecard(false,'toast(\''+(zh?'敬请期待':'Segera hadir')+'\')','fin',zh?'Tokopedia 销售':'Penjualan Tokopedia',zh?'敬请期待':'Segera hadir');
  return h;}
 // 打开时先显示手机里存的上一次结果（标「更新中」），同时去后台取最新的，取到就替换
 function slLsKey(k){return 'lk_sv_'+((S.user&&S.user.nick)||'')+'_'+k;}
