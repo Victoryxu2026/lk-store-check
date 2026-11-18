@@ -1,9 +1,7 @@
-# LK Hub 后台刷新：雅加达时间 9、13、15、18 点各一次，调后台 refreshAll（LK POS DATA 每天 8、12 点自动追加前一天数据）
-# （重算 POS 销售汇总、提前算好销售页数据；用户打开时只读结果）
+# LK Hub 手动刷新：在 GitHub Actions 页面点「Run workflow」即可，调后台 refreshAll
+# 2026-11-18 起定时刷新改由 Apps Script 触发器负责（雅加达 08:15、12:30、16:00），这里的定时已停用，只留手动按钮
 name: LK Hub refresh
 on:
-  schedule:
-    - cron: '0 2,6,8,11 * * *'   # UTC，对应雅加达 9、13、15、18 点
   workflow_dispatch: {}
 jobs:
   refresh:
