@@ -433,17 +433,19 @@ function slOpen(k){var ek='sv_'+k;S.dc=S.dc||{};if(S.slTy==null){try{S.slTy=loca
  if(!S.dc[ek]||S.dc[ek]._stale)run('salesView',[S.token,k,'cur'],function(r){S.dc[ek]=r;try{localStorage.setItem(slLsKey(k),JSON.stringify(r));}catch(e){}if(/^sales[SGD]$/.test(S.mod))render();},function(e){var c=S.dc[ek];if(c&&c._stale)c._failed=1;else S.dc[ek]={err:1,msg:String(e&&e.message||e||'').slice(0,120)};if(/^sales[SGD]$/.test(S.mod))render();});}
 function jt(n){n=Number(n)||0;var a=Math.abs(n)/1e6,v;if(a>=10){v=String(Math.round(a)).replace(/\B(?=(\d{3})+(?!\d))/g,',');}else{v=a>0&&a<1?a.toFixed(2):a.toFixed(1);}return (n<0?'-':'')+v+'jt';}
 function pc1(x){return x==null||!isFinite(x)?'—':Math.round(x*100)+'%';}
-function sgn(x){if(x==null||!isFinite(x))return '—';var v=Math.round(x*100);return (v>0?'+':'')+v+'%';}
+// 增长显示（2026-11-18 定）：上月 0、本月有 = 新增；超过 100% 写「>100%」；其余照常（排序仍按实际涨幅）
+function gr(a,b){return b>0?a/b-1:(a>0?Infinity:null);}
+function sgn(x){if(x===Infinity)return L==='zh'?'新增':'Baru';if(x==null||!isFinite(x))return '—';if(x>1)return '>100%';var v=Math.round(x*100);return (v>0?'+':'')+v+'%';}
 function achCol(x){return x==null?'#888':x<0.85?'#b3261e':x<1?'#b26a00':'#1d7a3a';}
 function ymLbl(ym){var y=ym.slice(0,4),m=Number(ym.slice(5,7)),mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];return L==='zh'?y+'年'+m+'月':mn[m-1]+' '+y;}
 function mdLbl(d){return L==='zh'?Number(d.slice(5,7))+'/'+Number(d.slice(8,10)):Number(d.slice(8,10))+' '+['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][Number(d.slice(5,7))-1];}
 // 每家店的指标（本月 = 截至数据日；上月 = 整月）
-// GrabMart 从 2026-10 开始统计，对比月早于 10 月就不比（显示「—」）
-var GM_START='2026-10';function gmCmp(R){return (R.m==='cur'?R.prev:ymPrev(R.sel))>=GM_START;}
+// GrabMart 从 2026-09 开始有数据（9–10 月 = 对账过的数，11 月起 = Grab 后台），对比月早于 9 月就不比（显示「—」）
+var GM_START='2026-09';function gmCmp(R){return (R.m==='cur'?R.prev:ymPrev(R.sel))>=GM_START;}
 function slCalc(x,R){var cur=R.m==='cur',d=cur?x.c:x.p,o={a:d.a,g:d.g,t:d.t,gd:d.gd};
  o.ach=d.t>0?d.a/d.t:null;o.share=d.a>0?d.g/d.a:null;
- if(cur){o.proj=d.t>0&&R.e>0?d.a/R.e*R.dim/d.t:null;o.need=d.t>d.a&&R.dim>R.e?(d.t-d.a)/(R.dim-R.e):0;o.mom=d.pa>0?d.a/d.pa-1:null;o.gmom=gmCmp(R)&&d.pg>0?d.g/d.pg-1:null;o.l7=d.l7;o.p7=d.p7;o.l7g=d.l7g;o.p7g=d.p7g;o.zero=d.zero;o.days=R.e;}
- else{o.proj=o.ach;o.mom=d.pa>0?d.a/d.pa-1:null;o.gmom=gmCmp(R)&&d.pg>0?d.g/d.pg-1:null;o.days=R.dimP;}
+ if(cur){o.proj=d.t>0&&R.e>0?d.a/R.e*R.dim/d.t:null;o.need=d.t>d.a&&R.dim>R.e?(d.t-d.a)/(R.dim-R.e):0;o.mom=gr(d.a,d.pa);o.gmom=gmCmp(R)?gr(d.g,d.pg):null;o.l7=d.l7;o.p7=d.p7;o.l7g=d.l7g;o.p7g=d.p7g;o.zero=d.zero;o.days=R.e;}
+ else{o.proj=o.ach;o.mom=gr(d.a,d.pa);o.gmom=gmCmp(R)?gr(d.g,d.pg):null;o.days=R.dimP;}
  var zh=L==='zh',f=[];
  if(o.proj!=null&&o.proj<0.85){var p2=cur?(x.p.t>0?x.p.a/x.p.t:null):(x.p2t>0?x.p2a/x.p2t:null);if(p2!=null&&p2<0.85)f.push(zh?'连续 2 个月达成 <85%':'2 bulan berturut-turut <85%');}
  if(cur){
@@ -506,7 +508,7 @@ function scSales(){var zh=L==='zh',k=S.slK||(S.mod==='salesG'?'grab':'store'),b=
  return h+(k==='grab'?slGrab(R,rows):slStore(R,rows));}
 function slStore(R,rows){var zh=L==='zh',cur=R.m==='cur',A=0,T=0,AA=0,PA=0,G=0,tier=[0,0,0,0],nt=0;
  rows.forEach(function(w){var o=w.o;AA+=o.a;G+=o.g;PA+=cur?w.x.c.pa:w.x.p.pa;if(o.t>0){A+=o.a;T+=o.t;var p=o.proj;tier[p<0.85?0:p<1?1:p<1.2?2:3]++;}else nt++;});
- var ach=T>0?A/T:null,proj=T>0?(cur?A/R.e*R.dim/T:A/T):null,need=cur&&T>A&&R.dim>R.e?(T-A)/(R.dim-R.e):0,mom=PA>0?AA/PA-1:null;
+ var ach=T>0?A/T:null,proj=T>0?(cur?A/R.e*R.dim/T:A/T):null,need=cur&&T>A&&R.dim>R.e?(T-A)/(R.dim-R.e):0,mom=gr(AA,PA);
  var L7=0;rows.forEach(function(w){if(w.o.t>0&&cur)L7+=w.o.l7||0;});
  var h='<div class="card">'+slHero(A,T,proj,need,L7,R);
  h+='<div class="sl-kpis">'+slKpi(zh?'累计销售':'Total penjualan',jt(AA))+slKpi(cur?(zh?'同期增长':'Pertumbuhan'):(zh?'比上月':'vs bulan lalu'),sgn(mom),grCol(mom))+slKpi(zh?'GrabMart 占比':'Porsi GrabMart',pc1(AA>0?G/AA:null))+'</div>';
@@ -532,7 +534,7 @@ function slFunnel(R,rows,live){var zh=L==='zh',cur=R.m==='cur',days=cur?R.e:R.di
 function slGrab(R,rows){var zh=L==='zh',cur=R.m==='cur',G=0,AA=0,on=0,l7=0,p7=0,PG=0;
  var live=rows.filter(function(w){return w.x.c.g>0||w.x.p.g>0||w.x.c.gd>0||w.x.p.gd>0;}),off=rows.filter(function(w){return live.indexOf(w)<0;});
  rows.forEach(function(w){G+=w.o.g;AA+=w.o.a;PG+=cur?w.x.c.pg:w.x.p.pg;if(w.o.g>0)on++;if(cur){l7+=w.o.l7g;p7+=w.o.p7g;}});
- var gm=gmCmp(R)&&PG>0?G/PG-1:null,w7=p7>0?l7/p7-1:null;
+ var gm=gmCmp(R)?gr(G,PG):null,w7=gr(l7,p7);
  var h='<div class="card"><div class="small muted">'+(zh?'GrabMart 累计':'Total GrabMart')+'</div><div class="sl-big">'+jt(G)+'</div>'
   +'<div class="sl-kpis" style="grid-template-columns:1fr 1fr">'+slKpi(cur?(zh?'同期增长':'Pertumbuhan'):(zh?'比上月':'vs bulan lalu'),sgn(gm),grCol(gm))+slKpi(zh?'占门店销售':'Porsi dari toko',pc1(AA>0?G/AA:null))+'</div>'+slFunnel(R,rows,live)
   +(cur?'<div class="small muted" style="margin-top:10px">'+(zh?'最近 7 天比前 7 天 ':'7 hari terakhir vs 7 hari sebelumnya ')+'<b style="color:'+grCol(w7)+'">'+sgn(w7)+'</b></div>':'')+'</div>';
@@ -543,7 +545,7 @@ function slGrab(R,rows){var zh=L==='zh',cur=R.m==='cur',G=0,AA=0,on=0,l7=0,p7=0,
   +slBar(r,c,null,1)+'<div class="sl-meta">'+jt(o.g)+' · '+(cur?(zh?'同期 ':'vs bln lalu '):(zh?'比上月 ':'vs bln lalu '))+'<b style="color:'+grCol(o.gmom)+'">'+sgn(o.gmom)+'</b> · '+(zh?'占门店 ':'porsi ')+pc1(o.share)+'</div>'
   +(cur&&o.l7g<=0?'<div><span class="sl-flag">'+(zh?'最近 7 天没有单':'7 hari terakhir tanpa order')+'</span></div>':'')+'</div>';}).join('')+'</div>';
  if(off.length)h+='<div class="card sl-list"><div class="sl-lh"><span>'+(zh?'未上线 GrabMart':'Belum ada GrabMart')+' · '+off.length+'</span><span>'+(zh?'这两个月没有 GrabMart 单':'tanpa order 2 bulan')+'</span></div><div style="padding:8px 0 10px;font-size:13px;color:#555;line-height:1.8">'+off.map(function(w){return esc(w.x.sn);}).join('<br>')+'</div></div>';
- return h+'<div class="small muted" style="margin:2px 4px 16px;line-height:1.5">'+(zh?'天数 = 有 GrabMart 销售的天数 / 当月已过天数。GrabMart 从 2026年10月开始统计，之前的月份没有对比，显示「—」':'Hari = hari ada order GrabMart / hari berjalan. GrabMart dihitung mulai Oktober 2026, bulan sebelumnya tanpa pembanding (—)')+'</div>';}
+ return h+'<div class="small muted" style="margin:2px 4px 16px;line-height:1.5">'+(zh?'天数 = 有 GrabMart 销售的天数 / 当月已过天数。GrabMart 数据从 2026年9月起（9 月没有对比月）。增长：上月没有单 = 新增，超过 100% 写 >100%':'Hari = hari ada order GrabMart / hari berjalan. Data GrabMart mulai September 2026 (September tanpa pembanding). Pertumbuhan: bulan lalu tanpa order = Baru, di atas 100% = >100%')+'</div>';}
 function slDetail(id){S.slId=id;S.slDay=null;var sel=S.slym||((S.dc||{})['sv_'+(S.slK||'store')]||{}).cur||'cur',ek='ss_'+id+'_'+sel;if(S.dc&&S.dc[ek]&&S.dc[ek].err)delete S.dc[ek];S.slPick=0;navTo('salesD');}
 function scSalesD(){var zh=L==='zh',k=S.slK||'store',b=(S.dc||{})['sv_'+k];
  if(!b||b.err||!b.stores)return backBtn()+loadingCard(b,'slRetry()');
