@@ -207,24 +207,33 @@ function takePhoto(tag,front,cb,album){var inp=document.createElement('input');i
   img.src=URL.createObjectURL(file);};
  getGeo(function(g){if(g)S.lastGeo=g;});inp.click();}
 S.thumbs={};
-function thumbHtml(ids){return '<div class="thumbs">'+(ids||[]).map(function(id){var src=S.thumbs[id]||murl(id);return src&&S.thumbs[id]?(murl(id)?'<img src="'+S.thumbs[id]+'" onclick="zoom(\''+id+'\')">':'<span style="position:relative;display:inline-block;line-height:0"><img src="'+S.thumbs[id]+'" onclick="zoom(\''+id+'\')"><span style="position:absolute;left:4px;bottom:6px;line-height:normal">'+chip(id)+'</span></span>'):''+chip(id)}).join('')+'</div>';}
+function thumbHtml(ids,key){return '<div class="thumbs">'+(ids||[]).map(function(id){var img=S.thumbs[id]?'<img src="'+S.thumbs[id]+'" onclick="zoom(\''+id+'\')">':'',ch=murl(id)?'':'<span style="position:absolute;left:4px;bottom:6px;line-height:normal">'+chip(id)+'</span>',x=key?'<span onclick="delPh(\''+key+'\',\''+id+'\')" style="position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:15px;line-height:26px;text-align:center;cursor:pointer">✕</span>':'';return img?'<span style="position:relative;display:inline-block;line-height:0">'+img+ch+x+'</span>':chip(id);}).join('')+'</div>';}
+// 删掉一张照片（只删这一张，其他照片不动）
+function delPh(key,id){ask(L==='zh'?'删掉这张照片？删掉后可以重新拍。':'Hapus foto ini? Setelah dihapus bisa foto ulang.',function(){var p=PH[key],arr;if(key.indexOf('bad_')===0){var b=S.v.answers[key.slice(4)];arr=b.badIds=(b.badIds||[]).filter(function(x){return x!==id});}else if(p){S.v[p]=(S.v[p]||[]).filter(function(x){return x!==id});}else{var a=S.v.answers[key]||{};a.photoIds=(a.photoIds||[]).filter(function(x){return x!==id});}
+ var mm=S.v.media[id];if(mm&&!mm.url&&!inflight[id]){delete S.v.media[id];mdel(id);}saveDraft();render();},L==='zh'?'删除':'Hapus');}
 function chip(id){var zh=L==='zh',m=S.v&&S.v.media[id]||{};if(m.url)return '<span class="tag ok">✓ '+(zh?'已上传':'Terkirim')+'</span>';if((m.fail||0)>=2)return '<span class="tag err">✕ '+(zh?'上传失败':'Gagal')+'</span>';return '<span class="tag warn">⟳ '+(zh?'上传中':'Upload…')+'</span>';}
 
 // ================= audio =================
 var REC=null;
 function recUI(key,min,max){var r=S.v.rec[key]||{};var html='<div class="card" id="rq_'+key+'"><h3>'+t(key)+'</h3>';
  if(r.id&&!REC)html+='<div class="ok">✓ '+t('recok')+' ('+Math.round(r.sec/60*10)/10+' '+t('minutes')+')</div><button class="btn btn2" onclick="recStart(\''+key+'\','+min+','+max+')">'+t('rerec')+'</button>';
- else if(REC&&REC.key===key)html+='<div class="rec" id="rtime">'+Math.floor(recClock()/60)+':'+('0'+recClock()%60).slice(-2)+'</div><div class="row"><button class="btn btn2" onclick="recPause()" id="rpause">'+t('pause')+'</button><button class="btn" onclick="recStop()">'+t('stop')+'</button></div>';
+ else if(REC&&REC.key===key)html+='<div class="small" style="color:#b3261e;margin-bottom:6px">'+(L==='zh'?'录音时不要锁屏、不要切到别的 App，屏幕会保持常亮':'Selama merekam jangan kunci layar atau pindah ke aplikasi lain; layar akan tetap menyala')+'</div><div class="rec" id="rtime">'+Math.floor(recClock()/60)+':'+('0'+recClock()%60).slice(-2)+'</div><div class="row"><button class="btn btn2" onclick="recPause()" id="rpause">'+t('pause')+'</button><button class="btn" onclick="recStop()">'+t('stop')+'</button></div>';
  else html+='<button class="btn btnY" onclick="recStart(\''+key+'\','+min+','+max+')">● '+t('start')+'</button>';
  return html+'</div>';}
 var REC_BUSY=false,REC_TIMERS=[];
+// 录音时让屏幕保持常亮（手机锁屏后浏览器一律停止录音，这是网页的限制）
+function wakeOn(me){try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(function(w){me.wl=w;}).catch(function(){});}catch(e){}}
+function wakeOff(me){try{if(me&&me.wl){me.wl.release();me.wl=null;}}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&REC&&!REC.stopping)wakeOn(REC);});
 function recClock(){if(!REC)return 0;var ms=REC.acc+(REC.paused?0:Date.now()-REC.t0);return Math.floor(ms/1000);}
 function recStart(key,min,max){if(REC||REC_BUSY)return;REC_BUSY=true;REC_TIMERS.forEach(clearInterval);REC_TIMERS=[];
  navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){var mr=new MediaRecorder(st);var ch=[];mr.ondataavailable=function(e){ch.push(e.data)};
- var me={key:key,mr:mr,st:st,ch:ch,min:min,max:max,sec:0,paused:false,acc:0,t0:Date.now()};REC=me;REC_BUSY=false;mr.start(1000);
+ var me={key:key,mr:mr,st:st,ch:ch,min:min,max:max,sec:0,paused:false,acc:0,t0:Date.now()};REC=me;REC_BUSY=false;mr.start(1000);wakeOn(me);
+ // 录音被系统打断（锁屏、来电、切 App）：已录的部分照样保存，不白录
+ st.getTracks().forEach(function(tk){tk.onended=function(){if(REC===me&&!me.stopping){me.sec=recClock();me.stopping=true;clearInterval(me.timer);try{if(me.paused)mr.resume();mr.stop();}catch(e){}toast(L==='zh'?'录音被打断了，已录的部分已保存；需要的话可以点「重录」':'Rekaman terputus; bagian yang sudah terekam tersimpan. Kalau perlu, ketuk "Rekam ulang"');}};});
  me.timer=setInterval(function(){if(REC!==me){clearInterval(me.timer);return;}me.sec=recClock();var e=document.getElementById('rtime');if(e)e.textContent=Math.floor(me.sec/60)+':'+('0'+me.sec%60).slice(-2);if(me.sec>=me.max*60)recStop(true);},500);REC_TIMERS.push(me.timer);
  mr.onstop=function(){clearInterval(me.timer);var b=new Blob(ch,{type:mr.mimeType||'audio/webm'});var fr=new FileReader();fr.onload=function(){var id='a'+Date.now();mput(id,fr.result);
-  S.v.media[id]={name:key+'_'+id+'.webm',mime:b.type.split(';')[0]};S.v.rec[key]={id:id,sec:me.sec};st.getTracks().forEach(function(tk){tk.stop()});if(REC===me)REC=null;saveDraft();pump();render();};fr.readAsDataURL(b);};
+  S.v.media[id]={name:key+'_'+id+'.webm',mime:b.type.split(';')[0]};S.v.rec[key]={id:id,sec:me.sec};wakeOff(me);st.getTracks().forEach(function(tk){tk.stop()});if(REC===me)REC=null;saveDraft();pump();render();};fr.readAsDataURL(b);};
  render();}).catch(function(){REC_BUSY=false;toast(t('micfail'))});}
 function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.t0=Date.now();REC.paused=false;document.getElementById('rpause').textContent=t('pause');}else{REC.mr.pause();REC.acc+=Date.now()-REC.t0;REC.paused=true;document.getElementById('rpause').textContent=t('cont');}}
 function recStop(force){if(!REC||REC.stopping)return;REC.sec=recClock();if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}REC.stopping=true;clearInterval(REC.timer);if(REC.paused){REC.mr.resume();}REC.mr.stop();}
@@ -673,7 +682,7 @@ function scCheckin(){if(!S.geoAsked){S.geoAsked=1;setTimeout(askGeo,50);}var v=S
   h+='<button class="btn" '+(ok?'':'disabled')+' onclick="doCheckin()">'+t('next')+'</button>';}
  return h;}
 function pickStore(id){var s=S.boot.stores.find(function(x){return x.id===id});S.v.storeId=id;S.v.storeName=s?s.name:'';S.v.storeType=s?s.type:'';saveDraft();render();}
-function photoBlock(key,label,n,front,ids,album){ids=ids||[];return '<div class="slot"><div>📷 '+esc(label)+' ('+ids.length+'/'+n+')</div>'+thumbHtml(ids)+(ids.length<n?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+')">'+t('takephoto')+'</button>'+(album?'<button class="btn btn2" onclick="snap(\''+key+'\',0,1)">'+(L==='zh'?'从相册上传照片':'Upload foto dari galeri')+'</button>':''):'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+',0,1)">'+t('retake')+'</button>')+'</div>';}
+function photoBlock(key,label,n,front,ids,album){ids=ids||[];return '<div class="slot"><div>📷 '+esc(label)+' ('+ids.length+'/'+n+')</div>'+thumbHtml(ids,n>1?key:'')+(n>1&&ids.length?'<div class="small muted" style="margin-top:4px">'+(L==='zh'?'哪张拍得不好，点那张右上角的 ✕ 删掉再重拍，其他照片不受影响':'Foto yang kurang bagus: ketuk ✕ di pojok foto itu lalu foto ulang; foto lain tetap aman')+'</div>':'')+(ids.length<n?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+')">'+t('takephoto')+'</button>'+(album?'<button class="btn btn2" onclick="snap(\''+key+'\',0,1)">'+(L==='zh'?'从相册上传照片':'Upload foto dari galeri')+'</button>':''):(n===1?'<button class="btn btn2" onclick="snap(\''+key+'\','+(front?1:0)+',0,1)">'+t('retake')+'</button>':''))+'</div>';}
 var PH={selfie:'startSelfieIds',front:'frontIds',outselfie:'endSelfieIds',group:'groupIds'};
 function snap(key,front,album,rep){if(key==='selfie'&&S.lastGeo)S.v.startGeo=S.lastGeo;if(key==='outselfie'&&S.lastGeo)S.v.endGeo=S.lastGeo;getGeo(function(g){if(g){S.lastGeo=g;S.lastGeoAt=Date.now();if(key==='selfie')S.v.startGeo=g;if(key==='outselfie')S.v.endGeo=g;saveDraft();}});
  takePhoto(key,!!front,function(id){var p=PH[key];if(rep){var olds=key.indexOf('bad_')===0?((S.v.answers[key.slice(4)]||{}).badIds||[]):p?(S.v[p]||[]):((S.v.answers[key]||{}).photoIds||[]);olds.forEach(function(o){var mm=S.v.media[o];if(mm&&!mm.url&&!inflight[o]){delete S.v.media[o];mdel(o);}});}if(key.indexOf('bad_')===0){var b=S.v.answers[key.slice(4)];b.badIds=(rep?[]:(b.badIds||[])).concat(id);}else if(p){S.v[p]=(rep?[]:(S.v[p]||[])).concat(id);}else{var a=S.v.answers[key]=S.v.answers[key]||{};a.photoIds=(rep?[]:(a.photoIds||[])).concat(id);}saveDraft();render();if(!S.lastGeo)geoNag();},!!album);}
@@ -694,7 +703,7 @@ function item(code){return S.boot.items.find(function(i){return i.code===code})}
 function autoNA(c){return ((S.boot&&S.boot.autoNA)||['B.8','C.3']).indexOf(c)>=0;}
 function naAllowed(it){return String(it.picNA)==='Y'&&S.user&&S.user.kind==='PIC';}
 function needBad(it,a){return a.level&&a.level!=='100'&&a.level!=='NA'&&(it.sec!=='C'||it.code==='C.0')&&it.code!=='B.8';}
-function badBlock(code,ids){ids=ids||[];return '<div class="slot" style="border-color:#b3261e"><div>📷 '+t('badPhoto')+' ('+ids.length+')</div>'+thumbHtml(ids)+'<button class="btn btn2" onclick="snap(\'bad_'+code+'\',0)">'+(ids.length?t('addBad'):t('takephoto'))+'</button>'+(ids.length?'<button class="btn btn2" onclick="snap(\'bad_'+code+'\',0,0,1)">'+t('retake')+'</button>':'')+'</div>';}
+function badBlock(code,ids){ids=ids||[];return '<div class="slot" style="border-color:#b3261e"><div>📷 '+t('badPhoto')+' ('+ids.length+')</div>'+thumbHtml(ids,'bad_'+code)+'<button class="btn btn2" onclick="snap(\'bad_'+code+'\',0)">'+(ids.length?t('addBad'):t('takephoto'))+'</button></div>';}
 function itemCard(code,extra){var it=item(code),a=S.v.answers[code]=S.v.answers[code]||{};
  if(autoNA(code)){a.level='NA';return '<div class="card" style="opacity:.75"><h3>'+it.code+' '+esc(f(it,'title'))+'</h3>'+(extra||'')+'<div class="small muted">'+t('autoNaNote')+'</div></div>';}
  var h='<div class="card" id="it_'+code.replace('.','_')+'"><h3>'+it.code+' '+esc(f(it,'title'))+' <span class="muted">· '+it.pts+'</span></h3><div class="small">'+esc(f(it,'std'))+'</div><div class="small muted" style="margin-top:4px">'+t('lowest')+'</div>'+(extra||'');
