@@ -406,9 +406,9 @@ function scSpotD(){var zh=L==='zh',r=(S.dc||{})['s_'+S.vid];if(!r||r.err)return 
  h+='<div class="card"><b>'+(zh?'对不上的 SKU':'SKU yang tidak cocok')+'</b>'+(b.length?b.map(function(x){return '<div style="padding:9px 0;border-top:1px solid #eee;font-size:14px"><div style="display:flex;justify-content:space-between;gap:8px"><span>'+esc(x.name)+'</span><b style="color:#b3261e;white-space:nowrap">'+(x.diff>0?'+':'')+x.diff+'</b></div><div class="small muted" style="margin-top:2px">POS '+esc(String(x.pos))+' · '+(zh?'实盘 ':'Hitung ')+esc(String(x.act))+(x.rc!==''?' · '+(zh?'复数 ':'Hitung ulang ')+esc(String(x.rc)):'')+'</div>'+(x.note?'<div class="small muted">'+esc(spotNoteTr(x.note))+'</div>':'')+'</div>';}).join(''):'<div class="small muted" style="padding-top:6px">'+(zh?'全部一致 ✓':'Semua cocok ✓')+'</div>')+'</div>';
  return h;}
 // ---------- 人事 SDM（2026-11-19）：门店人员 / 门店班次 / 考勤 / 积分校正。数据在 LK Toko 后台，这里只显示 ----------
-// 能看：Victory、Kim、Xiao 东西区；Joe、Adit 东区；Soni 西区（后台按这个名单再查一次）
+// 能看：Victory、Kim、Xiao 东西区；Joe、Adit、Nyimas 东区；Soni、Mala 西区（后台按这个名单再查一次）；Mala、Nyimas 不能做积分校正
 var TOKO_API='https://script.google.com/macros/s/AKfycbwRYWoMhFeSce8cyDNQm_9GozZMjE4DoU8zTDCij8V_fX_2Rvpef-CUK8OAjWrJO9M_/exec';
-var SDM_VIEW=['victory','kim','xiao','joe','adit','soni'];
+var SDM_VIEW=['victory','kim','xiao','joe','adit','soni','mala','nyimas'],SDM_NOADJ=['mala','nyimas'];
 function sdmOk(){return !!(S.user&&SDM_VIEW.indexOf(String(S.user.nick||'').toLowerCase())>=0);}
 function sdmKey(n){return 'lk_sdm_'+String(n||(S.user&&S.user.nick)||'').trim().toLowerCase();}
 function sdmTk(){try{return sessStore().getItem(sdmKey())||'';}catch(e){return '';}}
@@ -429,7 +429,7 @@ function scHr(){var zh=L==='zh',tab=S.sdT||0,h='<h2 style="margin:4px 0 10px">'+
  if(S.sdNeed||!sdmTk())return h+'<div class="card"><b>'+(zh?'请再输入一次密码':'Masukkan password sekali lagi')+'</b><div class="small muted" style="margin:4px 0 8px">'+(zh?'人事里是全员资料，第一次打开要确认一下是你本人（到明天早上 6 点前不用再输）。':'Data SDM berisi data semua karyawan, jadi perlu konfirmasi sekali (berlaku sampai besok jam 06:00).')+'</div><input id="sdmpw" type="password" autocomplete="current-password" placeholder="'+t('pw')+'"><button class="btn" onclick="sdmPw()">'+(zh?'确认':'Konfirmasi')+'</button></div>';
  if(S.sdP)return sdPerson();
  var tabs=zh?['门店人员','门店班次','考勤','积分校正']:['Tim Toko','Shift Toko','Absensi','Koreksi Poin'];
- h+='<div style="display:flex;background:#e6e4df;border-radius:12px;padding:3px;margin-bottom:12px">'+tabs.map(function(n,k){return '<button onclick="S.sdT='+k+';render();window.scrollTo(0,0)" style="flex:1;border:0;border-radius:10px;padding:9px 2px;font-size:13px;font-weight:'+(k===tab?'700;background:#fff;color:#111':'500;background:transparent;color:#666')+'">'+n+'</button>';}).join('')+'</div>';
+ h+='<div style="display:flex;background:#e6e4df;border-radius:12px;padding:3px;margin-bottom:12px">'+tabs.map(function(n,k){var off=k===3&&SDM_NOADJ.indexOf(String(S.user.nick||'').toLowerCase())>=0;return '<button onclick="S.sdT='+k+';render();window.scrollTo(0,0)" style="flex:1;border:0;border-radius:10px;padding:9px 2px;font-size:13px;font-weight:'+(k===tab?'700;background:#fff;color:'+(off?'#aaa':'#111'):'500;background:transparent;color:'+(off?'#bbb':'#666'))+'">'+n+'</button>';}).join('')+'</div>';
  if(S.sdErr){S.sdErr=0;h+='<div class="card" style="background:#fdecea">'+(zh?'读取失败，请稍后再试':'Gagal memuat, coba lagi nanti')+'</div>';}
  var ld='<div class="card">'+t('loading')+'</div>';
  if(tab===0){var d=(S.sd||{}).people;if(!d){sdmLoad('people','people');return h+ld;}
@@ -455,6 +455,7 @@ function scHr(){var zh=L==='zh',tab=S.sdT||0,h='<h2 style="margin:4px 0 10px">'+
     var outT=o?o.time+(o.early!=null&&o.early>10?' <span style="color:#d93025">'+(zh?'早退 '+o.early+' 分钟':'pulang awal '+o.early+' mnt')+'</span>':''):(d.date<d.today?'<span style="color:#d93025">'+(zh?'没打下班卡':'tanpa absen pulang')+'</span>':'—');
     return '<div onclick="S.sdP={nick:\''+p.nick+'\',name:\''+esc(p.name).replace(/\'/g,'')+'\',ym:\''+d.date.slice(0,7)+'\'};render();window.scrollTo(0,0)" style="padding:8px 0;border-top:1px solid #eee;font-size:14px;cursor:pointer"><div style="display:flex;justify-content:space-between"><b>'+esc(p.name)+(p.test?' <span class="muted" style="font-weight:400">('+(zh?'测试':'tes')+')</span>':'')+'</b><span class="muted">›</span></div><div class="small">'+(zh?'上班 ':'Masuk ')+inT+' · '+(zh?'问卷 ':'Laporan ')+(p.sv||'—')+' · '+(zh?'下班 ':'Pulang ')+outT+'</div></div>';}).join('')+'</div>';});
   return h;}
+ if(SDM_NOADJ.indexOf(String(S.user.nick||'').toLowerCase())>=0)return h+'<div class="card" style="text-align:center;color:#888;padding:28px 16px"><div style="font-size:15px;font-weight:600;color:#666">'+(zh?'暂无权限':'Belum ada akses')+'</div><div class="small" style="margin-top:6px">'+(zh?'积分校正由 HR 操作。需要校正的话，请把人、日期和原因发给 HR。':'Koreksi poin dilakukan oleh HR. Kirim nama, tanggal, dan alasannya ke HR.')+'</div></div>';
  var d=(S.sd||{}).adj;if(!d){sdmLoad('adj','adjList');return h+ld;}
  var F=S.sdF=S.sdF||{kind:'ADJ',date:''},ppl=d.people.slice().sort(function(a,b){return String(a.name).localeCompare(b.name);});
  h+='<div class="card"><b>'+(zh?'新增校正':'Koreksi baru')+'</b><div class="small muted" style="margin:4px 0 8px">'+(zh?'校正会作为一条记录出现在店员的积分明细里，写明原因。已经结算的月份（每月 8 号结算上个月）不能再校正。':'Koreksi muncul di rincian poin staf beserta alasannya. Bulan yang sudah ditutup (tgl 8) tidak bisa dikoreksi.')+'</div>'
