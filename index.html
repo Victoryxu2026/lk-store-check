@@ -247,7 +247,7 @@ function render(){var a=document.getElementById('app');setSync();if(!S.v||S.v.ty
   if(!S.boot){try{var cb=JSON.parse(localStorage.getItem(bk)||'null');if(cb&&cb.serverTime){S.boot=cb;S.bootStale=1;if(cb.entries)S.user.entries=cb.entries;}}catch(e){}}
   run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;S.bootStale=0;if(b.entries){S.user.entries=b.entries;try{var ss=sessStore(),o=JSON.parse(ss.getItem('lk_sess')||'null');if(o){o.user.entries=b.entries;ss.setItem('lk_sess',JSON.stringify(o));}}catch(e){}}OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();try{localStorage.setItem(bk,JSON.stringify(b));}catch(e){}if(!S.v)render();},function(){S.booting=0;if(!S.bootStale)toast(t('err'));});}
   if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';return;}}
- if(!S.v){if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
+ if(!S.v){if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='ntc')return a.innerHTML=scNtc();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
  if(S.v.type==='STD')return a.innerHTML=chkBack()+scStd();
  var sk=S.v.visitId+'|'+S.v.idx+'|'+(S.v.guideSeen?1:0);a.innerHTML=chkBack()+scSpot();if(sk!==SPOT_KEY){SPOT_KEY=sk;window.scrollTo(0,0);}}
 var SPOT_KEY='';
@@ -413,10 +413,10 @@ function sdmOk(){return !!(S.user&&SDM_VIEW.indexOf(String(S.user.nick||'').toLo
 function sdmKey(n){return 'lk_sdm_'+String(n||(S.user&&S.user.nick)||'').trim().toLowerCase();}
 function sdmTk(){try{return sessStore().getItem(sdmKey())||'';}catch(e){return '';}}
 function tkCall(fn,args,ok,fail){fetch(TOKO_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:args})}).then(function(x){return x.json()}).then(function(j){if(j.err)(fail||function(){})(j.err);else ok(j.data);}).catch(function(e){(fail||function(){})(String(e));});}
-function sdmLoginBg(n,p){if(SDM_VIEW.indexOf(String(n||'').trim().toLowerCase())<0)return;tkCall('sdmLogin',[n,p],function(r){if(r&&r.ok){try{sessStore().setItem(sdmKey(n),r.ticket);}catch(e){}S.sd={};if(!S.v&&!S.mod)render();}});}
+function sdmLoginBg(n,p){tkCall('sdmLogin',[n,p],function(r){if(r&&r.ok){try{sessStore().setItem(sdmKey(n),r.ticket);}catch(e){}S.sd={};if(!S.v&&!S.mod)render();}});}
 function sdmCall(op,a,ok){var t=sdmTk();if(!t){S.sdNeed=1;if(S.mod==='hr')render();return;}
  tkCall('sdm',[t,op,a||{}],ok,function(e){if(String(e).indexOf('SDM_LOGIN')>=0){try{sessStore().removeItem(sdmKey())}catch(x){}S.sdNeed=1;S.sd={};}else{S.sdErr=1;}if(S.mod==='hr')render();});}
-function sdmLoad(k,op,a){S.sd=S.sd||{};if(S.sd[k]||S.sd['_'+k])return;S.sd['_'+k]=1;sdmCall(op,a,function(r){S.sd[k]=r;delete S.sd['_'+k];if(S.mod==='hr'||(k==='sum'&&!S.mod&&!S.v))render();});}
+function sdmLoad(k,op,a){S.sd=S.sd||{};if(S.sd[k]||S.sd['_'+k])return;S.sd['_'+k]=1;sdmCall(op,a,function(r){S.sd[k]=r;delete S.sd['_'+k];if(S.mod==='hr'||S.mod==='ntc'||(k==='ntc'&&!S.mod&&!S.v))render();});}
 function sdmPw(){var p=document.getElementById('sdmpw').value;if(!p)return;busyOn('…');tkCall('sdmLogin',[S.user.nick,p],function(r){busyOff();if(!r.ok)return toast(r.err==='LOCKED'?(L==='zh'?'错误次数太多，请 15 分钟后再试':'Terlalu banyak salah, coba 15 menit lagi'):t('wrong'));try{sessStore().setItem(sdmKey(),r.ticket);}catch(e){}S.sdNeed=0;S.sd={};render();},function(){busyOff();toast(t('err'));});}
 function sdmBadge(){var s=(S.sd||{}).sum;return s&&s.n?'<span style="position:absolute;top:8px;right:10px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#d93025;color:#fff;font-size:12px;font-weight:700;line-height:20px">'+s.n+'</span>':'';}
 var SD_REG={West:['西区','Barat'],East:['东区','Timur']};
@@ -481,10 +481,28 @@ function sdPerson(){var zh=L==='zh',P=S.sdP,k='m_'+P.nick+'_'+P.ym,d=(S.sd||{})[
  var days=Object.keys(d.days||{}).sort().reverse();if(!days.length)return h+'<div class="card muted">'+(zh?'这个月没有记录':'Belum ada catatan')+'</div>';
  return h+'<div class="card" style="padding:4px 14px">'+days.map(function(x,i){var r=d.days[x],a=r.absen,c=r.card;
   return '<div style="padding:9px 0;'+(i?'border-top:1px solid #eee;':'')+'font-size:14px"><b>'+x.slice(5)+'</b> <span class="muted">'+esc((a&&a.store)||(c&&c.store)||'')+'</span><div class="small">'+(zh?'上班 ':'Masuk ')+(a?a.time+(a.diff>0?' <span style="color:#d93025">'+(zh?'迟到 '+a.diff+' 分钟':'telat '+a.diff+' mnt')+'</span>':''):'—')+' · '+(zh?'下班 ':'Pulang ')+(c?c.time+(c.early>10?' <span style="color:#d93025">'+(zh?'早退 '+c.early+' 分钟':'pulang awal '+c.early+' mnt')+'</span>':''):'<span style="color:#d93025">'+(zh?'没打':'tidak ada')+'</span>')+'</div></div>';}).join('')+'</div>';}
+// ---------- 通知栏（2026-11-19）：人员卡下面固定一行；有通知显示最重要的一条 + 还有几条，没有就一行浅灰字。数据：LK Toko 后台（系统通知 + 公告页签） ----------
+var NLV={urgent:['#d93025','#fdecea'],important:['#b06000','#fff4d6'],info:['#5f6368','#f1f1ef']};
+function nKey(){return 'lk_nr_'+String((S.user&&S.user.nick)||'').toLowerCase();}
+function nRead(){try{return JSON.parse(localStorage.getItem(nKey())||'{}');}catch(e){return {};}}
+function nList(){var zh=L==='zh',r=nRead(),o={urgent:0,important:1,info:2},d=((S.sd||{}).ntc||{}).list||[],hl=(S.boot&&S.boot.health)||[],out=[];
+ if(hl.length)out.push({id:'S-health',kind:'sys',level:'urgent',zh:{t:'数据源读取异常（仅你可见）',b:hl.map(function(x){return x.src+' · '+(x.msg||('正在用 '+x.bak+' 的备份'));}).join('\n')+'\n通常是表格改了名字或格式，把这条截图发给 Claude 处理。'},id_:{t:'Sumber data bermasalah (hanya kamu)',b:hl.map(function(x){return x.src+' · '+(x.msg||('pakai cadangan '+x.bak));}).join('\n')}});
+ return out.concat(d).map(function(n){n.read=n.kind==='ann'&&!!r[n.id];return n;}).sort(function(a,b){return ((a.ended?1:0)-(b.ended?1:0))||((a.read?1:0)-(b.read?1:0))||(o[a.level]-o[b.level])||String(b.date||'').localeCompare(String(a.date||''));});}
+function nTxt(n){return L==='zh'?n.zh:n.id_;}
+function nBar(){var all=nList(),act=all.filter(function(n){return !n.read&&!n.ended;}),zh=L==='zh';
+ if(!act.length)return '<div onclick="openMod(\'ntc\')" style="margin:0 0 12px;padding:11px 14px;border-radius:12px;background:#fff;border:1px solid #e4e4e0;font-size:14px;color:#9aa0a6;cursor:pointer;display:flex;justify-content:space-between"><span>✓ '+(zh?'目前没有需要你处理的事':'Tidak ada yang perlu kamu urus')+'</span><span>›</span></div>';
+ var n=act[0],c=NLV[n.level]||NLV.info,more=act.length-1;
+ return '<div onclick="openMod(\'ntc\')" style="margin:0 0 12px;padding:11px 14px;border-radius:12px;background:'+c[1]+';border:1px solid '+c[0]+'33;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:'+c[0]+';flex:none"></span><b style="flex:1;color:'+c[0]+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(nTxt(n).t)+'</b><span style="color:'+c[0]+';white-space:nowrap">'+(more>0?'+'+more+' ':'')+'›</span></div>';}
+function nGo(l){var m=String(l||'').split(':');if(m[0]==='hr'){openMod('hr');S.sdT=Number(m[1])||0;render();}}
+function scNtc(){var zh=L==='zh',all=nList(),r=nRead();all.forEach(function(n){if(n.kind==='ann')r[n.id]=1;});try{localStorage.setItem(nKey(),JSON.stringify(r));}catch(e){}
+ var h='<h2 style="margin:4px 0 10px">'+(zh?'通知':'Pemberitahuan')+'</h2>';
+ if(!all.length)return h+'<div class="card" style="color:#9aa0a6;text-align:center;padding:28px 16px">'+(zh?'目前没有通知':'Belum ada pemberitahuan')+'</div>';
+ return h+all.map(function(n){var c=NLV[n.level]||NLV.info,x=nTxt(n),dim=n.read||n.ended;
+  return '<div class="card" style="border-left:5px solid '+(dim?'#ccc':c[0])+(dim?';opacity:.7':'')+'"><div style="display:flex;justify-content:space-between;gap:8px"><b style="font-size:15px;color:'+(dim?'#5f6368':c[0])+'">'+esc(x.t)+'</b><span class="small muted" style="white-space:nowrap">'+esc(n.ended?(zh?'已结束':'Selesai'):n.read?(zh?'已读':'Dibaca'):String(n.date||'').slice(5))+'</span></div>'+(x.b?'<div class="small" style="margin-top:6px;line-height:1.5;white-space:pre-line">'+esc(x.b)+'</div>':'')+(n.link?'<button class="btn" style="margin-top:10px" onclick="nGo(\''+n.link+'\')">'+(zh?'去处理 ›':'Buka ›')+'</button>':'')+'</div>';}).join('');}
 function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.boot.pc)||{},tiles=[];
- var hl=(S.boot&&S.boot.health)||[];if(hl.length)h+='<div class="card" style="background:#fdecea;border-color:#f3c1bd;padding:10px 14px;font-size:13px"><b style="color:#b3261e">⚠ '+(zh?'数据源读取异常（仅你可见）':'Sumber data bermasalah (hanya kamu)')+'</b>'+hl.map(function(x){return '<div style="margin-top:4px">'+esc(x.src)+' · '+(x.msg?esc(x.msg):(zh?'正在用 ':'pakai cadangan ')+esc(x.bak)+(zh?' 的备份':''))+'</div>';}).join('')+'<div class="muted" style="margin-top:4px">'+(zh?'通常是表格改了名字或格式，把这条截图发给 Claude 处理':'Biasanya karena nama/format sheet berubah')+'</div></div>';
+ h+=nBar();
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6;padding:10px 14px;cursor:pointer" onclick="resume()"><b>'+(zh?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc((d.storeName||d.storeId||'')+' · '+(d.type==='STD'?t('std'):t('spot')))+' · <u>'+(zh?'继续':'Lanjutkan')+' ›</u></div></div>';
- var hasChk=(S.user.entries||[]).length>0,soon=zh?'敬请期待':'Segera hadir';if(sdmOk()&&sdmTk())sdmLoad('sum','sum');
+ var hasChk=(S.user.entries||[]).length>0,soon=zh?'敬请期待':'Segera hadir';if(sdmTk())sdmLoad('ntc','notices');
 
  var finSub=zh?'备用金':'Petty cash';
  var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core;
@@ -496,12 +514,12 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
  if(!core)tiles=tiles.filter(function(x){return (x[0]==='check'&&hasChk)||(x[0]==='fin'&&pc.has)||(x[0]==='sales'&&x[2]);});
  if(!tiles.length)return h+'<div class="card muted" style="text-align:center;margin-top:12px">'+(zh?'目前还没有需要你操作的功能，有新功能会在这里出现。':'Belum ada fitur untukmu saat ini. Fitur baru akan muncul di sini.')+'</div>'+a2hsMini();
  h+='<div class="grid9">'+tiles.map(function(x){var on=!!x[2],ic='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+ICO[x[0]]+'"/></svg>';
-  return '<div class="t9'+(on?'':' soon')+'" style="position:relative" onclick="'+(on?'openMod(\''+x[0]+'\')':(x[0]==='sales'?'offToast()':'toast(\''+soon+'\')'))+'"><div class="ic">'+ic+'</div><div class="nm">'+esc(x[1])+'</div>'+(x[0]==='hr'&&on?sdmBadge():'')+'</div>';}).join('')+'</div>';
+  return '<div class="t9'+(on?'':' soon')+'" style="position:relative" onclick="'+(on?'openMod(\''+x[0]+'\')':(x[0]==='sales'?'offToast()':'toast(\''+soon+'\')'))+'"><div class="ic">'+ic+'</div><div class="nm">'+esc(x[1])+'</div>'+''+'</div>';}).join('')+'</div>';
  return h+myArea()+a2hsMini();}
 // 金额统一格式（规则 R231）：逗号千分位、点只做小数点，中印文一样
 function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');}
 function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
-function openMod(m){S.mod=m;if(m==='hr'){S.sdP=null;S.sdNeed=0;S.sd={sum:(S.sd||{}).sum};}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
+function openMod(m){S.mod=m;if(m==='hr'){S.sdP=null;S.sdNeed=0;S.sd={ntc:(S.sd||{}).ntc};}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
 
 // ---------- 销售 ----------
 function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,h='<h2 style="margin:4px 0 10px">'+(zh?'销售':'Penjualan')+'</h2>';
