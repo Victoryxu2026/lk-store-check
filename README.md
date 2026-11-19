@@ -2,4 +2,4 @@
 
 LK VAPE Indonesia store inspection & stock spot-check web page.
 
-Link: https://victoryxu2026.github.io/lk-store-check/
+Link: https://lk-retail.github.io/lk-hub/
