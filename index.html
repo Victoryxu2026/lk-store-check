@@ -136,11 +136,9 @@ function toast(m){var e=document.getElementById('toast');e.style.whiteSpace='';e
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
 function busyOn(m){document.getElementById('busymsg').textContent=m;document.getElementById('busy').style.display='flex';}
 function busyOff(){document.getElementById('busy').style.display='none';}
-var API='https://script.google.com/macros/s/AKfycbxPxspsZC9VBAmycgwoYaAdzPRe_t3LzAP9js9Aon7GgJNAtoAmdg4KShmHbCPGl0I/exec';
-// 2026-11-19 起正式用数据库版接口（Supabase）。万一要临时切回旧后台：链接加 ?db=0（左下角显示 OLD），加 ?db=1 切回数据库版
-(function(){try{var q=location.search;if(/[?&]db=0/.test(q))localStorage.setItem('lk_db','0');if(/[?&]db=1/.test(q))localStorage.removeItem('lk_db');
-if(localStorage.getItem('lk_db')!=='0'){API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-api/hub';}
-else{var mk=function(){if(!document.body)return setTimeout(mk,50);var b=document.createElement('div');b.textContent='OLD';b.style.cssText='position:fixed;left:6px;bottom:6px;z-index:99999;background:#b3261e;color:#fff;font:bold 10px Arial;padding:2px 6px;border-radius:6px;opacity:.85;pointer-events:none';document.body.appendChild(b);};mk();}}catch(e){}})();
+var API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-api/hub';
+// 2026-11-19 起只用数据库版接口（Supabase），旧后台已停用
+API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-api/hub';try{localStorage.removeItem('lk_db');}catch(e){}
 
 try{fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'warm',args:[]})}).catch(function(){});}catch(e){}
 function run(fn,args,ok,fail){var onFail=function(e){if(String(e).indexOf('SESSION_EXPIRED')>=0){toast(t('expired'));logout();return;}(fail||function(){toast(t('err'))})(e);};
@@ -412,7 +410,7 @@ function scSpotD(){var zh=L==='zh',r=(S.dc||{})['s_'+S.vid];if(!r||r.err)return 
  return h;}
 // ---------- 人事 SDM（2026-11-19）：门店人员 / 门店班次 / 考勤 / 积分校正。数据在 LK Toko 后台，这里只显示 ----------
 // 能看：Victory、Kim、Xiao 东西区；Joe、Adit、Nyimas 东区；Soni、Mala 西区（后台按这个名单再查一次）；Mala、Nyimas 不能做积分校正
-var TOKO_API='https://script.google.com/macros/s/AKfycbwRYWoMhFeSce8cyDNQm_9GozZMjE4DoU8zTDCij8V_fX_2Rvpef-CUK8OAjWrJO9M_/exec';try{if(localStorage.getItem('lk_db')!=='0')TOKO_API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-api/toko';}catch(e){}
+var TOKO_API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-api/toko';
 var SDM_VIEW=['victory','kim','xiao','joe','adit','soni','mala','nyimas'],SDM_NOADJ=['mala','nyimas'];
 function sdmOk(){return !!(S.user&&SDM_VIEW.indexOf(String(S.user.nick||'').toLowerCase())>=0);}
 function sdmKey(n){return 'lk_sdm_'+String(n||(S.user&&S.user.nick)||'').trim().toLowerCase();}
