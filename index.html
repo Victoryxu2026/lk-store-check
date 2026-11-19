@@ -514,7 +514,7 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
  var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core;
  // 核心人员：已上线的模块一律亮（模块里没权限的标准入口显示灰色）；门店人员：只显示用得到的
  tiles=[['ops',zh?'门店运营':'Operasional Toko'],['sales',zh?'销售':'Penjualan',(core||sa.store||sa.grab)?' ':''],['check',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Cek stok'):(zh?'门店巡检':'Inspeksi toko')],
-  ['goods',zh?'货品':'Produk & Stok'],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM',sdmOk()?' ':''],['exp',zh?'拓展':'Ekspansi'],['fix',zh?'报修':'Perbaikan'],['school','LK School']];
+  ['goods',zh?'货品':'Produk & Stok'],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM',sdmOk()?' ':''],['exp',zh?'拓展':'Ekspansi'],['fix',zh?'报修与反馈':'Perbaikan & Laporan'],['school','LK School']];
 
  // 门店人员：只显示自己用得到的格子（未上线的、用不到的都不显示）；核心团队：全部显示，未上线的灰色
  if(!core)tiles=tiles.filter(function(x){return (x[0]==='check'&&hasChk)||(x[0]==='fin'&&pc.has)||(x[0]==='sales'&&x[2]);});
