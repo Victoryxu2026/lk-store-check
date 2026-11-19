@@ -640,7 +640,7 @@ function pcDetail(me,title){var zh=L==='zh',d=me&&me.det;if(!me||!d||!d.ok)retur
  var old=(me.hist||[]).filter(function(x){return !/^\d{6}$/.test(x.p)||x.p<d.from});
  if(old.length)c+=S.finOld?pcHist({bal:me.bal,hist:old}).replace(/^<div class="card">[\s\S]*?<\/div><\/div>/,'').replace(zh?'历史记录（按月）':'Riwayat per bulan',zh?'更早的月度汇总':'Ringkasan bulan sebelumnya'):'<div class="more" onclick="S.finOld=1;render()">'+(zh?'查看更早的月度汇总':'Lihat ringkasan bulan sebelumnya')+' ▾</div>';
  return h+c;}
-function finNote(f){var zh=L==='zh';return '<div class="guide" style="margin:0 0 10px">ℹ️ '+(zh?'数据来自 Finance，截至 ':'Data dari Finance, per ')+'<b>'+esc((f&&f.asOf)||'—')+'</b>'+(zh?'。Finance 每周更新；有疑问请联系 Finance。':'. Finance memperbarui tiap minggu; ada pertanyaan hubungi Finance.')+'</div>';}
+function finNote(f){var zh=L==='zh';return '<div class="guide" style="margin:0 0 10px">ℹ️ '+(zh?'数据截至 ':'Data per ')+'<b>'+esc((f&&f.asOf)||'—')+'</b>'+(zh?'，每周更新，有疑问请联系 Finance。':', diperbarui tiap minggu; ada pertanyaan hubungi Finance.')+'</div>';}
 function finBack(){return '<div><span class="back" onclick="S.finSub=null;S.finWho=null;render();window.scrollTo(0,0)">‹ '+(L==='zh'?'财务':'Keuangan')+'</span></div>';}
 function scFin(){var zh=L==='zh',f=S.fin,pc=(S.boot&&S.boot.pc)||{},h='';
  var wait=function(){return '<div class="card">'+(S.finErr?(zh?'读取失败，请稍后再试':'Gagal memuat, coba lagi nanti'):t('loading'))+'</div>';};
