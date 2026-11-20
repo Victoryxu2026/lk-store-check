@@ -289,7 +289,7 @@ function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.t0=Date.no
 function recStop(force){if(!REC||REC.stopping)return;REC.sec=recClock();if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}REC.stopping=true;clearInterval(REC.timer);if(REC.paused){REC.mr.resume();}REC.mr.stop();}
 
 // ================= screens =================
-function render(){var lb=document.querySelector('header .lang');if(lb)lb.innerHTML=langLbl();var dk=S._desk=!!(S.token&&!S.mustChange&&deskOn()),dv=document.getElementById('dnav');document.body.classList.toggle('desk',dk);document.body.classList.toggle('dv',dk&&!!S.v);render0();if(dk&&dv){dv.innerHTML=S.boot?deskNav():'';if(!S.v&&S.boot){var tb=deskTabs();if(tb)document.getElementById('app').insertAdjacentHTML('afterbegin','<div class="dhead">'+tb+'</div>');}}else if(dv)dv.innerHTML='';var dh=dk&&document.querySelector('#app .dhead');document.body.style.setProperty('--dh',(dh?dh.offsetHeight:0)+'px');var th=document.querySelector('#app .gdtw thead');if(th)document.body.style.setProperty('--gdth',th.offsetHeight+'px');if(!dk)gdCardify();}
+function render(){var lb=document.querySelector('header .lang');if(lb)lb.innerHTML=langLbl();var dk=S._desk=!!(S.token&&!S.mustChange&&deskOn()),dv=document.getElementById('dnav');document.body.classList.toggle('desk',dk);document.body.classList.toggle('dv',dk&&!!S.v);render0();if(dk&&dv){dv.innerHTML=S.boot?deskNav():'';if(!S.v&&S.boot){var tb=deskTabs();if(tb)document.getElementById('app').insertAdjacentHTML('afterbegin','<div class="dhead">'+tb+'</div>');}}else if(dv)dv.innerHTML='';var dh=dk&&document.querySelector('#app .dhead');document.body.style.setProperty('--dh',(dh?dh.offsetHeight:0)+'px');var th=document.querySelector('#app .gdtw thead');if(th)document.body.style.setProperty('--gdth',th.offsetHeight+'px');if(!dk&&window.gdCardify)gdCardify();}
 function render0(){var a=document.getElementById('app');setSync();if(!S.v||S.v.type!=='SPOT')SPOT_KEY='';
  if(!S.token)return a.innerHTML=scLogin();
  if(S.mustChange)return a.innerHTML=scChangePw();
@@ -825,7 +825,7 @@ function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
 // ---------- 报修与反馈 + LK School（2026-11-21，决策记录 642）----------
 // 报修与反馈：提交（报修 / 反馈 / 违规举报 + 我的记录）· 待处理（有处理权限才显示：报修 / 反馈 / 举报，举报只有指定的人看得到）
 // LK School：学习看板 / 发布与审核 / 我的学习，按权限显示（权限在 LK Hub 数据表 Settings）
-var SC_MAX_MB=50;// 资料文件上限：Supabase 项目整体上传上限现在是 50MB，调高后改这里（最高 200MB，存储桶 school 已设 200MB）
+var SC_MAX_MB=200;// 资料文件上限 200MB（Supabase 项目整体上限和存储桶 school 都已设 200MB，2026-11-21）
 var LP_API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-lapor',SC_API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-school';
 function zi(a,b){return L==='zh'?a:b;}
 function xCall(url,fn,args,ok,fail){var ac=window.AbortController?new AbortController():null,tm=ac?setTimeout(function(){ac.abort()},120000):0;
