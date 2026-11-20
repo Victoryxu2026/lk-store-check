@@ -905,7 +905,7 @@ function fxMineUI(){var D=S.fx.d,rows=D.mine||[];if(!rows.length)return gdEmpty(
 function fxQueue(){var X=S.fx;X.ql=null;X.qloading=1;xCall(LP_API,'queue',[X.q,X.rg||'',X.done],function(r){X.qloading=0;X.ql=r;render();},function(e){X.qloading=0;X.ql={rows:[],regs:[]};xErr(e);render();});}
 function fxQueueUI(){var X=S.fx,q=X.d.queue||{},segs=[];['repair','feedback','whistle'].forEach(function(k){if(q[k]!=null)segs.push([k,lpKind(k)+' '+q[k]]);});
  if(!X.ql&&!X.qloading)setTimeout(fxQueue,0);
- var h=gdBar(gdSeg(segs,X.q,'S.fx.q=\'%v\';fxQueue();render()')+'<span style="margin-left:auto;display:flex;gap:8px;align-items:center">'+(X.ql&&X.ql.regs&&X.ql.regs.length>1?gdSel([['',zi('东西区','Semua')],['West',zi('西区','Barat')],['East',zi('东区','Timur')]],X.rg,'S.fx.rg=this.value;fxQueue()'):'')+gdSel([['0',zi('没关的','Aktif')],['1',zi('已关闭（60 天）','Selesai (60 hari)')]],String(X.done),'S.fx.done=Number(this.value);fxQueue()')+'</span>');
+ var h=gdBar(gdSeg(segs,X.q,'S.fx.q=\'%v\';fxQueue();render()')+'<span style="margin-left:auto;display:flex;gap:8px;align-items:center">'+(X.ql&&X.ql.regs&&X.ql.regs.length>1?gdSel([['',zi('全国','Nasional')],['West',zi('西区','Barat')],['East',zi('东区','Timur')]],X.rg,'S.fx.rg=this.value;fxQueue()'):'')+gdSel([['0',zi('没关的','Aktif')],['1',zi('已关闭（60 天）','Selesai (60 hari)')]],String(X.done),'S.fx.done=Number(this.value);fxQueue()')+'</span>');
  if(X.q==='repair')h+='<div class="small muted" style="margin:0 4px 8px">'+zi('影响营业的排最前面，然后是待接单。','Yang mengganggu operasional paling atas.')+'</div>';
  if(X.q==='whistle')h+='<div class="small muted" style="margin:0 4px 8px">'+zi('保密：只有 Settings 里指定的人看得到。需要调查的，由 HR 把材料转给稽查。','Rahasia. Bila perlu investigasi, HR meneruskan ke audit.')+'</div>';
  if(!X.ql)return h+'<div class="card">'+t('loading')+'</div>';if(!X.ql.rows.length)return h+gdEmpty(zi('没有单子','Tidak ada'));
@@ -956,10 +956,14 @@ function scSchool(){var X=S.sch||(schInit(),S.sch),D=X.d;
  if(X.tab==='board')return h+schBoardUI();if(X.tab==='pub')return h+schPubUI();return h+schLearnUI();}
 // 我的学习（核心人员自己的必学和考试）
 function schLearnUI(){var D=S.sch.d,h='';
+ // 我的学习 = 我的资料 + 我的考试（待考、已通过和分数）放在一起，核心人员内容少，不再单独分页（2026-11-21）
  if((D.todo||[]).length)h+='<div class="card" style="background:#111;color:#fff"><b style="color:#FDCD17">'+zi('还有 '+D.todo.length+' 份必学没完成','Ada '+D.todo.length+' materi wajib')+'</b></div>';
  if(!D.mats.length&&!D.exams.length)return h+gdEmpty(zi('还没有发给你的资料或考试。发布时「给谁看」选了「核心人员」才会出现在这里。','Belum ada materi untukmu.'));
- h+=D.mats.map(function(m){return ecard(true,'schOpen('+m.id+')','school',esc(m.title),scCat(m.cat)+' · '+scTy(m.media_type)+(m.req?' · '+zi('必学','Wajib'):'')+' · '+(m.done?zi('已完成','Selesai'):m.viewed?zi('已学待考','Belum ujian'):zi('未学','Belum')));}).join('');
- h+=D.exams.filter(function(e){return !e.passed;}).map(function(e){return ecard(e.left>0,e.left>0?'schStart('+e.id+')':'toast(\''+zi('今天已经考了 3 次','Sudah 3 kali hari ini')+'\')','check',zi('考试：','Ujian: ')+esc(e.title),zi(e.n+' 题 · '+e.pass+' 分及格','')+(e.best!=null?' · '+zi('最高 ','tertinggi ')+e.best:'')+' · '+zi('今天还能考 '+e.left+' 次','sisa '+e.left));}).join('');
+ if(D.mats.length)h+=gdSec(zi('学习资料','Materi'),'')+D.mats.map(function(m){return ecard(true,'schOpen('+m.id+')','school',esc(m.title),scCat(m.cat)+' · '+scTy(m.media_type)+(m.req?' · '+zi('必学','Wajib'):'')+' · '+(m.done?zi('已完成','Selesai'):m.viewed?zi('已学待考','Belum ujian'):zi('未学','Belum')));}).join('');
+ var todo=D.exams.filter(function(e){return !e.passed;}),ok=D.exams.filter(function(e){return e.passed;});
+ if(D.exams.length)h+=gdSec(zi('我的考试','Ujian saya'),'');
+ h+=todo.map(function(e){return ecard(e.left>0,e.left>0?'schStart('+e.id+')':'toast(\''+zi('今天已经考了 3 次','Sudah 3 kali hari ini')+'\')','check',esc(e.title),zi(e.n+' 题 · '+e.pass+' 分及格',e.n+' soal · lulus '+e.pass)+(e.due?' · '+e.due:'')+(e.best!=null?' · '+zi('最高 ','tertinggi ')+e.best:'')+' · '+zi('今天还能考 '+e.left+' 次','sisa '+e.left));}).join('');
+ h+=ok.map(function(e){return ecard(false,'','check',esc(e.title)+' · '+zi('已通过','Lulus'),zi('最高 '+e.best+' 分 · 考了 '+e.tries+' 次','Tertinggi '+e.best+' · '+e.tries+' kali'));}).join('');
  return h;}
 function schOpen(id){busyOn();xCall(SC_API,'open',[id],function(r){busyOff();S.sch.view={mat:r};render();window.scrollTo(0,0);});}
 function schStart(id){busyOn();xCall(SC_API,'start',[id],function(r){busyOff();S.sch.view={ex:r,ans:{}};render();window.scrollTo(0,0);});}
@@ -1046,7 +1050,7 @@ function schReviewUI(){var R=S.sch.rv,x=R.x,h='<div><span class="back" onclick="
 function schRv(ok){var R=S.sch.rv,n=(fxV('rvn')||'').trim();if(!ok&&!n)return toast(zi('写退回原因','Tulis alasan'));busyOn();xCall(SC_API,'review',[R.typ,R.x.id,!!ok,n],function(){busyOff();toast(ok?zi('已发布','Terbit'):zi('已退回','Dikembalikan'));S.sch.rv=null;schMgmt();render();});}
 // 学习看板
 function schBoardUI(){var X=S.sch,B=X.b,h='';
- var regs=(X.d.me.p.board||[]);h+=gdBar((regs.length>1?gdSeg([['',zi('东西区','Semua')],['West',zi('西区','Barat')],['East',zi('东区','Timur')]],X.brg||'','S.sch.brg=\'%v\';schBoard();render()'):'')+gdSeg([['store',zi('按门店','Per toko')],['person',zi('按人','Per orang')],['item',zi('按资料','Per materi')]],X.bv||'store','S.sch.bv=\'%v\';render()'));
+ var regs=(X.d.me.p.board||[]);h+=gdBar((regs.length>1?gdSeg([['',zi('全国','Nasional')],['West',zi('西区','Barat')],['East',zi('东区','Timur')]],X.brg||'','S.sch.brg=\'%v\';schBoard();render()'):'')+gdSeg([['store',zi('按门店','Per toko')],['person',zi('按人','Per orang')],['item',zi('按资料','Per materi')]],X.bv||'store','S.sch.bv=\'%v\';render()'));
  if(!B)return h+'<div class="card">'+t('loading')+'</div>';
  if(!B.items.length)return h+gdEmpty(zi('还没有已发布的必学。必学发布后，这里按门店、按人显示完成情况，没完成的排在最前面。','Belum ada materi wajib yang terbit.'));
  var pc=function(a,b){return b?Math.round(100*a/b):0;},bar=function(p){return '<div style="height:6px;background:#eee;border-radius:3px;margin-top:4px"><div style="height:6px;width:'+p+'%;background:'+(p>=80?'#1e8e3e':p>=50?'#FDCD17':'#d93025')+';border-radius:3px"></div></div>';};
