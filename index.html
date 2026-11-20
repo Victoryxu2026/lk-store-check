@@ -199,7 +199,32 @@ function murl(id){return S.v&&S.v.media[id]?S.v.media[id].url||'':'';}
 // ================= GPS =================
 // 2026-11-20：开始检查和提交检查都必须拿到手机定位（离门店多远只记录，不限制）
 function needGeo(retry){if(S.lastGeo&&Date.now()-(S.lastGeoAt||0)<120000)return retry(S.lastGeo);busyOn(L==='zh'?'正在定位…':'Mencari lokasi…');getGeo(function(g){busyOff();if(!g)return geoFail(retry);S.lastGeo=g;S.lastGeoAt=Date.now();retry(g);});}
-function geoFail(retry){var zh=L==='zh';S._geoRetry=retry;ask(zh?'没拿到定位，不能继续。请打开手机的定位（GPS），并允许浏览器使用位置，然后点「再试一次」。':'Lokasi belum terbaca, tidak bisa lanjut. Nyalakan lokasi (GPS) di HP dan izinkan browser memakai lokasi, lalu tekan "Coba lagi".',function(){S.lastGeo=null;needGeo(S._geoRetry);},zh?'再试一次':'Coba lagi');}
+var GEO_INTRO_ZH='开始检查和提交检查都要用定位。下面的设置只要做一次，以后就不用再管。',GEO_INTRO_ID='Mulai dan kirim inspeksi butuh lokasi. Pengaturan ini cukup sekali saja.',GEO_HELP_ZH='还是不行？请联系公司 IT。',GEO_HELP_ID='Masih tidak bisa? Hubungi IT kantor.';
+function geoFail(retry){geoHelp(retry,1);}
+function geoHelpRetry(){var d=document.getElementById('geoHelp');if(d)d.remove();S.lastGeo=null;var r=window._geoRetry;if(r)return needGeo(r);askGeo();}
+// ---- 怎么打开定位（2026-11-20）：打卡页状态行、拿不到定位的提示、「我的 / 账号菜单」里的帮助，都打开这一个说明 ----
+function isIOS(){var u=navigator.userAgent||'';return /iPhone|iPad|iPod/i.test(u)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);}
+function geoHelp(retry,failed,os){var zh=L==='zh',old=document.getElementById('geoHelp');if(old)old.remove();os=os||(isIOS()?'ios':'and');
+ var d=document.createElement('div');d.id='geoHelp';d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:flex;align-items:flex-end;justify-content:center';
+ d.onclick=function(e){if(e.target===d)d.remove();};
+ var st=function(n,ti,tx){return '<div style="display:flex;gap:12px;padding:12px 0;border-top:1px solid #eee"><div style="flex:none;width:26px;height:26px;border-radius:50%;background:#FDCD17;color:#111;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px">'+n+'</div><div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px;margin-bottom:3px">'+ti+'</div><div style="font-size:14px;line-height:1.55;color:#333">'+tx+'</div></div></div>';};
+ var B=function(x){return '<b>'+x+'</b>';};
+ var and=st(1,zh?'打开手机定位':'Nyalakan lokasi HP',zh?'从屏幕顶端往下滑，找到「定位」图标（印尼文是 '+B('Lokasi')+'），点一下让它变亮。':'Usap layar dari atas ke bawah, cari ikon '+B('Lokasi')+', ketuk sampai menyala.')
+   +st(2,zh?'允许浏览器使用位置':'Izinkan browser memakai lokasi',zh?'在这个页面点地址栏左边的小图标 → '+B('Izin')+'（权限）→ '+B('Lokasi')+' → 选 '+B('Izinkan')+'（允许）。<br><span style="color:#777">找不到的话：Chrome 右上角 ⋮ → '+B('Setelan')+' → '+B('Setelan situs')+' → '+B('Lokasi')+' → 把 lk-retail.github.io 改成 '+B('Izinkan')+'。如果用的是桌面上的图标：长按图标 → '+B('Info aplikasi')+' → '+B('Izin')+' → '+B('Lokasi')+' → '+B('Izinkan')+'。</span>':'Di halaman ini, ketuk ikon kecil di kiri kolom alamat → '+B('Izin')+' → '+B('Lokasi')+' → pilih '+B('Izinkan')+'.<br><span style="color:#777">Kalau tidak ketemu: Chrome ⋮ (kanan atas) → '+B('Setelan')+' → '+B('Setelan situs')+' → '+B('Lokasi')+' → ubah lk-retail.github.io jadi '+B('Izinkan')+'. Kalau pakai ikon di layar utama: tekan lama ikon → '+B('Info aplikasi')+' → '+B('Izin')+' → '+B('Lokasi')+' → '+B('Izinkan')+'.</span>')
+   +st(3,zh?'回到这里，点「再试一次」':'Kembali ke sini, tekan "Coba lagi"','');
+ var ios=st(1,zh?'打开手机定位':'Nyalakan lokasi HP',zh?'打开 '+B('Pengaturan')+'（设置）→ '+B('Privasi & Keamanan')+'（隐私与安全性）→ '+B('Layanan Lokasi')+'（定位服务）→ 打开开关。':'Buka '+B('Pengaturan')+' → '+B('Privasi & Keamanan')+' → '+B('Layanan Lokasi')+' → nyalakan.')
+   +st(2,zh?'允许 Safari 使用位置':'Izinkan Safari memakai lokasi',zh?'在同一页往下找 '+B('Situs Web Safari')+'（Safari 网站）→ 选 '+B('Saat Menggunakan App')+'（使用 App 期间）。<br>再回到 Safari，点地址栏的 '+B('aA')+' → '+B('Pengaturan Situs Web')+'（网站设置）→ '+B('Lokasi')+' → '+B('Izinkan')+'（允许）。':'Di halaman yang sama, cari '+B('Situs Web Safari')+' → pilih '+B('Saat Menggunakan App')+'.<br>Lalu di Safari, ketuk '+B('aA')+' di kolom alamat → '+B('Pengaturan Situs Web')+' → '+B('Lokasi')+' → '+B('Izinkan')+'.')
+   +st(3,zh?'回到这里，点「再试一次」':'Kembali ke sini, tekan "Coba lagi"','');
+ var tab=function(k,l){var on=os===k;return '<span onclick="geoHelp(window._geoRetry,'+(failed?1:0)+',\''+k+'\')" style="flex:1;text-align:center;padding:7px 0;border-radius:8px;cursor:pointer;font-size:14px;'+(on?'background:#111;color:#FDCD17;font-weight:700':'color:#555')+'">'+l+'</span>';};
+ window._geoRetry=retry||null;
+ d.innerHTML='<div style="background:#fff;width:100%;max-width:480px;max-height:90vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 18px calc(22px + env(safe-area-inset-bottom));color:#111;text-align:left">'
+  +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><div style="font-size:18px;font-weight:800">'+(failed?(zh?'没拿到定位，不能继续':'Lokasi belum terbaca'):(zh?'怎么打开定位':'Cara menyalakan lokasi'))+'</div><div style="font-size:13px;color:#666;margin-top:4px;line-height:1.5">'+(zh?GEO_INTRO_ZH:GEO_INTRO_ID)+'</div></div><span onclick="document.getElementById(\'geoHelp\').remove()" style="font-size:22px;color:#999;cursor:pointer;line-height:1">✕</span></div>'
+  +'<div style="display:flex;gap:4px;background:#f1f1ef;border-radius:10px;padding:3px;margin:12px 0 4px">'+tab('and','Android')+tab('ios','iPhone')+'</div>'
+  +(os==='ios'?ios:and)
+  +'<button onclick="geoHelpRetry()" style="display:block;width:100%;margin-top:6px;padding:14px;border:0;border-radius:12px;background:#FDCD17;color:#111;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer">'+(zh?'已经打开了，再试一次':'Sudah, coba lagi')+'</button>'
+  +'<div style="font-size:13px;color:#777;text-align:center;margin-top:10px">'+(zh?GEO_HELP_ZH:GEO_HELP_ID)+'</div></div>';
+ document.body.appendChild(d);}
+
 function getGeo(cb){if(!navigator.geolocation)return cb(null);var done=false;navigator.geolocation.getCurrentPosition(function(p){if(done)return;done=true;cb({lat:p.coords.latitude,lng:p.coords.longitude,acc:Math.round(p.coords.accuracy)})},function(){if(done)return;done=true;cb(null)},{enableHighAccuracy:true,timeout:12000,maximumAge:30000});setTimeout(function(){if(!done){done=true;cb(null)}},14000);}
 
 // ================= camera + watermark =================
@@ -214,7 +239,7 @@ function geoLine(){var g=S.lastGeo;if(S.geoBusy)return '📍 '+(L==='zh'?'正在
   if(d===null)return '📍 '+(zh?'已定位，精度约 ':'Lokasi tercatat, akurasi ±')+g.acc+' m';
   if(d<=500)return '📍 '+(zh?'已定位 · 离门店约 ':'Lokasi tercatat · jarak ke toko ±')+fmtD(d);
   return '<span style="color:#b3261e">⚠️ '+(S.v.visitId?(zh?'离门店约 '+fmtD(d)+'，会记为「离门店较远」。（只做记录，可以继续）':'Jarak ke toko ±'+fmtD(d)+', akan dicatat "jauh dari toko". (Hanya dicatat, tetap bisa lanjut)'):(zh?'离 '+esc(st.name)+' 约 '+fmtD(d)+'，请确认门店没选错。（只做记录，可以继续）':'Jarak ke '+esc(st.name)+' ±'+fmtD(d)+'. Pastikan toko yang dipilih sudah benar. (Hanya dicatat, tetap bisa lanjut)'))+'</span>';}
- return '⚠️ '+(L==='zh'?'没拿到定位。请允许浏览器使用位置，然后 ':'Lokasi belum terbaca. Izinkan akses lokasi di browser, lalu ')+'<a href="#" onclick="askGeo();return false">'+(L==='zh'?'点这里重试':'coba lagi')+'</a>';}
+ return '<span style="color:#b3261e">📍 '+(L==='zh'?'还没打开定位，不然没法开始和提交检查 · ':'Lokasi belum aktif, inspeksi tidak bisa dimulai/dikirim · ')+'</span><a href="#" onclick="geoHelp();return false" style="color:#b3261e;font-weight:700">'+(L==='zh'?'怎么打开 ›':'Caranya ›')+'</a> · <a href="#" onclick="askGeo();return false">'+(L==='zh'?'重试':'coba lagi')+'</a>';}
 function askGeo(){S.geoBusy=1;render();getGeo(function(g){S.geoBusy=0;if(g){S.lastGeo=g;S.lastGeoAt=Date.now();}render();});}
 function takePhoto(tag,front,cb,album){var inp=document.createElement('input');inp.type='file';inp.accept='image/*';if(!album)inp.setAttribute('capture',front?'user':'environment');
  inp.onchange=function(){var file=inp.files[0];if(!file)return;var lim=album?30:5;if(file.lastModified&&Date.now()-file.lastModified>lim*60000){toast(album?(L==='zh'?'这张照片超过 30 分钟了，请用 30 分钟内收到或截的图':'Foto ini lebih dari 30 menit. Pakai foto/screenshot dalam 30 menit terakhir'):t('photoOld'));return;}
@@ -476,6 +501,7 @@ function acctMenu(){var zh=L==='zh',m=document.createElement('div');m.id='acm';m
  m.innerHTML='<div style="background:#fff;width:100%;border-radius:16px 16px 0 0;padding:14px 16px 26px"><div style="width:36px;height:4px;border-radius:2px;background:#ddd;margin:0 auto 12px"></div><b style="font-size:16px">'+(zh?'我的账号':'Akun saya')+'</b><div style="height:8px"></div>'
   +row('avMenu()','M4 7h3l2-3h6l2 3h3v13H4zM12 17a4 4 0 100-8 4 4 0 000 8z',zh?'更换头像':'Ganti foto profil')
   +(!S._desk?'':row('toggleLang()','M12 21a9 9 0 100-18 9 9 0 000 18zM3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18',zh?'语言：切换成印尼文':'Bahasa: ganti ke Mandarin'))
+  +row('geoHelp()','M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21zM12 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5z',zh?'帮助 · 怎么打开定位':'Bantuan · Cara menyalakan lokasi')
   +row('S.myPw=1;render()','M7 11V8a5 5 0 0110 0v3M5 11h14v10H5zM12 15v2',zh?'修改密码':'Ganti password')
   +(window.innerWidth>=1000?row('deskToggle()','M3 4h18v12H3zM8 20h8M12 16v4',(function(){var on=true;try{on=localStorage.getItem('lk_desk')!=='0';}catch(e){}return zh?(on?'切回原来的界面':'打开电脑版界面'):(on?'Kembali ke tampilan lama':'Buka tampilan desktop');})()):'')
   +row('askLogout()','M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',zh?'退出登录':'Keluar',1)+'</div>';document.body.appendChild(m);}
