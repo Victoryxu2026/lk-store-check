@@ -1691,7 +1691,7 @@ function gdMvStore(sid){var G=S.gd;G.mvStore=sid;G.mv=null;render();gdCall('move
 function gdPoListUI(){var G=S.gd,D=G.data,ps=D.pos||[],me=D.me.r,money=me.po||me.admin;
  if(!(me.po||me.admin||me.wh))return '<div class="card">'+gT('你没有「仓库订货」的权限。','Tidak ada akses order gudang.')+'</div>';
  var nodes=GD_PO.slice(0,7).map(function(s){return {t:L==='zh'?s[1]:s[2],k:s[0],n:ps.filter(function(p){return p.stage===s[0]}).length,click:"S.gd.pst=(S.gd.pst==='"+s[0]+"'?null:'"+s[0]+"');render()"};});
- var h=gdBar('<span class="small muted" style="flex:1;min-width:300px">'+gT('建议量 = 目标天数 × 全渠道日销 − 仓库在库 − 已下未到。只看要订什么、订多少，不分经销商；没确认前每天按最新库存重算，Victory 确认那天定下 PO 号。','Saran = target hari × rata2 jual − stok gudang − PO belum datang. Dihitung ulang tiap hari sampai Victory konfirmasi.')+'</span>'+(me.admin&&!ps.some(function(p){return p.stage==='suggest'})?gdBtn(gT('生成订货建议','Buat saran order'),'gdPoNew()',1):''));
+ var h=gdBar('<span class="small muted" style="flex:1;min-width:300px">'+gT('建议量 = 门店补到 30 天还缺的 + 仓库留 21 天 − 仓库在库 − 已下未到（日销按全渠道）。只看要订什么、订多少，不分经销商；没确认前每天按最新库存重算，Victory 确认那天定下 PO 号。','Saran = kekurangan toko s/d 30 hari + stok gudang 21 hari − stok gudang − PO belum datang. Dihitung ulang tiap hari sampai Victory konfirmasi.')+'</span>'+(me.admin&&!ps.some(function(p){return p.stage==='suggest'})?gdBtn(gT('生成订货建议','Buat saran order'),'gdPoNew()',1):''));
  h+='<div class="card" style="padding:12px">'+gdFlow(nodes,G.pst)+'</div>';
  var f=ps.filter(function(p){return !G.pst||p.stage===G.pst});
  if(!f.length)return h+gdEmpty(gT('没有 PO。','Tidak ada PO.'));
