@@ -134,7 +134,7 @@ reasons:[['Ada toko pesaing baru di dekat sini','附近新开了竞争店'],['St
 function t(k,i){var v=T[k];if(!v)return k;return L==='zh'?v[1]:v[0];}
 function tt(arr){return L==='zh'?arr[1]:arr[0];}
 function f(it,k){return it[k+'_'+L]||it[k+'_id']||'';}
-function langLbl(){var on=function(x,t){return L===x?'<b style="color:#FDCD17">'+t+'</b>':'<span style="opacity:.45">'+t+'</span>';};return on('id','ID')+' | '+on('zh','中文');}
+function langLbl(){var on=function(x,t){return L===x?'<b style="color:#FDCD17">'+t+'</b>':'<span style="opacity:.45">'+t+'</span>';};return on('id','ID')+'<span style="margin:0 6px;opacity:.6">|</span>'+on('zh','中文');}
 function setLangTo(l){if(L!==l)toggleLang();}
 function toggleLang(){L=L==='zh'?'id':'zh';localStorage.setItem('lk_lang',L);if(S.token)run('setLang',[S.token,L],function(){},function(){});render();}
 
