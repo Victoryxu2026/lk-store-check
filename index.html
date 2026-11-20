@@ -295,7 +295,7 @@ function render0(){var a=document.getElementById('app');setSync();if(!S.v||S.v.t
   if(!S.boot){try{var cb=JSON.parse(localStorage.getItem(bk)||'null');if(cb&&cb.serverTime){S.boot=cb;S.bootStale=1;if(cb.entries)S.user.entries=cb.entries;}}catch(e){}}
   run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;S.bootStale=0;if(b.entries){S.user.entries=b.entries;try{var ss=sessStore(),o=JSON.parse(ss.getItem('lk_sess')||'null');if(o){o.user.entries=b.entries;ss.setItem('lk_sess',JSON.stringify(o));}}catch(e){}}OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();try{localStorage.setItem(bk,JSON.stringify(b));}catch(e){}if(!S.v)render();},function(){S.booting=0;if(!S.bootStale)toast(t('err'));});}
   if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';return;}}
- if(!S.v){if(S._desk&&!S.mod)return a.innerHTML=deskHome();if(S.mod==='myrec')return a.innerHTML=scMyRec();if(S._desk&&S.mod==='check')return a.innerHTML=deskChk();if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='ops')return a.innerHTML=scOps();if(S.mod==='ntc')return a.innerHTML=scNtc();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
+ if(!S.v){if(S._desk&&!S.mod)return a.innerHTML=deskHome();if(S.mod==='exp')return a.innerHTML=scExp();if(S.mod==='myrec')return a.innerHTML=scMyRec();if(S._desk&&S.mod==='check')return a.innerHTML=deskChk();if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='ops')return a.innerHTML=scOps();if(S.mod==='ntc')return a.innerHTML=scNtc();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
  if(S.v.type==='STD')return a.innerHTML=chkBack()+scStd();
  var sk=S.v.visitId+'|'+S.v.idx+'|'+(S.v.guideSeen?1:0);a.innerHTML=chkBack()+scSpot();if(sk!==SPOT_KEY){SPOT_KEY=sk;window.scrollTo(0,0);}}
 var SPOT_KEY='';
@@ -349,10 +349,10 @@ function deskOn(){try{return localStorage.getItem('lk_desk')!=='0'&&window.inner
 function deskToggle(){var on=false;try{on=localStorage.getItem('lk_desk')!=='0';localStorage.setItem('lk_desk',on?'0':'1');}catch(e){}S.mod=null;S.nav=[];render();window.scrollTo(0,0);toast(L==='zh'?(on?'已切回原来的界面':'已打开电脑版新界面'):(on?'Kembali ke tampilan lama':'Tampilan desktop baru aktif'));}
 window.addEventListener('resize',function(){var on=deskOn();if(on!==!!S._desk){S._desk=on;render();}});
 var D_MODS=['home','ops','sales','check','goods','fin','hr','exp','fix','school'];
-function deskMod(){var m=S.mod;if(!m||m==='ntc')return 'home';if(m==='ops')return 'ops';if(/^sales/.test(m))return 'sales';if(/^(check|dash|visit|spotd|store|myrec)$/.test(m))return 'check';if(m==='fin')return 'fin';if(m==='hr')return 'hr';return 'home';}
+function deskMod(){var m=S.mod;if(!m||m==='ntc')return 'home';if(m==='ops')return 'ops';if(/^sales/.test(m))return 'sales';if(/^(check|dash|visit|spotd|store|myrec)$/.test(m))return 'check';if(m==='fin')return 'fin';if(m==='hr')return 'hr';if(m==='exp')return 'exp';return 'home';}
 function deskName(k){var zh=L==='zh';return {home:zh?'首页':'Beranda',ops:zh?'门店运营':'Operasional Toko',sales:zh?'销售':'Penjualan',check:zh?'门店检查':'Cek Toko',goods:zh?'货品':'Produk & Stok',fin:zh?'财务':'Keuangan',hr:zh?'人事':'SDM',exp:zh?'拓展':'Ekspansi',fix:zh?'报修与反馈':'Perbaikan & Laporan',school:'LK School'}[k];}
 function deskAvail(k){var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,pc=(S.boot&&S.boot.pc)||{};
- if(k==='home')return 2;if(['goods','exp','fix','school'].indexOf(k)>=0)return core?0:-1;
+ if(k==='home')return 2;if(k==='exp')return core?2:-1;if(['goods','fix','school'].indexOf(k)>=0)return core?0:-1;
  if(k==='ops')return opsOk()?2:(core?1:-1);if(k==='sales')return (sa.store||sa.grab)?2:(core?1:-1);
  if(k==='check')return (S.user.entries||[]).length||((S.boot.home||{}).dash)?2:(core?1:-1);if(k==='fin')return pc.has||core?2:-1;if(k==='hr')return sdmOk()?2:(core?1:-1);return -1;}
 function deskGo(k){var zh=L==='zh',av=deskAvail(k);if(av===0)return toast(zh?'即将上线':'Segera hadir');if(av===1)return offToast();S.nav=[];S.v=null;
@@ -807,7 +807,7 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
  var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core;
  // 核心人员：已上线的模块一律亮（模块里没权限的标准入口显示灰色）；门店人员：只显示用得到的
  tiles=[['ops',zh?'门店运营':'Operasional Toko',opsOk()?' ':''],['sales',zh?'销售':'Penjualan',(core||sa.store||sa.grab)?' ':''],['check',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Stock opname'):(zh?'门店巡检':'Inspeksi toko')],
-  ['goods',zh?'货品':'Produk & Stok'],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM',sdmOk()?' ':''],['exp',zh?'拓展':'Ekspansi'],['fix',zh?'报修与反馈':'Perbaikan & Laporan'],['school','LK School']];
+  ['goods',zh?'货品':'Produk & Stok'],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM',sdmOk()?' ':''],['exp',zh?'拓展':'Ekspansi',core?' ':''],['fix',zh?'报修与反馈':'Perbaikan & Laporan'],['school','LK School']];
 
  // 门店人员：只显示自己用得到的格子（未上线的、用不到的都不显示）；核心团队：全部显示，未上线的灰色
  if(!core)tiles=tiles.filter(function(x){return (x[0]==='check'&&hasChk)||(x[0]==='fin'&&pc.has)||(x[0]==='sales'&&x[2]);});
@@ -818,7 +818,7 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
 // 金额统一格式（规则 R231）：逗号千分位、点只做小数点，中印文一样
 function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');}
 function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
-function openMod(m){S.mod=m;if(m==='hr'){S.sdP=null;S.sdNeed=0;sdcHyd();var f=S.sdFresh||{};S.sdFresh={ntc:f.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('att_')===0&&k!=='att_'))delete S.sd[k];});sdmPre();}if(m==='ops'){S.opD='';S.sdP=null;S.sdNeed=0;sdcHyd();var f2=S.sdFresh||{};S.sdFresh={ntc:f2.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('opsT_')===0&&k!=='opsT_')||(k.indexOf('opsP_')===0&&k!=='opsP_'))delete S.sd[k];});opsPre();}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
+function openMod(m){S.mod=m;if(m==='exp'){S.ex=null;exInit();}if(m==='hr'){S.sdP=null;S.sdNeed=0;sdcHyd();var f=S.sdFresh||{};S.sdFresh={ntc:f.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('att_')===0&&k!=='att_'))delete S.sd[k];});sdmPre();}if(m==='ops'){S.opD='';S.sdP=null;S.sdNeed=0;sdcHyd();var f2=S.sdFresh||{};S.sdFresh={ntc:f2.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('opsT_')===0&&k!=='opsT_')||(k.indexOf('opsP_')===0&&k!=='opsP_'))delete S.sd[k];});opsPre();}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
 
 // ---------- 销售 ----------
 function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,h='<h2 style="margin:4px 0 10px">'+(zh?'销售':'Penjualan')+'</h2>';
@@ -1288,4 +1288,186 @@ function submitSpot(force){var v=S.v;if(!v.endGeo)return needGeo(function(g){v.e
 
 window.addEventListener('beforeunload',function(e){if(S.v&&pending()){e.preventDefault();e.returnValue='';}});
 render();
+</script>
+<script>
+// ================= 拓展（R243 / R244，2026-11-20）=================
+// 拓展项目（P-xxxx：点位池 / 推进中 / 未成功）+ 门店（IDL-C：营业中 / 退出中 / 已关闭）；后台接口 lk-exp
+var EXP_API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-exp';
+var EXL={pool:'点位池',progress:'推进中',failed:'未成功',open:'营业中',exit:'退出中',closed:'已关闭'};
+var EXL_ID={pool:'Bank lokasi',progress:'Dalam proses',failed:'Tidak jadi',open:'Beroperasi',exit:'Proses keluar',closed:'Tutup'};
+function exT(zh,id){return L==='zh'?zh:id;}
+function exStage(k){return L==='zh'?EXL[k]:EXL_ID[k];}
+function exCall(fn,args,ok,fail){var ac=window.AbortController?new AbortController():null,tm=ac?setTimeout(function(){ac.abort()},120000):0;
+ fetch(EXP_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:[S.token].concat(args||[])}),signal:ac?ac.signal:undefined})
+ .then(function(x){return x.json()}).then(function(j){clearTimeout(tm);if(j.err){if(String(j.err).indexOf('SESSION_EXPIRED')>=0){toast(t('expired'));logout();return;}(fail||exErr)(j.err);}else ok(j.data);})
+ .catch(function(e){clearTimeout(tm);(fail||exErr)(String(e));});}
+function exErr(e){var m=String(e||''),zh=L==='zh';var map={NO_ACCESS:zh?'你没有这个操作的权限':'Tidak ada akses',NEED_REASON:zh?'请写一句原因':'Tulis alasannya',NEED_NAME:zh?'请填点位名称':'Isi nama lokasi',BAD_CODE:zh?'门店编号格式不对（例：IDL-C12345）':'Format kode toko salah (contoh: IDL-C12345)',CODE_EXISTS:zh?'这个门店编号已经存在':'Kode toko sudah ada',NEED_RECEIPT_INFO:zh?'收据要填日期、金额、什么款':'Isi tanggal, jumlah, dan jenis pembayaran',FILE_TOO_BIG:zh?'文件太大（最大 15MB）':'File terlalu besar (maks 15MB)'};
+ var k=Object.keys(map).find(function(x){return m.indexOf(x)>=0});toast(k?map[k]:(zh?'出错了，请重试：':'Gagal, coba lagi: ')+m.slice(0,60));S.ex&&(S.ex.busy=0);render();}
+function exInit(){S.ex=S.ex||{grp:'store',tab:'open',rg:'all',q:''};exLoad();}
+function exLoad(){S.ex.loading=1;exCall('boot',[],function(r){S.ex.loading=0;S.ex.data=r;S.ex.err=0;if(S.mod==='exp')render();},function(e){S.ex.loading=0;S.ex.err=String(e);if(S.mod==='exp')render();});}
+function exOpen(id){S.ex.cur=id;S.ex.d=null;S.ex.form=null;S.ex.busy=0;exCall('get',[id],function(r){if(S.ex.cur===id){S.ex.d=r;render();}});render();window.scrollTo(0,0);}
+function exBack(){if(S.ex.form&&S.ex.form!=='newPoint'){S.ex.form=null;render();return;}S.ex.cur=null;S.ex.d=null;S.ex.form=null;exLoad();render();window.scrollTo(0,0);}
+function exSet(k,v){S.ex[k]=v;if(k==='grp')S.ex.tab=v==='project'?'pool':'open';render();}
+function exReg(r){return r==='East'?exT('东区','Timur'):exT('西区','Barat');}
+function exFmtJt(n){if(n===null||n===undefined||n==='')return '';n=Number(n);if(!isFinite(n))return '';return n>=10?Math.round(n).toLocaleString('en-US')+'jt':n>=1?n.toFixed(1)+'jt':n.toFixed(2)+'jt';}
+
+function scExp(){var zh=L==='zh',E=S.ex||(exInit(),S.ex);
+ if(E.form==='newPoint')return exNewPointUI();
+ if(E.cur)return exDetailUI();
+ var h='<h2 style="margin:4px 0 10px">'+exT('拓展','Ekspansi')+'</h2>';
+ if(E.err)return h+'<div class="card">'+(String(E.err).indexOf('NO_ACCESS')>=0?exT('你没有「拓展」的权限。需要的话请联系 Victory。','Kamu belum punya akses Ekspansi.'):exT('读取失败，请稍后再试','Gagal memuat, coba lagi'))+'</div>';
+ if(!E.data)return h+'<div class="card">'+t('loading')+'</div>';
+ var all=E.data.sites||[],me=E.data.me||{},q=String(E.q||'').toLowerCase();
+ var inR=all.filter(function(s){return (E.rg==='all'||s.region===E.rg)&&!(s.kind==='project'&&s.became_store)&&(!q||(s.name+' '+s.code).toLowerCase().indexOf(q)>=0);});
+ var cnt=function(k){return inR.filter(function(s){return s.stage===k}).length;};
+ var gb=function(g,lbl,sub,n){var on=E.grp===g;return '<button onclick="exSet(\'grp\',\''+g+'\')" style="text-align:left;padding:14px 16px;border-radius:12px;cursor:pointer;font-family:inherit;'+(on?'background:#111;color:#fff;border:0':'background:#fff;color:#111;border:1px solid #ddd')+'"><div style="font-size:17px;font-weight:700">'+lbl+' · '+n+'</div><div style="font-size:12px;margin-top:3px;opacity:.8">'+sub+'</div></button>';};
+ h+='<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px">'
+  +gb('project',exT('拓展项目','Proyek'),exT('点位池 · 推进中 · 未成功（还不是门店）','Bank lokasi · Proses · Tidak jadi'),cnt('pool')+cnt('progress')+cnt('failed'))
+  +gb('store',exT('门店','Toko'),exT('营业中 · 退出中 · 已关闭（有门店编号）','Beroperasi · Keluar · Tutup'),cnt('open')+cnt('exit')+cnt('closed'))+'</div>';
+ var tabs=E.grp==='project'?['pool','progress','failed']:['open','exit','closed'];
+ h+='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px">'+tabs.map(function(k){var on=E.tab===k;return '<button onclick="exSet(\'tab\',\''+k+'\')" style="padding:9px 14px;border-radius:8px;font-family:inherit;font-size:14px;cursor:pointer;'+(on?'background:#FDCD17;border:0;font-weight:700':'background:#fff;border:1px solid #ddd')+'">'+exStage(k)+' · '+cnt(k)+'</button>';}).join('')
+  +'<span style="flex:1"></span>'+['all','West','East'].map(function(r){var on=E.rg===r;return '<button onclick="exSet(\'rg\',\''+r+'\')" style="padding:7px 12px;border-radius:16px;font-family:inherit;font-size:13px;cursor:pointer;'+(on?'background:#111;color:#fff;border:0':'background:#fff;border:1px solid #ddd')+'">'+(r==='all'?exT('全部','Semua'):exReg(r))+'</button>';}).join('')+'</div>';
+ h+='<div style="display:flex;gap:8px;margin-bottom:10px"><input placeholder="'+exT('搜索店名或编号','Cari nama / kode')+'" value="'+esc(E.q||'')+'" oninput="S.ex.q=this.value;clearTimeout(S.ex._qt);S.ex._qt=setTimeout(render,250)" style="flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:15px">'
+  +(me.edit&&me.edit.length?'<button class="btn" style="width:auto;margin:0;padding:10px 16px;font-size:14px" onclick="S.ex.form=\'newPoint\';S.ex.np={region:\''+(me.edit[0]||'West')+'\',photos:[]};render();">+ '+exT('新建点位','Lokasi baru')+'</button>':'')+'</div>';
+ var rows=inR.filter(function(s){return s.stage===E.tab;});
+ if(!rows.length){var em={pool:exT('点位池是空的。拓展到现场踩点后，点「新建点位」拍照、填几项信息就进来了。','Belum ada lokasi.'),progress:exT('现在没有推进中的项目。在点位档案里点「开始推进」就会到这里；开业时点「开业」生成门店。','Belum ada proyek berjalan.'),failed:exT('还没有未成功的项目。','Belum ada.'),open:'—',exit:'—',closed:'—'}[E.tab];
+  return h+'<div class="card muted" style="text-align:center;padding:28px 14px">'+em+'</div>';}
+ h+='<div class="card" style="padding:0;overflow:hidden"><table class="dtbl"><thead><tr><th>'+exT('名称','Nama')+'</th><th>'+exT('区域 · 店型','Wilayah · Tipe')+'</th><th>'+exT('下一件要做的事','Langkah berikutnya')+'</th><th>'+exT('负责人','PIC')+'</th></tr></thead><tbody>'
+  +rows.map(function(s){var tag=s.tag?' <span style="display:inline-block;padding:1px 7px;border:1px solid #111;border-radius:9px;font-size:11px">'+esc(s.tag)+'</span>':'';
+   var ex=s.stage==='exit'?'<div class="small muted">'+exT('押金','Deposit')+'：'+({returned:exT('已退','Kembali'),not_returned:exT('不退','Tidak kembali'),none:exT('无押金','Tanpa deposit'),pending:exT('待确认','Belum jelas')}[s.exit_deposit_status]||exT('待确认','Belum jelas'))+' · '+exT('交接','Serah terima')+'：'+(s.exit_handover?exT('已完成','Selesai'):exT('未完成','Belum'))+'</div>':'';
+   var rc=Number(s.recog)>0?' <span style="background:#FDCD17;border-radius:9px;padding:1px 7px;font-size:11px;font-weight:700">'+exT('合同识别待确认','Cek hasil kontrak')+'</span>':'';
+   return '<tr style="cursor:pointer" onclick="exOpen('+s.id+')"><td><b>'+esc(s.name)+'</b>'+tag+rc+'<div class="small muted">'+esc(s.code)+'</div></td><td class="small">'+exReg(s.region)+' · '+esc(s.store_type||'')+'</td><td class="small">'+esc(s.next_action||'—')+ex+'</td><td class="small">'+esc(s.owner||'')+'</td></tr>';}).join('')+'</tbody></table></div>';
+ return h;}
+
+function exField(lbl,v){return v===null||v===undefined||v===''?'':'<div style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;padding:5px 0;font-size:14px"><div class="muted">'+lbl+'</div><div>'+esc(v)+'</div></div>';}
+function exSec(title,body,btn){return '<div class="card" style="padding:0;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:center;background:#111;color:#fff;padding:10px 14px"><b style="font-size:15px">'+title+'</b>'+(btn||'')+'</div><div style="padding:10px 14px">'+body+'</div></div>';}
+function exBtnS(lbl,click,yellow){return '<button onclick="'+click+'" style="padding:9px 14px;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;'+(yellow?'background:#FDCD17;border:0;color:#111':'background:#fff;border:1px solid #111;color:#111')+'">'+lbl+'</button>';}
+
+function exDetailUI(){var zh=L==='zh',E=S.ex,D=E.d,h='<div style="margin:4px 0 10px"><a href="javascript:void(0)" onclick="exBack()" style="color:#111">← '+exT('返回','Kembali')+'</a></div>';
+ if(!D)return h+'<div class="card">'+t('loading')+'</div>';
+ var s=D.site,ed=D.canEdit&&!(s.kind==='project'&&s.became_store),proj=s.kind==='project';
+ if(E.form==='stage')return h+exStageUI(s);if(E.form==='open')return h+exOpenUI(s);if(E.form==='edit')return h+exEditUI(s);if(E.form&&E.form.indexOf('up_')===0)return h+exUploadUI(s,E.form.slice(3));if(E.form&&E.form.indexOf('rc_')===0)return h+exRecogUI(Number(E.form.slice(3)));
+ h+='<div class="card"><div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px"><b style="font-size:20px">'+esc(s.name)+'</b><span style="padding:2px 9px;border-radius:5px;font-size:12px;font-weight:700;'+(s.stage==='exit'?'background:#FDCD17':s.stage==='open'?'background:#111;color:#fff':'border:1px solid #111')+'">'+exStage(s.stage)+'</span>'+(s.tag?'<span style="padding:1px 8px;border:1px solid #111;border-radius:9px;font-size:12px">'+esc(s.tag)+'</span>':'')+'</div>'
+  +'<div class="small muted" style="margin-top:4px">'+(proj?exT('项目编号 ','Kode proyek ')+esc(s.code)+exT(' · 还不是门店',' · belum toko'):esc(s.code))+' · '+exReg(s.region)+(s.city?' · '+esc(s.city):'')+(s.store_type?' · '+esc(s.store_type):'')+' · '+exT('负责人 ','PIC ')+esc(s.owner||'—')+'</div>'
+  +(s.became_store?'<div class="small" style="margin-top:6px">'+exT('已开业，生成门店 ','Sudah buka sebagai toko ')+esc(s.became_store)+exT('；本项目档案只读','; arsip proyek hanya baca')+'</div>':'')
+  +(D.src?'<div class="small" style="margin-top:6px">'+exT('来自项目 ','Dari proyek ')+'<a href="javascript:void(0)" onclick="exOpen('+D.src.id+')">'+esc(D.src.code)+' '+esc(D.src.name)+'</a></div>':'')
+  +(ed?'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">'+exBtnS(exT('切换状态','Ubah status'),'S.ex.form=\'stage\';render()')+(proj&&s.stage==='progress'?exBtnS(exT('开业 → 生成门店','Buka → jadi toko'),'S.ex.form=\'open\';render()',1):'')+exBtnS(exT('修改信息','Ubah data'),'S.ex.form=\'edit\';render()')+'</div>':'')+'</div>';
+ // 合同识别待确认
+ (D.files||[]).filter(function(f){return f.channel==='contract'&&f.recog_status==='done'&&f.site_id===s.id;}).forEach(function(f){h+='<div class="card" style="background:#fff8d6;cursor:pointer" onclick="S.ex.form=\'rc_'+f.id+'\';render()"><b>'+exT('合同识别结果待确认','Hasil baca kontrak perlu dicek')+'</b><div class="small">'+esc(f.name)+' · '+exT('点开逐项确认 ›','Buka untuk cek ›')+'</div></div>';});
+ if(s.stage==='exit'){var ds={returned:exT('已退回','Sudah kembali'),not_returned:exT('不退','Tidak kembali'),none:exT('合同无押金','Tanpa deposit'),pending:exT('待确认','Belum jelas')}[s.exit_deposit_status]||exT('待确认','Belum jelas');
+  h+=exSec(exT('退出进度','Progres keluar'),exField(exT('最后营业日','Hari terakhir'),s.exit_last_day||exT('未定','Belum')) +exField(exT('押金结果','Deposit'),ds+(s.exit_deposit_rp?' · '+rp(s.exit_deposit_rp):'')+(s.exit_deposit_date?' · '+s.exit_deposit_date:''))+exField(exT('交接完成','Serah terima'),s.exit_handover?exT('是','Ya'):exT('否','Belum')),ed?'<a href="javascript:void(0)" onclick="S.ex.form=\'edit\';render()" style="color:#FDCD17;font-size:13px">'+exT('更新','Ubah')+'</a>':'');}
+ if(proj){var P=s.point||{};h+=exSec(exT('点位信息','Info lokasi'),exField(exT('地址','Alamat'),s.address)+exField(exT('面积 / 楼层','Luas / lantai'),[s.area,P.floor].filter(Boolean).join(' · '))+exField(exT('房东报价','Harga sewa'),P.quote?(P.quote+(P.years?exT(' · 能签 ',' · bisa ')+P.years+exT(' 年',' tahun'):'')):'')+exField(exT('能否转租','Boleh sewa ulang'),P.sublease_ok)+exField(exT('房东或中介','Pemilik / agen'),P.contact)+exField(exT('备注','Catatan'),P.note)+exField('GPS',P.lat?(Number(P.lat).toFixed(5)+', '+Number(P.lng).toFixed(5)):''));}
+ else h+=exSec(exT('基本信息','Info dasar'),exField(exT('地址','Alamat'),s.address)+exField(exT('开业日期','Tgl buka'),s.opened)+exField(exT('面积','Luas'),s.area)+(s.map_url?'<div style="padding:5px 0;font-size:14px"><a href="'+esc(s.map_url)+'" target="_blank" rel="noopener">'+exT('在 Google 地图打开','Buka di Google Maps')+'</a></div>':''));
+ if(!proj||s.stage==='progress')h+=exSec(exT('租约','Sewa'),exField(exT('房东','Pemilik'),s.landlord)+exField(exT('合同承租方','Penyewa'),s.tenant)+exField(exT('租期','Periode'),s.lease_start||s.lease_end?(s.lease_start||'?')+' → '+(s.lease_end||'?'):'')
+  +exField(exT('租金','Sewa'),[s.rent_total_jt?exT('合同总额 ','Total ')+exFmtJt(s.rent_total_jt):'',s.rent_monthly_jt?exT('每月 ','per bulan ')+rp(Number(s.rent_monthly_jt)*1e6):''].filter(Boolean).join(' · '))
+  +exField(exT('付款','Pembayaran'),s.payment_terms)+exField(exT('已付到','Lunas s/d'),s.paid_through)+exField(exT('下一笔付款','Pembayaran berikutnya'),s.next_payment)+exField(exT('押金','Deposit'),s.deposit_jt?rp(Number(s.deposit_jt)*1e6):'')
+  +exField(exT('税费和其他','Pajak & biaya'),s.tax_costs)+exField(exT('转租','Sewa ulang'),s.sublease)+exField(exT('提前退租','Keluar awal'),s.early_exit)+exField(exT('续约','Perpanjangan'),s.renewal)+exField(exT('其他条款','Lainnya'),s.other_terms)+exField(exT('待补 / 待核对','Perlu dicek'),s.todo_note));
+ // 材料：合同、收据（永久）、其他（12 个月）
+ var F=D.files||[],box=function(ch,title,note,strong){var fs=F.filter(function(f){return f.channel===ch;});
+  return '<div style="border:'+(strong?'2px solid #111':'1px solid #ddd')+';border-radius:10px;padding:10px 12px;margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>'+title+'</b> <span class="small muted">· '+note+'</span></div>'+(ed?exBtnS(exT('上传','Unggah'),'S.ex.form=\'up_'+ch+'\';S.ex.up={};render()',strong):'')+'</div>'
+  +(fs.length?fs.map(function(f){return '<div class="small" style="padding:6px 0;border-top:1px solid #eee;margin-top:6px'+(f.voided?';opacity:.5':'')+'"><a href="'+esc(f.url)+'" target="_blank" rel="noopener">'+esc(f.name)+'</a>'+(f.voided?' <b>'+exT('（作废）','(batal)')+'</b>':'')
+    +'<div class="muted">'+esc(f.at)+' · '+esc(f.by_nick)+(f.receipt_date?' · '+esc(f.receipt_date)+' · '+rp(f.amount_rp)+' · '+esc(f.pay_kind):'')+(ch==='contract'?' · '+({pending:exT('今晚识别','Dibaca malam ini'),done:exT('识别完待确认','Perlu dicek'),confirmed:exT('已确认','Sudah dicek'),failed:exT('识别失败，请人工核对','Gagal dibaca'),none:''}[f.recog_status]||''):'')+'</div>'
+    +(ed&&!f.voided&&f.channel!=='other'?'<a href="javascript:void(0)" class="muted" onclick="exVoid('+f.id+')">'+exT('标记作废（文件仍保留）','Tandai batal')+'</a>':'')+'</div>';}).join(''):'<div class="small muted" style="margin-top:6px">'+exT('还没有上传','Belum ada')+'</div>')+'</div>';};
+ h+=exSec(exT('材料','Dokumen'),box('contract',exT('合同','Kontrak'),exT('永久保存，不能删除','Disimpan permanen'),1)+box('receipt',exT('收据','Kwitansi'),exT('永久保存，不能删除','Disimpan permanen'),1)+box('other',exT('其他材料','Lainnya'),exT('保存 12 个月','Disimpan 12 bulan')));
+ // 动态记录
+ var lg=(ed?'<textarea id="exlog" rows="3" placeholder="'+exT('写清谁、做了什么、对方原话、下一步','Siapa, apa yang dilakukan, jawaban pihak lain, langkah berikutnya')+'" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit"></textarea>'
+  +'<div style="display:flex;gap:8px;justify-content:flex-end;margin:8px 0 4px"><button onclick="exLogPick()" style="padding:9px 12px;border:1px solid #ddd;background:#fff;border-radius:8px;font-family:inherit;cursor:pointer">'+exT('附照片 / 文件','Lampiran')+(E.logF&&E.logF.length?' ('+E.logF.length+')':'')+'</button>'+exBtnS(E.busy?exT('保存中…','Menyimpan…'):exT('保存','Simpan'),E.busy?'':'exLogSave()',1)+'</div>':'')
+  +((D.logs||[]).map(function(l){return '<div style="display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;border-top:1px solid #eee;padding:8px 0"><div class="small muted">'+esc(l.at)+'<div style="color:#111;font-weight:700">'+esc(l.who)+'</div></div><div class="small" style="white-space:pre-line">'+esc(l.text)
+   +((l.urls||[]).length?'<div style="margin-top:4px">'+l.urls.map(function(u,i){return '<a href="'+esc(u)+'" target="_blank" rel="noopener">'+exT('附件 ','File ')+(i+1)+'</a>';}).join(' · ')+'</div>':'')+'</div></div>';}).join('')||'<div class="small muted">'+exT('还没有记录','Belum ada catatan')+'</div>');
+ h+=exSec(exT('动态记录','Catatan'),lg);
+ return h;}
+
+function exVoid(id){var n=prompt(L==='zh'?'作废原因（文件不会删除）':'Alasan batal (file tetap disimpan)');if(n===null)return;exCall('voidFile',[id,n],function(){exOpen(S.ex.cur);});}
+function exReadFile(file,cb){var r=new FileReader();r.onload=function(){cb({name:file.name,mime:file.type||'application/octet-stream',b64:String(r.result)});};r.readAsDataURL(file);}
+function exLogPick(){var i=document.createElement('input');i.type='file';i.multiple=true;i.onchange=function(){var fs=[].slice.call(i.files||[]),out=[],n=fs.length;if(!n)return;var keep=(document.getElementById('exlog')||{}).value||'';fs.forEach(function(f){exReadFile(f,function(x){out.push(x);if(!--n){S.ex.logF=(S.ex.logF||[]).concat(out);S.ex.logTxt=keep;render();var t2=document.getElementById('exlog');if(t2)t2.value=S.ex.logTxt;}});});};i.click();}
+function exLogSave(){var t2=(document.getElementById('exlog')||{}).value||'';if(!t2.trim()&&!(S.ex.logF||[]).length)return toast(exT('先写点内容','Tulis catatan dulu'));S.ex.busy=1;render();
+ exCall('addLog',[S.ex.cur,t2,S.ex.logF||[]],function(){S.ex.busy=0;S.ex.logF=[];toast(exT('已保存','Tersimpan'));exOpen(S.ex.cur);});}
+
+function exStageUI(s){var proj=s.kind==='project',list=proj?['pool','progress','failed']:['open','exit','closed'],E=S.ex;E.st=E.st||list.filter(function(k){return k!==s.stage})[0];
+ return '<div class="card"><b style="font-size:18px">'+exT('切换状态','Ubah status')+'</b><div class="small muted" style="margin:4px 0 12px">'+esc(s.name)+' · '+exT('现在：','Sekarang: ')+exStage(s.stage)+'</div>'
+  +'<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">'+list.map(function(k){var cur=k===s.stage,on=E.st===k;return '<button '+(cur?'disabled':'onclick="S.ex.st=\''+k+'\';render()"')+' style="padding:12px 4px;border-radius:8px;font-family:inherit;font-size:15px;'+(cur?'background:#f4f4f4;color:#999;border:1px dashed #ccc':on?'background:#FDCD17;border:0;font-weight:700':'background:#fff;border:1px solid #ddd')+'">'+exStage(k)+(cur?exT('（现在）',' (kini)'):'')+'</button>';}).join('')+'</div>'
+  +(proj?'<div class="small muted" style="margin-top:8px">'+exT('开业不在这里切，用「开业 → 生成门店」','Untuk buka toko pakai tombol "Buka → jadi toko"')+'</div>':'')
+  +'<div style="margin-top:12px" class="small"><b>'+exT('原因（必填，一句话）','Alasan (wajib)')+'</b></div><textarea id="exreason" rows="3" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit"></textarea>'
+  +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">'+exBtnS(exT('取消','Batal'),'S.ex.form=null;render()')+exBtnS(exT('确认切换','Simpan'),'exStageSave()',1)+'</div></div>';}
+function exStageSave(){var r=(document.getElementById('exreason')||{}).value||'';if(!r.trim())return toast(exT('请写一句原因','Tulis alasannya'));exCall('stage',[S.ex.cur,S.ex.st,r],function(){S.ex.form=null;S.ex.st=null;toast(exT('已切换','Status diubah'));exOpen(S.ex.cur);});}
+
+function exOpenUI(s){return '<div class="card"><b style="font-size:18px">'+exT('开业，生成门店','Buka toko')+'</b><div class="small muted" style="margin:4px 0 12px">'+esc(s.code)+' · '+esc(s.name)+'</div>'
+ +exInp('exo_code',exT('门店编号（POS 建店后拿到的 IDL-C 编号）','Kode toko (IDL-C dari POS)'),'','IDL-C')+exInp('exo_name',exT('门店名称','Nama toko'),'',exT('例：LK Tangerang Gading Serpong','contoh: LK Tangerang Gading Serpong'))
+ +exInp('exo_open',exT('开业日期','Tanggal buka'),'','','date')+exSel('exo_type',exT('店型','Tipe'),EX_TYPES,s.store_type)
+ +'<div class="small" style="background:#f6f7f8;border-radius:8px;padding:10px;margin-top:10px;line-height:1.6">'+exT('确认后：建好门店档案（营业中）；合同、收据、照片、动态记录都能在门店档案里看到；项目档案保留只读；系统会提醒数据专员在 Store Status 加这家店。','Setelah simpan: arsip toko dibuat, dokumen & catatan proyek ikut terlihat, arsip proyek jadi hanya-baca.')+'</div>'
+ +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">'+exBtnS(exT('取消','Batal'),'S.ex.form=null;render()')+exBtnS(exT('确认开业','Simpan'),'exOpenSave()',1)+'</div></div>';}
+function exOpenSave(){var v=function(id){return (document.getElementById(id)||{}).value||'';};exCall('open',[S.ex.cur,{code:v('exo_code'),name:v('exo_name'),opened:v('exo_open'),store_type:v('exo_type')}],function(r){toast(exT('已生成门店','Toko dibuat'));S.ex.form=null;exOpen(r.id);});}
+
+var EX_TYPES=['LK 主干道','LK 生活区','RS 商场 A 级','RS 商场 B 级','RVS 街边'];
+function exInp(id,lbl,val,ph,type){return '<label style="display:block;margin-top:10px"><div class="small" style="font-weight:700;margin-bottom:4px">'+lbl+'</div><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val==null?'':val)+'" placeholder="'+esc(ph||'')+'" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px;font-family:inherit"></label>';}
+function exSel(id,lbl,opts,val){return '<label style="display:block;margin-top:10px"><div class="small" style="font-weight:700;margin-bottom:4px">'+lbl+'</div><select id="'+id+'" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px;font-family:inherit"><option value=""></option>'+opts.map(function(o){var k=typeof o==='string'?o:o[0],l=typeof o==='string'?o:o[1];return '<option value="'+esc(k)+'"'+(String(val)===k?' selected':'')+'>'+esc(l)+'</option>';}).join('')+'</select></label>';}
+
+var EX_EDIT=[['name','名称','Nama'],['city','城市','Kota'],['tag','标签（续约中 / 部分转租 / 观察 / 关店 …）','Label'],['next_action','下一件要做的事','Langkah berikutnya'],['owner','负责人','PIC'],['address','地址','Alamat'],['map_url','地图链接','Link peta'],['opened','开业日期','Tgl buka','date'],['area','面积','Luas'],
+ ['landlord','房东','Pemilik'],['tenant','合同承租方','Penyewa'],['lease_start','起租','Mulai sewa','date'],['lease_end','到期','Akhir sewa','date'],['rent_total_jt','合同总租金（jt）','Total sewa (jt)'],['rent_annual_jt','年租金（jt）','Sewa per tahun (jt)'],['rent_monthly_jt','月租金（jt）','Sewa per bulan (jt)'],
+ ['payment_terms','付款方式','Cara bayar'],['paid_through','租金已付到','Lunas s/d','date'],['next_payment','下一笔付款','Pembayaran berikutnya'],['deposit_jt','押金（jt）','Deposit (jt)'],['tax_costs','税费和其他费用','Pajak & biaya'],['sublease','转租 / 转让','Sewa ulang'],['early_exit','提前退租','Keluar awal'],['renewal','续约','Perpanjangan'],['other_terms','其他关键条款','Lainnya'],['todo_note','待补 / 待核对','Perlu dicek']];
+function exEditUI(s){var h='<div class="card"><b style="font-size:18px">'+exT('修改信息','Ubah data')+'</b><div class="small muted">'+esc(s.code)+' · '+exT('改完会在动态记录留一条','Perubahan dicatat otomatis')+'</div>';
+ if(s.stage==='exit')h+='<div style="background:#fff8d6;border-radius:8px;padding:8px 12px;margin-top:10px"><b>'+exT('退出进度','Progres keluar')+'</b>'+exInp('exe_exit_last_day',exT('最后营业日','Hari terakhir'),s.exit_last_day,'','date')
+  +exSel('exe_exit_deposit_status',exT('押金结果','Deposit'),[['pending',exT('待确认','Belum jelas')],['returned',exT('已退回','Sudah kembali')],['not_returned',exT('不退','Tidak kembali')],['none',exT('合同无押金','Tanpa deposit')]],s.exit_deposit_status)
+  +exInp('exe_exit_deposit_rp',exT('押金金额（Rp）','Jumlah deposit (Rp)'),s.exit_deposit_rp)+exInp('exe_exit_deposit_date',exT('退回日期','Tgl kembali'),s.exit_deposit_date,'','date')
+  +'<label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:15px"><input type="checkbox" id="exe_exit_handover"'+(s.exit_handover?' checked':'')+'> '+exT('交接完成（钥匙、清场、EDC 都还了）','Serah terima selesai')+'</label></div>';
+ EX_EDIT.forEach(function(f){if(s.kind==='project'&&['opened','map_url'].indexOf(f[0])>=0)return;if(f[0]==='name'||f[0]==='city'||f[0]==='owner')return h+=exInp('exe_'+f[0],L==='zh'?f[1]:f[2],s[f[0]],'',f[3]);h+=exInp('exe_'+f[0],L==='zh'?f[1]:f[2],s[f[0]],'',f[3]);});
+ h+=exSel('exe_store_type',exT('店型','Tipe'),EX_TYPES,s.store_type);
+ return h+'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'+exBtnS(exT('取消','Batal'),'S.ex.form=null;render()')+exBtnS(exT('保存','Simpan'),'exEditSave()',1)+'</div></div>';}
+function exEditSave(){var o={};EX_EDIT.concat([['store_type'],['exit_last_day'],['exit_deposit_status'],['exit_deposit_rp'],['exit_deposit_date']]).forEach(function(f){var e=document.getElementById('exe_'+f[0]);if(e)o[f[0]]=e.value;});var hb=document.getElementById('exe_exit_handover');if(hb)o.exit_handover=hb.checked;
+ exCall('save',[S.ex.cur,o],function(r){toast(r.changed&&r.changed.length?exT('已保存','Tersimpan'):exT('没有改动','Tidak ada perubahan'));S.ex.form=null;exOpen(S.ex.cur);});}
+
+function exUploadUI(s,ch){var U=S.ex.up||{},lbl={contract:exT('上传合同','Unggah kontrak'),receipt:exT('上传收据','Unggah kwitansi'),other:exT('上传其他材料','Unggah dokumen lain')}[ch];
+ var h='<div class="card"><b style="font-size:18px">'+lbl+'</b><div class="small muted" style="margin:4px 0 10px">'+esc(s.name)+' · '+(ch==='other'?exT('保存 12 个月','Disimpan 12 bulan'):exT('永久保存，传上去以后任何人都删不了','Disimpan permanen, tidak bisa dihapus'))+'</div>'
+  +'<button onclick="exUpPick()" style="width:100%;padding:18px;border:2px dashed #ccc;background:#fafafa;border-radius:10px;font-family:inherit;font-size:15px;cursor:pointer">'+(U.f?esc(U.f.name):exT('选择文件（PDF 或照片，最大 15MB）','Pilih file (PDF/foto, maks 15MB)'))+'</button>';
+ if(ch==='receipt')h+=exInp('exr_date',exT('收据日期','Tanggal kwitansi'),U.date,'','date')+exInp('exr_amt',exT('金额（Rp）','Jumlah (Rp)'),U.amt,'')
+  +exSel('exr_kind',exT('什么款','Jenis'),[['房租',exT('房租','Sewa')],['押金',exT('押金','Deposit')],['退押金',exT('退押金','Pengembalian deposit')],['PPh 代扣',exT('PPh 代扣','Potongan PPh')],['装修款',exT('装修款','Renovasi')],['其他',exT('其他','Lainnya')]],U.kind);
+ if(ch==='contract')h+='<div class="small muted" style="margin-top:8px">'+exT('当晚自动识别，第二天在这里显示和档案不一样的地方，你确认后才更新。','Malam ini dibaca otomatis; besok cek perbedaannya di sini.')+'</div>';
+ return h+'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'+exBtnS(exT('取消','Batal'),'S.ex.form=null;render()')+exBtnS(S.ex.busy?exT('上传中…','Mengunggah…'):exT('上传','Unggah'),S.ex.busy?'':'exUpSave(\''+ch+'\')',1)+'</div></div>';}
+function exUpKeep(){var U=S.ex.up=S.ex.up||{},v=function(id){var e=document.getElementById(id);return e?e.value:undefined;};if(v('exr_date')!==undefined){U.date=v('exr_date');U.amt=v('exr_amt');U.kind=v('exr_kind');}}
+function exUpPick(){exUpKeep();var i=document.createElement('input');i.type='file';i.accept='application/pdf,image/*';i.onchange=function(){var f=(i.files||[])[0];if(!f)return;if(f.size>15*1024*1024)return toast(exT('文件太大（最大 15MB）','File terlalu besar'));exReadFile(f,function(x){S.ex.up.f=x;render();});};i.click();}
+function exUpSave(ch){exUpKeep();var U=S.ex.up||{};if(!U.f)return toast(exT('先选文件','Pilih file dulu'));if(ch==='receipt'&&(!U.date||!U.amt||!U.kind))return toast(exT('收据要填日期、金额、什么款','Isi tanggal, jumlah, jenis'));
+ S.ex.busy=1;render();exCall('upload',[S.ex.cur,ch,{name:U.f.name,mime:U.f.mime,b64:U.f.b64,receipt_date:U.date,amount_rp:U.amt,pay_kind:U.kind}],function(){S.ex.busy=0;S.ex.up={};S.ex.form=null;toast(exT('已上传','Terunggah'));exOpen(S.ex.cur);});}
+
+function exRecogUI(fid){var f=((S.ex.d||{}).files||[]).find(function(x){return x.id===fid;}),R=(f&&f.recog)||{},P=S.ex.pick=S.ex.pick||{};if(!f)return '';
+ var fs=R.fields||[],diff=fs.filter(function(x){return x.diff;});
+ var h='<div class="card"><b style="font-size:18px">'+exT('合同识别结果 · 待确认','Hasil baca kontrak')+'</b><div class="small muted" style="margin:4px 0 10px">'+esc(f.name)+(R.note?' · '+esc(R.note):'')+'</div>'
+  +'<div class="small" style="background:#f6f7f8;border-left:5px solid #FDCD17;padding:8px 10px;margin-bottom:10px">'+exT('识别出 ','Terbaca ')+fs.length+exT(' 项，',' item, ')+(fs.length-diff.length)+exT(' 项和档案一致，',' sama, ')+diff.length+exT(' 项不一样。不一样的选「用合同的」或「保留档案的」。',' berbeda.')+(R.risks&&R.risks.length?'<div style="margin-top:6px"><b>'+exT('要注意：','Perhatian: ')+'</b>'+R.risks.map(esc).join('；')+'</div>':'')+'</div>'
+  +'<div style="overflow-x:auto"><table class="dtbl"><thead><tr><th>'+exT('项目','Item')+'</th><th>'+exT('档案现在','Arsip')+'</th><th>'+exT('合同识别','Kontrak')+'</th><th></th></tr></thead><tbody>'
+  +fs.map(function(x){var p=P[x.key];return '<tr'+(x.diff?' style="background:#fffbea"':'')+'><td><b>'+esc(x.label||x.key)+'</b></td><td class="small">'+esc(x.now==null?'—':x.now)+'</td><td class="small">'+esc(x.value==null?'—':x.value)+'</td><td>'+(x.diff?'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+    +'<button onclick="S.ex.pick[\''+x.key+'\']=\'contract\';render()" style="padding:6px 10px;border-radius:6px;font-family:inherit;font-size:12px;'+(p==='contract'?'background:#111;color:#FDCD17;border:0':'background:#fff;border:1px solid #ddd')+'">'+exT('用合同的','Pakai kontrak')+'</button>'
+    +'<button onclick="S.ex.pick[\''+x.key+'\']=\'keep\';render()" style="padding:6px 10px;border-radius:6px;font-family:inherit;font-size:12px;'+(p==='keep'?'background:#111;color:#FDCD17;border:0':'background:#fff;border:1px solid #ddd')+'">'+exT('保留档案的','Tetap arsip')+'</button></div>':'<span class="small muted">'+exT('一致','Sama')+'</span>')+'</td></tr>';}).join('')+'</tbody></table></div>'
+  +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">'+exBtnS(exT('稍后再看','Nanti'),'S.ex.form=null;render()')+exBtnS(exT('确认，更新档案','Simpan'),'exRecogSave('+fid+','+diff.length+')',1)+'</div></div>';
+ return h;}
+function exRecogSave(fid,n){var P=S.ex.pick||{},f=((S.ex.d||{}).files||[]).find(function(x){return x.id===fid;}),miss=((f&&f.recog&&f.recog.fields)||[]).filter(function(x){return x.diff&&!P[x.key];}).length;if(miss)return toast(exT('还有 '+miss+' 项没选','Masih ada '+miss+' item belum dipilih'));
+ exCall('recogConfirm',[fid,P],function(){S.ex.pick={};S.ex.form=null;toast(exT('已更新档案','Arsip diperbarui'));exOpen(S.ex.cur);});}
+
+// 新建点位（拓展实地踩点，手机用）
+var EX_SHOTS=[['door','门头正面','Depan toko'],['left','街景左边','Jalan kiri'],['right','街景右边','Jalan kanan'],['front','对面','Seberang'],['around','周边配套','Sekitar'],['inside','室内','Dalam']];
+function exNewPointUI(){var N=S.ex.np||{photos:[]},me=(S.ex.data||{}).me||{},g=S.lastGeo;if(!N._geo){N._geo=1;getGeo(function(p){if(p){S.lastGeo=p;N.lat=p.lat;N.lng=p.lng;if(S.ex.form==='newPoint')exNpKeepRender();}});}
+ var h='<div style="margin:4px 0 10px"><a href="javascript:void(0)" onclick="S.ex.form=null;render()" style="color:#111">← '+exT('返回','Kembali')+'</a></div><div class="card"><b style="font-size:18px">'+exT('新建点位','Lokasi baru')+'</b>'
+  +'<div class="small" style="background:#f6f7f8;border-radius:8px;padding:8px 10px;margin-top:8px">'+(N.lat?exT('已定位 ','Lokasi ')+Number(N.lat).toFixed(5)+', '+Number(N.lng).toFixed(5):exT('正在定位…请打开手机定位','Mencari lokasi… aktifkan GPS'))+'</div>'
+  +exInp('np_name',exT('点位名称','Nama lokasi'),N.name,exT('例：Tangerang Gading Serpong 路口','contoh: Simpang Gading Serpong'))
+  +(me.edit&&me.edit.length>1?exSel('np_region',exT('区域','Wilayah'),[['West',exT('西区','Barat')],['East',exT('东区','Timur')]],N.region):'')
+  +exInp('np_city',exT('城市','Kota'),N.city,'Jakarta / Tangerang / …')+exSel('np_type',exT('店型','Tipe'),EX_TYPES,N.store_type)+exInp('np_addr',exT('地址','Alamat'),N.address,'')
+  +exInp('np_area',exT('面积（㎡）','Luas (m²)'),N.area,'')+exInp('np_floor',exT('楼层','Lantai'),N.floor,exT('例：1F，共 3 层','contoh: 1F dari 3'))
+  +exInp('np_quote',exT('房东报价（每年）','Harga sewa per tahun'),N.quote,'Rp')+exInp('np_years',exT('能签几年','Bisa berapa tahun'),N.years,'')
+  +exSel('np_sub',exT('能不能转租','Boleh disewakan ulang'),[['能',exT('能','Boleh')],['不能',exT('不能','Tidak')],['还没问',exT('还没问','Belum ditanya')]],N.sublease_ok)
+  +exInp('np_contact',exT('房东或中介（名字 + 电话）','Pemilik / agen (nama + HP)'),N.contact,'')
+  +'<div class="small" style="font-weight:700;margin:12px 0 6px">'+exT('照片（自动加时间、人名、位置水印）','Foto (otomatis diberi watermark)')+'</div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">'
+  +EX_SHOTS.map(function(s){var p=(N.photos||[]).find(function(x){return x.key===s[0];});return '<button onclick="exNpShot(\''+s[0]+'\')" style="height:90px;border-radius:10px;cursor:pointer;font-family:inherit;font-size:12px;'+(p?'background:#111 url('+p.b64+') center/cover;color:#FDCD17;border:0':'background:#f6f6f6;border:2px dashed #ccc')+'">'+(p?'✓ ':'+ ')+(L==='zh'?s[1]:s[2])+'</button>';}).join('')+'</div>'
+  +'<label style="display:block;margin-top:10px"><div class="small" style="font-weight:700;margin-bottom:4px">'+exT('备注（周边情况、为什么觉得好）','Catatan')+'</div><textarea id="np_note" rows="3" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:15px;font-family:inherit">'+esc(N.note||'')+'</textarea></label>'
+  +'<button class="btn" onclick="'+(S.ex.busy?'':'exNpSave()')+'">'+(S.ex.busy?exT('保存中…','Menyimpan…'):exT('保存到点位池','Simpan ke bank lokasi'))+'</button></div>';
+ return h;}
+function exNpKeep(){var N=S.ex.np=S.ex.np||{photos:[]},v=function(id){var e=document.getElementById(id);return e?e.value:undefined;};
+ [['np_name','name'],['np_region','region'],['np_city','city'],['np_type','store_type'],['np_addr','address'],['np_area','area'],['np_floor','floor'],['np_quote','quote'],['np_years','years'],['np_sub','sublease_ok'],['np_contact','contact'],['np_note','note']].forEach(function(x){var y=v(x[0]);if(y!==undefined)N[x[1]]=y;});}
+function exNpKeepRender(){exNpKeep();render();}
+function exNpShot(key){exNpKeep();var i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.onchange=function(){var f=(i.files||[])[0];if(!f)return;var img=new Image();img.onload=function(){var max=1600,w=img.width,hh=img.height,r=Math.min(1,max/Math.max(w,hh));w=Math.round(w*r);hh=Math.round(hh*r);
+  var c=document.createElement('canvas');c.width=w;c.height=hh;var x=c.getContext('2d');x.drawImage(img,0,0,w,hh);var N=S.ex.np,lab=(EX_SHOTS.find(function(s){return s[0]===key})||[])[1]||'';
+  var lines=[nowStr(),(N.name||'')+' · '+lab,(S.user?S.user.nick:'')+' · '+exT('拓展踩点','Survei lokasi'),N.lat?('GPS '+Number(N.lat).toFixed(5)+', '+Number(N.lng).toFixed(5)):'GPS -'],fs=Math.max(16,Math.round(w/40));
+  x.font='bold '+fs+'px Arial';var bh=(fs+6)*lines.length+10;x.fillStyle='rgba(0,0,0,.55)';x.fillRect(0,hh-bh,w,bh);x.fillStyle='#FDCD17';lines.forEach(function(l,j){x.fillText(l,10,hh-bh+fs+6+j*(fs+6))});
+  N.photos=(N.photos||[]).filter(function(p){return p.key!==key;}).concat([{key:key,label:lab,b64:c.toDataURL('image/jpeg',0.82)}]);render();};img.src=URL.createObjectURL(f);};i.click();}
+function exNpSave(){exNpKeep();var N=S.ex.np;if(!String(N.name||'').trim())return toast(exT('请填点位名称','Isi nama lokasi'));if(!(N.photos||[]).length)return toast(exT('至少拍一张门头照片','Minimal 1 foto depan toko'));
+ S.ex.busy=1;render();exCall('newPoint',[{name:N.name,region:N.region||'West',city:N.city,store_type:N.store_type,address:N.address,area:N.area,floor:N.floor,quote:N.quote,years:N.years,sublease_ok:N.sublease_ok,contact:N.contact,note:N.note,lat:N.lat,lng:N.lng,photos:N.photos.map(function(p){return {label:p.label,b64:p.b64};})}],
+  function(r){S.ex.busy=0;S.ex.np=null;S.ex.form=null;S.ex.grp='project';S.ex.tab='pool';toast(exT('已存入点位池 ','Tersimpan ')+r.code);exOpen(r.id);});}
+
 </script></body></html>
