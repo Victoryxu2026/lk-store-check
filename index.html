@@ -74,6 +74,7 @@ body.desk main{max-width:1180px;margin:0 0 0 232px;padding:26px 36px 40px}body.d
 .dgrid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.dk4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.dkp:hover{border-color:#bbb}
 .dtbl{width:100%;border-collapse:collapse;font-size:14px}.dtbl th{text-align:left;font-size:12px;color:#777;font-weight:600;padding:10px 12px;background:#fafaf8;border-bottom:1px solid #e4e4e0}.dtbl td{padding:10px 12px;border-bottom:1px solid #eee;vertical-align:top}.dtbl tbody tr:hover{background:#fcfbf6}
 body.desk .dtabs~h2:first-of-type{display:none}
+body.desk #app input[type=date]{max-width:240px}
 body.desk #toast{left:calc(50% + 116px)}
 </style></head><body>
 <header><div style="display:flex;align-items:center;gap:8px"><span id="homeBtn"></span><b>LK</b> Hub</div><div><span id="sync" class="sync"></span> <button class="lang" onclick="toggleLang()">ID | 中文</button></div></header>
@@ -326,7 +327,7 @@ function deskAvail(k){var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.
  if(k==='check')return (S.user.entries||[]).length||((S.boot.home||{}).dash)?2:(core?1:-1);if(k==='fin')return pc.has||core?2:-1;if(k==='hr')return sdmOk()?2:(core?1:-1);return -1;}
 function deskGo(k){var zh=L==='zh',av=deskAvail(k);if(av===0)return toast(zh?'即将上线':'Segera hadir');if(av===1)return offToast();S.nav=[];S.v=null;
  if(k==='home'){S.mod=null;render();}else if(k==='sales'){var sa=(S.boot&&S.boot.sales)||{};S.mod=null;if(sa.store)slOpen('store');else if(sa.grab)slOpen('grab');else{S.mod='sales';}S.nav=[];render();}
- else if(k==='check'){S.chkT='STD';S.mod='check';render();}else if(k==='fin'){openMod('fin');S.finSub='mine';render();}else openMod(k);window.scrollTo(0,0);}
+ else if(k==='check'){var Hh=(S.boot&&S.boot.home)||{};S.chkT='STD';if(Hh.dash&&/management|operations manager/i.test(String(S.user.role||''))){S.fromDash=1;S.mod='dash';}else S.mod='check';render();}else if(k==='fin'){openMod('fin');S.finSub='mine';render();}else openMod(k);window.scrollTo(0,0);}
 function deskNav(){var zh=L==='zh',cur=deskMod(),u=S.user||{},m=(S.boot&&S.boot.me)||{},nm=titleCase(m.fullName||u.fullName||u.nick||''),av=myAv();
  var h='<div style="display:flex;align-items:center;gap:10px;padding:2px 8px 20px"><div style="width:36px;height:36px;background:#FDCD17;color:#111;font-weight:800;border-radius:7px;display:flex;align-items:center;justify-content:center">LK</div><div><div style="font-weight:700">LK Hub</div><div style="font-size:12px;color:#9499A0">'+(zh?'核心团队工作台':'Ruang kerja tim inti')+'</div></div></div>';
  D_MODS.forEach(function(k){var a=deskAvail(k);if(a<0)return;var ic=k==='home'?'M3 11l9-7 9 7v9h-6v-6H9v6H3z':ICO[k];
@@ -680,6 +681,7 @@ function opsDay(ld){var zh=L==='zh',dt=S.opD||'',k='opsT_'+dt,d=(S.sd||{})[k];
  if(!d.ok)return opsNo(d);
  var list=sdFilter(d.list),bad=list.filter(function(s){return s.lvl!=='ok';}),ok=list.filter(function(s){return s.lvl==='ok';}),isT=d.date===d.today;
  var h=sdRegBar(d.regs)+'<input type="date" value="'+d.date+'" max="'+d.today+'" onchange="S.opD=this.value;render()" style="margin-bottom:10px">';
+ if(d.date<'2026-11-24')h+='<div class="guide" style="margin-bottom:10px">'+(zh?'LK Toko 11/24 门店才正式开始用（西区），这天之前门店没有打卡数据，下面显示「没人打卡」是正常的。':'LK Toko mulai dipakai 24/11. Sebelum itu belum ada data absen, jadi "tidak ada absen" di bawah ini normal.')+'</div>';
  h+='<div class="small muted" style="margin-bottom:8px">'+(zh?list.length+' 家店 · '+bad.length+' 家要跟进':list.length+' toko · '+bad.length+' perlu dicek')+'</div>';
  if(S._desk)return h+opsDesk(bad.concat(ok),isT,d.date);
  bad.forEach(function(s){h+=opsCard(s,isT,d.date);});
@@ -753,7 +755,7 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
 // 金额统一格式（规则 R231）：逗号千分位、点只做小数点，中印文一样
 function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');}
 function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
-function openMod(m){S.mod=m;if(m==='hr'){S.sdP=null;S.sdNeed=0;sdcHyd();var f=S.sdFresh||{};S.sdFresh={ntc:f.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('att_')===0&&k!=='att_'))delete S.sd[k];});sdmPre();}if(m==='ops'){S.sdP=null;S.sdNeed=0;sdcHyd();var f2=S.sdFresh||{};S.sdFresh={ntc:f2.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('opsT_')===0&&k!=='opsT_')||(k.indexOf('opsP_')===0&&k!=='opsP_'))delete S.sd[k];});opsPre();}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
+function openMod(m){S.mod=m;if(m==='hr'){S.sdP=null;S.sdNeed=0;sdcHyd();var f=S.sdFresh||{};S.sdFresh={ntc:f.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('att_')===0&&k!=='att_'))delete S.sd[k];});sdmPre();}if(m==='ops'){S.opD='';S.sdP=null;S.sdNeed=0;sdcHyd();var f2=S.sdFresh||{};S.sdFresh={ntc:f2.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('opsT_')===0&&k!=='opsT_')||(k.indexOf('opsP_')===0&&k!=='opsP_'))delete S.sd[k];});opsPre();}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
 
 // ---------- 销售 ----------
 function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,h='<h2 style="margin:4px 0 10px">'+(zh?'销售':'Penjualan')+'</h2>';
