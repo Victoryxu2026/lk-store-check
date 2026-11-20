@@ -299,7 +299,7 @@ function slDeskTbl(rows,R,cur){var zh=L==='zh';
    +'<td style="text-align:right;color:'+grCol(o.mom)+'">'+sgn(o.mom)+'</td><td style="text-align:right">'+pc1(o.share)+'</td><td>'+o.flags.map(function(f){return '<span class="sl-flag">'+esc(f)+'</span>';}).join('')+'</td></tr>';});
  return h+'</tbody></table></div>';}
 function fbCard(){var zh=L==='zh',d=(S.sd||{}).fb,LB={LOST:zh?'没货丢单':'Pelanggan hilang (stok)',QUAL:zh?'质量问题':'Masalah kualitas',COMP:zh?'竞品':'Kompetitor',FAC:zh?'影响生意的因素':'Faktor penjualan',IDEA:zh?'店员建议':'Ide staf'};
- var h='<div class="card" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:17px">'+(zh?'店员反馈 · 最近 7 天按主题汇总（下班问卷）':'Masukan staf · 7 hari per tema')+'</b><span class="small" style="cursor:pointer;color:#555" onclick="deskGo(\'ops\')">'+(zh?'看原话 ›':'Lihat detail ›')+'</span></div>';
+ var h='<div class="card" style="margin-top:16px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:17px">'+(zh?'店员反馈 · 最近 7 天按主题汇总（下班问卷）':'Masukan staf · 7 hari per tema')+'</b><div class="small muted">'+(zh?'原文在「门店运营 › 今日」，点店名能看到店员每一题的回答':'Isi lengkap ada di Operasional Toko › Hari ini')+'</div><span class="small" style="cursor:pointer;color:#555" onclick="deskGo(\'ops\')">'+(zh?'看每份问卷的原文 ›':'Lihat isi tiap laporan ›')+'</span></div>';
  if(!sdmTk())return h+'<div class="small muted" style="padding-top:8px">'+(zh?'打开一次「门店运营」并确认密码后显示':'Buka Operasional Toko sekali untuk menampilkan')+'</div></div>';
  if(!d){sdmLoad('fb','fbSum');return h+'<div class="small muted" style="padding-top:8px">'+t('loading')+'</div></div>';}
  if(!d.ok)return h+'<div class="small muted" style="padding-top:8px">—</div></div>';
