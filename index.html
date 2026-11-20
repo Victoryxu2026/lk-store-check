@@ -115,7 +115,7 @@ reasons:[['Ada toko pesaing baru di dekat sini','附近新开了竞争店'],['St
  posqty:['4. Jumlah stok di LK POS — angka saja','4. LK POS 显示的库存数（只填数字）'], diff:['Selisih','差异'], recount:['Hitung ulang: jumlahnya berapa?','重新点一遍：是多少？'], diffnote:['Jelaskan kenapa ada selisih','说明差异原因'],
  nosku:['Toko ini tidak punya data penjualan 14 hari terakhir, jadi tidak ada SKU untuk dicek.','这家店近 14 天没有销售数据，没有可抽查的 SKU'], spotDone:['SKU cocok','个 SKU 一致'],
  photoOld:['Foto harus diambil langsung sekarang, bukan dari galeri','照片必须现场拍，不能用相册里的旧照片'], loading:['Memuat…','加载中…'], err:['Gagal. Cek internet lalu coba lagi.','操作失败，请检查网络后重试'],
- expired:['Sesi sudah habis (setiap hari setelah jam 06.00 perlu masuk lagi). Data yang belum dikirim tetap tersimpan.','登录已过期（每天早上 6 点后要重新登录），没提交的内容都还在'], c3pick:['Minta staf menjelaskan 2 produk ini:','请店员介绍这 2 个商品：'], c3na:['Kartu produk belum ada, jadi C.3 otomatis "tidak berlaku"','卖点卡还没下发，C.3 自动按"不适用"处理'],
+ expired:['Sesi sudah habis (30 hari tidak dipakai, atau password diganti). Silakan masuk lagi. Data yang belum dikirim tetap tersimpan.','登录已过期（超过 30 天，或改过密码），请重新登录，没提交的内容都还在'], c3pick:['Minta staf menjelaskan 2 produk ini:','请店员介绍这 2 个商品：'], c3na:['Kartu produk belum ada, jadi C.3 otomatis "tidak berlaku"','卖点卡还没下发，C.3 自动按"不适用"处理'],
  selectStore:['Pilih toko','选择门店'], hintNoSnap:['Data stok harian belum tersambung, jadi B.8 otomatis "tidak berlaku"','每日库存数据还没接入，B.8 自动按"不适用"处理'],
  sec:{1:['Kondisi staf saat kamu masuk (lihat sebelum menyapa)','进店先看：店员在岗状态（先观察，再打招呼）'],3:['Penampilan staf & toko','店员和门店形象'],4:['Tasting counter (meja tester)','试抽台'],5:['Display & label harga','陈列和价签'],6:['Stok','库存'],8:['Operasional harian','日常运营']}
 };
@@ -129,9 +129,10 @@ var S={token:null,user:null,boot:null,v:null,screen:'login'};
 var DRAFT_KEY='lk_draft_v1';
 function saveDraft(){if(S.v){localStorage.setItem(DRAFT_KEY,JSON.stringify(S.v));}setSync();}
 function loadDraft(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');}catch(e){return null;}}
-// 桌面 App：登录存到当天早上 6 点（服务器控制）；浏览器：关掉页面就要重新登录
-function sessStore(){return standalone()?localStorage:sessionStorage;}
-var sess=null;try{if(!standalone())localStorage.removeItem('lk_sess');sess=JSON.parse(sessStore().getItem('lk_sess')||'null');}catch(e){}if(sess){S.token=sess.token;S.user=sess.user;}
+// 2026-11-20：登录记住 30 天（服务器控制），网页版和桌面 App 一样；改密码后其他设备退出
+function sessStore(){return localStorage;}   // 2026-11-20：网页版和桌面 app 一样记住登录（30 天）
+function secStore(){return standalone()?localStorage:sessionStorage;}   // 人事等二次密码：仍按原来的方式（浏览器关掉就要重输）
+var sess=null;try{sess=JSON.parse(sessStore().getItem('lk_sess')||'null');}catch(e){}if(sess){S.token=sess.token;S.user=sess.user;}
 function toast(m){var e=document.getElementById('toast');e.style.whiteSpace='';e.style.width='';e.style.bottom='';e.style.borderRadius='';e.textContent=m;e.style.display='block';clearTimeout(e._t);e._t=setTimeout(function(){e.style.display='none'},2600);}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
 function busyOn(m){document.getElementById('busymsg').textContent=m;document.getElementById('busy').style.display='flex';}
@@ -285,7 +286,7 @@ function scMyPw(){var zh=L==='zh';return '<div class="card"><h2>'+(zh?'修改密
 function doMyPw(){var zh=L==='zh',o=document.getElementById('p0').value,a=document.getElementById('p1').value,b=document.getElementById('p2').value;if(!o)return toast(zh?'请输入当前密码':'Isi password saat ini');if(a!==b||a.length<6)return toast(t('pwdiff'));busyOn(zh?'正在保存…':'Menyimpan…');run('changePassword',[S.token,a,o],function(r){busyOff();if(!r.ok)return toast(r.err==='BAD_PW'?(zh?'当前密码不对':'Password saat ini salah'):t('pwdiff'));S.myPw=0;render();toast(zh?'密码已更新，下次登录请用新密码':'Password diperbarui. Login berikutnya pakai password baru');},function(){busyOff();toast(t('err'));});}
 function scChangePw(){return '<div class="card"><h2>'+t('mustchange')+'</h2><input id="p1" type="password" placeholder="'+t('newpw')+'"><input id="p2" type="password" placeholder="'+t('newpw2')+'"><button class="btn" onclick="doChange()">'+t('save')+'</button></div>';}
 function doChange(){if(S.busyBtn)return;S.busyBtn=1;setTimeout(function(){S.busyBtn=0},4000);var a=document.getElementById('p1').value,b=document.getElementById('p2').value;if(a!==b||a.length<6)return toast(t('pwdiff'));run('changePassword',[S.token,a],function(r){if(!r.ok)return toast(t('pwdiff'));S.mustChange=false;render();});}
-function logout(){try{sessStore().removeItem(sdmKey());sessStore().removeItem(sdcKey())}catch(e){}if(S.token)try{fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'logout',args:[S.token]})}).catch(function(){});}catch(e){}S={token:null,user:null,boot:null,v:null,thumbs:{},nav:[],dc:{}};inflight={};try{Object.keys(localStorage).filter(function(k){return k.indexOf('lk_boot_')===0||k.indexOf('lk_fin_')===0}).forEach(function(k){localStorage.removeItem(k)});localStorage.removeItem('lk_sess');sessionStorage.removeItem('lk_sess');}catch(e){}render();}
+function logout(){try{secStore().removeItem(sdmKey());secStore().removeItem(sdcKey())}catch(e){}if(S.token)try{fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:'logout',args:[S.token]})}).catch(function(){});}catch(e){}S={token:null,user:null,boot:null,v:null,thumbs:{},nav:[],dc:{}};inflight={};try{Object.keys(localStorage).filter(function(k){return k.indexOf('lk_boot_')===0||k.indexOf('lk_fin_')===0}).forEach(function(k){localStorage.removeItem(k)});localStorage.removeItem('lk_sess');sessionStorage.removeItem('lk_sess');}catch(e){}render();}
 function titleCase(n){n=String(n||'').trim();return n===n.toUpperCase()?n.toLowerCase().replace(/(^|[\s'\-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()}):n;}
 function roleLabel(r){var zh=L==='zh',m=[[/management/i,'管理层','Manajemen'],[/operations manager/i,'运营经理','Operations Manager'],[/area/i,'区域主管','Area Supervisor'],[/audit manager/i,'稽查经理','Audit Manager'],[/audit/i,'稽查专员','Audit Specialist'],[/^pic|store manager/i,'店长','PIC / Kepala Toko'],[/senior sa/i,'资深店员','Senior SA'],[/^sa\b|sales/i,'店员','Sales Assistant']];for(var i=0;i<m.length;i++)if(m[i][0].test(r||''))return zh?m[i][1]:m[i][2];return r||'';}
 function regionLabel(g){var zh=L==='zh';if(/west|barat/i.test(g||''))return zh?'西区':'Wilayah Barat';if(/east|timur/i.test(g||''))return zh?'东区':'Wilayah Timur';return '';}
@@ -414,19 +415,19 @@ var TOKO_API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-api/toko'
 var SDM_VIEW=['victory','kim','xiao','joe','adit','soni','mala','nyimas'],SDM_NOADJ=['mala','nyimas'];
 function sdmOk(){return !!(S.user&&SDM_VIEW.indexOf(String(S.user.nick||'').toLowerCase())>=0);}
 function sdmKey(n){return 'lk_sdm_'+String(n||(S.user&&S.user.nick)||'').trim().toLowerCase();}
-function sdmTk(){try{return sessStore().getItem(sdmKey())||'';}catch(e){return '';}}
+function sdmTk(){try{return secStore().getItem(sdmKey())||'';}catch(e){return '';}}
 function tkCall(fn,args,ok,fail){fetch(TOKO_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:args})}).then(function(x){return x.json()}).then(function(j){if(j.err)(fail||function(){})(j.err);else ok(j.data);}).catch(function(e){(fail||function(){})(String(e));});}
-function sdmLoginBg(n,p){tkCall('sdmLogin',[n,p],function(r){if(r&&r.ok){try{sessStore().setItem(sdmKey(n),r.ticket);}catch(e){}S.sd={};if(!S.v&&!S.mod)render();}});}
+function sdmLoginBg(n,p){tkCall('sdmLogin',[n,p],function(r){if(r&&r.ok){try{secStore().setItem(sdmKey(n),r.ticket);}catch(e){}S.sd={};if(!S.v&&!S.mod)render();}});}
 function sdmCall(op,a,ok){var t=sdmTk();if(!t){S.sdNeed=1;if(S.mod==='hr'||S.mod==='ops')render();return;}
- tkCall('sdm',[t,op,a||{}],ok,function(e){var mm=S.mod==='hr'||S.mod==='ops';Object.keys(S.sd||{}).forEach(function(x){if(x.charAt(0)==='_')delete S.sd[x];});if(String(e).indexOf('SDM_LOGIN')>=0){try{sessStore().removeItem(sdmKey());sessStore().removeItem(sdcKey())}catch(x){}S.sdNeed=1;S.sd={};}else{S.sdErr=1;}if(mm)render();});}
+ tkCall('sdm',[t,op,a||{}],ok,function(e){var mm=S.mod==='hr'||S.mod==='ops';Object.keys(S.sd||{}).forEach(function(x){if(x.charAt(0)==='_')delete S.sd[x];});if(String(e).indexOf('SDM_LOGIN')>=0){try{secStore().removeItem(sdmKey());secStore().removeItem(sdcKey())}catch(x){}S.sdNeed=1;S.sd={};}else{S.sdErr=1;}if(mm)render();});}
 // 2026-11-19 提速：人事页先显示上次的数据（存在本机会话里，退出登录就清掉），后台同时刷新；进人事页时 4 个分页一起拉
 var SDC_KEEP=['ntc','people','shifts','attM_','adj','opsT_','opsP_'];
 function sdcKey(){return 'lk_sdc_'+String((S.user&&S.user.nick)||'').trim().toLowerCase();}
-function sdcHyd(){if(S.sdHyd)return;S.sdHyd=1;S.sd=S.sd||{};S.sdFresh=S.sdFresh||{};try{var c=JSON.parse(sessStore().getItem(sdcKey())||'null')||{};SDC_KEEP.forEach(function(k){if(c[k]&&!S.sd[k])S.sd[k]=c[k];});}catch(e){}}
-function sdcSave(){try{var o={};SDC_KEEP.forEach(function(k){if(S.sd&&S.sd[k])o[k]=S.sd[k];});sessStore().setItem(sdcKey(),JSON.stringify(o));}catch(e){}}
+function sdcHyd(){if(S.sdHyd)return;S.sdHyd=1;S.sd=S.sd||{};S.sdFresh=S.sdFresh||{};try{var c=JSON.parse(secStore().getItem(sdcKey())||'null')||{};SDC_KEEP.forEach(function(k){if(c[k]&&!S.sd[k])S.sd[k]=c[k];});}catch(e){}}
+function sdcSave(){try{var o={};SDC_KEEP.forEach(function(k){if(S.sd&&S.sd[k])o[k]=S.sd[k];});secStore().setItem(sdcKey(),JSON.stringify(o));}catch(e){}}
 function sdmPre(){if(!sdmTk())return;sdmLoad('people','people');sdmLoad('shifts','shifts');sdmLoad('attM_','attMonth',{ym:''});if(SDM_NOADJ.indexOf(String(S.user.nick||'').toLowerCase())<0)sdmLoad('adj','adjList');}
 function sdmLoad(k,op,a){sdcHyd();S.sd=S.sd||{};S.sdFresh=S.sdFresh||{};if(S.sd['_'+k]||(S.sd[k]&&S.sdFresh[k]))return;S.sd['_'+k]=1;sdmCall(op,a,function(r){S.sd[k]=r;S.sdFresh[k]=1;delete S.sd['_'+k];if(SDC_KEEP.indexOf(k)>=0)sdcSave();if(S.mod==='hr'||S.mod==='ops'||S.mod==='ntc'||(k==='ntc'&&!S.mod&&!S.v))render();});}
-function sdmPw(){var p=document.getElementById('sdmpw').value;if(!p)return;busyOn('…');tkCall('sdmLogin',[S.user.nick,p],function(r){busyOff();if(!r.ok)return toast(r.err==='LOCKED'?(L==='zh'?'错误次数太多，请 15 分钟后再试':'Terlalu banyak salah, coba 15 menit lagi'):t('wrong'));try{sessStore().setItem(sdmKey(),r.ticket);}catch(e){}S.sdNeed=0;S.sd={};render();},function(){busyOff();toast(t('err'));});}
+function sdmPw(){var p=document.getElementById('sdmpw').value;if(!p)return;busyOn('…');tkCall('sdmLogin',[S.user.nick,p],function(r){busyOff();if(!r.ok)return toast(r.err==='LOCKED'?(L==='zh'?'错误次数太多，请 15 分钟后再试':'Terlalu banyak salah, coba 15 menit lagi'):t('wrong'));try{secStore().setItem(sdmKey(),r.ticket);}catch(e){}S.sdNeed=0;S.sd={};render();},function(){busyOff();toast(t('err'));});}
 function sdmBadge(){var s=(S.sd||{}).sum;return s&&s.n?'<span style="position:absolute;top:8px;right:10px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#d93025;color:#fff;font-size:12px;font-weight:700;line-height:20px">'+s.n+'</span>':'';}
 var SD_REG={West:['西区','Barat'],East:['东区','Timur']};
 function sdReg(r){var x=SD_REG[r];return x?(L==='zh'?x[0]:x[1]):r;}
