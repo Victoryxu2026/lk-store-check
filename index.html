@@ -1331,7 +1331,9 @@ function scExp(){var zh=L==='zh',E=S.ex||(exInit(),S.ex);
  var tabs=E.grp==='project'?['pool','progress','failed']:['open','exit','closed'];
  h+='<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px">'+tabs.map(function(k){var on=E.tab===k;return '<button onclick="exSet(\'tab\',\''+k+'\')" style="padding:9px 14px;border-radius:8px;font-family:inherit;font-size:14px;cursor:pointer;'+(on?'background:#FDCD17;border:0;font-weight:700':'background:#fff;border:1px solid #ddd')+'">'+exStage(k)+' · '+cnt(k)+'</button>';}).join('')
   +'<span style="flex:1"></span>'+['all','West','East'].map(function(r){var on=E.rg===r;return '<button onclick="exSet(\'rg\',\''+r+'\')" style="padding:7px 12px;border-radius:16px;font-family:inherit;font-size:13px;cursor:pointer;'+(on?'background:#111;color:#fff;border:0':'background:#fff;border:1px solid #ddd')+'">'+(r==='all'?exT('全部','Semua'):exReg(r))+'</button>';}).join('')+'</div></div>';
- h+='<div style="display:flex;gap:8px;margin-bottom:10px"><input placeholder="'+exT('搜索店名或编号','Cari nama / kode')+'" value="'+esc(E.q||'')+'" oninput="S.ex.q=this.value;clearTimeout(S.ex._qt);S.ex._qt=setTimeout(render,250)" style="flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:15px">'
+ h+='<div style="display:flex;gap:8px;margin-bottom:10px"><input placeholder="'+exT('搜索店名或编号','Cari nama / kode')+'" value="'+esc(E.q||'')+'" id="exq" onkeydown="if(event.key===\'Enter\'){S.ex.q=this.value;render();}" style="flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:10px;font-size:15px">'
+  +'<button onclick="S.ex.q=document.getElementById(\'exq\').value;render()" style="padding:10px 18px;border-radius:10px;border:1px solid #111;background:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">'+exT('搜索','Cari')+'</button>'
+  +(E.q?'<button onclick="S.ex.q=\'\';render()" style="padding:10px 12px;border-radius:10px;border:1px solid #ddd;background:#fff;font-family:inherit;font-size:14px;cursor:pointer">'+exT('清除','Hapus')+'</button>':'')
   +(me.edit&&me.edit.length?'<button class="btn" style="width:auto;margin:0;padding:10px 16px;font-size:14px" onclick="S.ex.form=\'newPoint\';S.ex.np={region:\''+(me.edit[0]||'West')+'\',photos:[]};render();">+ '+exT('新建点位','Lokasi baru')+'</button>':'')+'</div>';
  var rows=inR.filter(function(s){return s.stage===E.tab;});
  if(!rows.length){var em={pool:exT('点位池是空的。拓展到现场踩点后，点「新建点位」拍照、填几项信息就进来了。','Belum ada lokasi.'),progress:exT('现在没有推进中的项目。在点位档案里点「开始推进」就会到这里；开业时点「开业」生成门店。','Belum ada proyek berjalan.'),failed:exT('还没有未成功的项目。','Belum ada.'),open:'—',exit:'—',closed:'—'}[E.tab];
@@ -1479,4 +1481,24 @@ function exNpShot(key){exNpKeep();var i=document.createElement('input');i.type='
 function exNpSave(){exNpKeep();var N=S.ex.np;if(!String(N.name||'').trim())return toast(exT('请填点位名称','Isi nama lokasi'));if(!(N.photos||[]).length)return toast(exT('至少拍一张门头照片','Minimal 1 foto depan toko'));
  S.ex.busy=1;render();exCall('newPoint',[{name:N.name,region:N.region||'West',city:N.city,store_type:N.store_type,address:N.address,area:N.area,floor:N.floor,quote:N.quote,years:N.years,sublease_ok:N.sublease_ok,contact:N.contact,note:N.note,lat:N.lat,lng:N.lng,photos:N.photos.map(function(p){return {label:p.label,b64:p.b64};})}],
   function(r){S.ex.busy=0;S.ex.np=null;S.ex.form=null;S.ex.grp='project';S.ex.tab='pool';toast(exT('已存入点位池 ','Tersimpan ')+r.code);exOpen(r.id);});}
-</script></body></html>
+</script><script>
+// 密码框加「眼睛」：点一下显示密码，再点一下隐藏（LK Hub / LK Toko 共用，2026-11-20）
+(function(){
+ var EYE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+ var OFF='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+ function add(i){if(i.getAttribute('data-eye'))return;i.setAttribute('data-eye','1');
+  var cs=getComputedStyle(i),w=document.createElement('span');
+  w.style.cssText='position:relative;display:block;margin:'+cs.marginTop+' '+cs.marginRight+' '+cs.marginBottom+' '+cs.marginLeft;
+  i.parentNode.insertBefore(w,i);w.appendChild(i);i.style.margin='0';i.style.paddingRight='46px';i.style.width='100%';i.style.boxSizing='border-box';
+  var b=document.createElement('button');b.type='button';b.tabIndex=-1;b.title='显示 / 隐藏密码';
+  b.style.cssText='position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;padding:8px;margin:0;width:auto;min-height:0;cursor:pointer;color:#888;line-height:0;box-shadow:none';
+  b.innerHTML=EYE;
+  b.onmousedown=function(e){e.preventDefault();};
+  b.onclick=function(e){e.preventDefault();e.stopPropagation();var show=i.type==='password';i.type=show?'text':'password';b.innerHTML=show?OFF:EYE;b.style.color=show?'#111':'#888';};
+  w.appendChild(b);}
+ function scan(){var l=document.querySelectorAll('input[type=password]:not([data-eye])');for(var k=0;k<l.length;k++)add(l[k]);}
+ if(window.MutationObserver)new MutationObserver(scan).observe(document.body,{childList:true,subtree:true});
+ scan();
+})();
+</script>
+</body></html>
