@@ -298,7 +298,7 @@ function render0(){var a=document.getElementById('app');setSync();if(!S.v||S.v.t
   if(!S.boot){try{var cb=JSON.parse(localStorage.getItem(bk)||'null');if(cb&&cb.serverTime){S.boot=cb;S.bootStale=1;if(cb.entries)S.user.entries=cb.entries;}}catch(e){}}
   run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;S.bootStale=0;if(b.entries){S.user.entries=b.entries;try{var ss=sessStore(),o=JSON.parse(ss.getItem('lk_sess')||'null');if(o){o.user.entries=b.entries;ss.setItem('lk_sess',JSON.stringify(o));}}catch(e){}}OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();try{localStorage.setItem(bk,JSON.stringify(b));}catch(e){}if(!S.v)render();if(b.me&&b.me.core&&!S.ex&&window.exInit)setTimeout(exInit,500);},function(){S.booting=0;if(!S.bootStale)toast(t('err'));});}
   if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';return;}}
- if(!S.v){if(S._desk&&!S.mod)return a.innerHTML=deskHome();if(S.mod==='exp')return a.innerHTML=scExp();if(S.mod==='myrec')return a.innerHTML=scMyRec();if(S._desk&&S.mod==='check')return a.innerHTML=deskChk();if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='ops')return a.innerHTML=scOps();if(S.mod==='ntc')return a.innerHTML=scNtc();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
+ if(!S.v){if(S._desk&&!S.mod)return a.innerHTML=deskHome();if(S.mod==='exp')return a.innerHTML=scExp();if(S.mod==='goods')return a.innerHTML=scGoods();if(S.mod==='myrec')return a.innerHTML=scMyRec();if(S._desk&&S.mod==='check')return a.innerHTML=deskChk();if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='ops')return a.innerHTML=scOps();if(S.mod==='ntc')return a.innerHTML=scNtc();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
  if(S.v.type==='STD')return a.innerHTML=chkBack()+scStd();
  var sk=S.v.visitId+'|'+S.v.idx+'|'+(S.v.guideSeen?1:0);a.innerHTML=chkBack()+scSpot();if(sk!==SPOT_KEY){SPOT_KEY=sk;window.scrollTo(0,0);}}
 var SPOT_KEY='';
@@ -352,10 +352,10 @@ function deskOn(){try{return localStorage.getItem('lk_desk')!=='0'&&window.inner
 function deskToggle(){var on=false;try{on=localStorage.getItem('lk_desk')!=='0';localStorage.setItem('lk_desk',on?'0':'1');}catch(e){}S.mod=null;S.nav=[];render();window.scrollTo(0,0);toast(L==='zh'?(on?'已切回原来的界面':'已打开电脑版新界面'):(on?'Kembali ke tampilan lama':'Tampilan desktop baru aktif'));}
 window.addEventListener('resize',function(){var on=deskOn();if(on!==!!S._desk){S._desk=on;render();}});
 var D_MODS=['home','ops','sales','check','goods','fin','hr','exp','fix','school'];
-function deskMod(){var m=S.mod;if(!m||m==='ntc')return 'home';if(m==='ops')return 'ops';if(/^sales/.test(m))return 'sales';if(/^(check|dash|visit|spotd|store|myrec)$/.test(m))return 'check';if(m==='fin')return 'fin';if(m==='hr')return 'hr';if(m==='exp')return 'exp';return 'home';}
+function deskMod(){var m=S.mod;if(!m||m==='ntc')return 'home';if(m==='ops')return 'ops';if(/^sales/.test(m))return 'sales';if(/^(check|dash|visit|spotd|store|myrec)$/.test(m))return 'check';if(m==='fin')return 'fin';if(m==='hr')return 'hr';if(m==='exp')return 'exp';if(m==='goods')return 'goods';return 'home';}
 function deskName(k){var zh=L==='zh';return {home:zh?'首页':'Beranda',ops:zh?'门店运营':'Operasional Toko',sales:zh?'销售':'Penjualan',check:zh?'门店检查':'Cek Toko',goods:zh?'货品':'Produk & Stok',fin:zh?'财务':'Keuangan',hr:zh?'人事':'SDM',exp:zh?'拓展':'Ekspansi',fix:zh?'报修与反馈':'Perbaikan & Laporan',school:'LK School'}[k];}
 function deskAvail(k){var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,pc=(S.boot&&S.boot.pc)||{};
- if(k==='home')return 2;if(k==='exp')return core?2:-1;if(['goods','fix','school'].indexOf(k)>=0)return core?0:-1;
+ if(k==='home')return 2;if(k==='exp'||k==='goods')return core?2:-1;if(['fix','school'].indexOf(k)>=0)return core?0:-1;
  if(k==='ops')return opsOk()?2:(core?1:-1);if(k==='sales')return (sa.store||sa.grab)?2:(core?1:-1);
  if(k==='check')return (S.user.entries||[]).length||((S.boot.home||{}).dash)?2:(core?1:-1);if(k==='fin')return pc.has||core?2:-1;if(k==='hr')return sdmOk()?2:(core?1:-1);return -1;}
 function deskGo(k){var zh=L==='zh',av=deskAvail(k);if(av===0)return toast(zh?'即将上线':'Segera hadir');if(av===1)return offToast();S.nav=[];S.v=null;
@@ -810,7 +810,7 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
  var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core;
  // 核心人员：已上线的模块一律亮（模块里没权限的标准入口显示灰色）；门店人员：只显示用得到的
  tiles=[['ops',zh?'门店运营':'Operasional Toko',opsOk()?' ':''],['sales',zh?'销售':'Penjualan',(core||sa.store||sa.grab)?' ':''],['check',zh?'门店检查':'Cek Toko',(S.user.entries||[]).indexOf('SPOT')>=0||!hasChk?(zh?'巡检 · 库存抽查':'Inspeksi · Stock opname'):(zh?'门店巡检':'Inspeksi toko')],
-  ['goods',zh?'货品':'Produk & Stok'],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM',sdmOk()?' ':''],['exp',zh?'拓展':'Ekspansi',core?' ':''],['fix',zh?'报修与反馈':'Perbaikan & Laporan'],['school','LK School']];
+  ['goods',zh?'货品':'Produk & Stok',core?' ':''],['fin',zh?'财务':'Keuangan',finSub],['hr',zh?'人事':'SDM',sdmOk()?' ':''],['exp',zh?'拓展':'Ekspansi',core?' ':''],['fix',zh?'报修与反馈':'Perbaikan & Laporan'],['school','LK School']];
 
  // 门店人员：只显示自己用得到的格子（未上线的、用不到的都不显示）；核心团队：全部显示，未上线的灰色
  if(!core)tiles=tiles.filter(function(x){return (x[0]==='check'&&hasChk)||(x[0]==='fin'&&pc.has)||(x[0]==='sales'&&x[2]);});
@@ -821,7 +821,7 @@ function scHome(){var d=loadDraft(),zh=L==='zh',h=profileCard(),pc=(S.boot&&S.bo
 // 金额统一格式（规则 R231）：逗号千分位、点只做小数点，中印文一样
 function rp(n){n=Math.round(Number(n)||0);return (n<0?'-':'')+'Rp '+Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',');}
 function finKey(){return 'lk_fin_'+String((S.user||{}).nick||'').toLowerCase();}
-function openMod(m){S.mod=m;if(m==='exp'){if(S.ex&&S.ex.data){S.ex.cur=null;S.ex.form=null;exLoad();}else{S.ex=null;exInit();}}if(m==='hr'){S.sdP=null;S.sdNeed=0;sdcHyd();var f=S.sdFresh||{};S.sdFresh={ntc:f.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('att_')===0&&k!=='att_'))delete S.sd[k];});sdmPre();}if(m==='ops'){S.opD='';S.sdP=null;S.sdNeed=0;sdcHyd();var f2=S.sdFresh||{};S.sdFresh={ntc:f2.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('opsT_')===0&&k!=='opsT_')||(k.indexOf('opsP_')===0&&k!=='opsP_'))delete S.sd[k];});opsPre();}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
+function openMod(m){S.mod=m;if(m==='goods'){var g0=S.gd;S.gd=null;gdInit();if(g0){S.gd.tab=g0.tab;S.gd.rg=g0.rg;}}if(m==='exp'){if(S.ex&&S.ex.data){S.ex.cur=null;S.ex.form=null;exLoad();}else{S.ex=null;exInit();}}if(m==='hr'){S.sdP=null;S.sdNeed=0;sdcHyd();var f=S.sdFresh||{};S.sdFresh={ntc:f.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('att_')===0&&k!=='att_'))delete S.sd[k];});sdmPre();}if(m==='ops'){S.opD='';S.sdP=null;S.sdNeed=0;sdcHyd();var f2=S.sdFresh||{};S.sdFresh={ntc:f2.ntc};Object.keys(S.sd||{}).forEach(function(k){if(k.indexOf('m_')===0||(k.indexOf('opsT_')===0&&k!=='opsT_')||(k.indexOf('opsP_')===0&&k!=='opsP_'))delete S.sd[k];});opsPre();}if(m==='fin'){S.finWho=null;S.finSub=null;S.finErr=0;S.finOpen={};S.finOld=0;if(!S.fin){try{S.fin=JSON.parse(localStorage.getItem(finKey())||'null');}catch(e){}}loadFin();}render();window.scrollTo(0,0);}
 
 // ---------- 销售 ----------
 function scSalesMod(){var zh=L==='zh',sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,h='<h2 style="margin:4px 0 10px">'+(zh?'销售':'Penjualan')+'</h2>';
@@ -1482,6 +1482,203 @@ function exNpSave(){exNpKeep();var N=S.ex.np;if(!String(N.name||'').trim())retur
  S.ex.busy=1;render();exCall('newPoint',[{name:N.name,region:N.region||'West',city:N.city,store_type:N.store_type,address:N.address,area:N.area,floor:N.floor,quote:N.quote,years:N.years,sublease_ok:N.sublease_ok,contact:N.contact,note:N.note,lat:N.lat,lng:N.lng,photos:N.photos.map(function(p){return {label:p.label,b64:p.b64};})}],
   function(r){S.ex.busy=0;S.ex.np=null;S.ex.form=null;S.ex.grp='project';S.ex.tab='pool';toast(exT('已存入点位池 ','Tersimpan ')+r.code);exOpen(r.id);});}
 </script><script>
+// ================= 货品（决策记录 624–636，2026-11-21）=================
+// 四个入口：门店补货（6 节点流程）· 当前库存 · 调拨与退仓 · 仓库订货（7 节点流程）；后台接口 lk-goods
+var GD_API='https://okzfaepdfeolsmurwtft.supabase.co/functions/v1/lk-goods';
+function gT(zh,id){return L==='zh'?zh:id;}
+function gdCall(fn,args,ok,fail){var ac=window.AbortController?new AbortController():null,tm=ac?setTimeout(function(){ac.abort()},120000):0;
+ fetch(GD_API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({fn:fn,args:[S.token].concat(args||[])}),signal:ac?ac.signal:undefined})
+ .then(function(x){return x.json()}).then(function(j){clearTimeout(tm);if(j.err){if(String(j.err).indexOf('SESSION_EXPIRED')>=0){toast(t('expired'));logout();return;}(fail||gdErr)(j.err);}else ok(j.data);})
+ .catch(function(e){clearTimeout(tm);(fail||gdErr)(String(e));});}
+function gdErr(e){var m=String(e||''),G=S.gd||{};G.busy=0;
+ var map={NO_ACCESS:gT('你没有这个操作的权限','Tidak ada akses'),NEED_REASON:gT('改了数量要写原因','Tulis alasan perubahan'),LOCKED:gT('已经锁定，不能再改','Sudah dikunci'),BAD_STAGE:gT('状态已经变了，请刷新','Status sudah berubah, muat ulang'),BAD_TO:gT('DMS 调拨单号格式不对（例 TO-20261121-001）','Format nomor TO salah (contoh TO-20261121-001)'),NOT_LOCKED:gT('锁定后才能下载','Bisa diunduh setelah dikunci'),NEED_RETURN:gT('先上传经销商回传','Unggah balasan distributor dulu'),BAD_FILE:gT('文件对不上（要用导出的那个表）','File tidak cocok (pakai file hasil ekspor)'),EMPTY:gT('没有填数量','Belum isi jumlah')};
+ if(m.indexOf('OVER_STOCK')>=0){var p=m.split(' ');toast(gT('仓库不够：这个 SKU 最多还能加 ','Stok gudang kurang, maks tambah ')+(p[2]||0));render();return;}
+ var k=Object.keys(map).find(function(x){return m.indexOf(x)>=0});toast(k?map[k]:gT('出错了，请重试：','Gagal, coba lagi: ')+m.slice(0,60));render();}
+function gdN(n){n=Number(n)||0;return Math.round(n).toLocaleString('en-US');}
+function gdJt(n){n=Number(n)||0;var j=n/1e6;return j>=10?Math.round(j).toLocaleString('en-US')+'jt':j>=1?j.toFixed(1)+'jt':j.toFixed(2)+'jt';}
+function gdD(n){return n===null||n===undefined?'—':Math.round(Number(n))+gT('天','h');}
+function gdReg(r){return r==='East'?gT('东区','Timur'):gT('西区','Barat');}
+var GD_STAGE={open:['① ② 分配中 · 可调整','① ② Alokasi · bisa diubah'],locked:['③ 已锁定 · 等仓库确认','③ Terkunci · tunggu gudang'],confirmed:['④ 仓库已确认 · 待发出','④ Gudang OK · siap kirim'],shipped:['⑤ 已发出 · 待门店收货','⑤ Dikirim · tunggu toko'],rejected:['⑥ 门店拒收 · 待仓库处理','⑥ Toko tolak · gudang cek'],returned:['⑥ 仓库已处理 · 待门店再确认','⑥ Sudah dicek · toko konfirmasi lagi'],received:['⑥ 门店已收货','⑥ Diterima toko']};
+function gdStage(s){var x=GD_STAGE[s]||[s,s];return L==='zh'?x[0]:x[1];}
+var GD_PO=[['suggest','① 系统建议','① Saran sistem'],['victory','② Victory 已确认','② Victory OK'],['nia','③ 仓库经理已确认','③ Manajer gudang OK'],['exported','④ 已导出给经销商','④ Diekspor ke distributor'],['talk','⑤ PO 沟通中','⑤ Diskusi PO'],['returned','⑥ 经销商已回传','⑥ Balasan distributor'],['arrived','⑦ 到仓中','⑦ Barang datang'],['closed','完结','Selesai']];
+function gdPoStage(s){var x=GD_PO.find(function(a){return a[0]===s})||[s,s,s];return L==='zh'?x[1]:x[2];}
+function gdInit(){S.gd=S.gd||{tab:'repl',rg:'all',st:'all'};gdLoad();}
+function gdLoad(){var G=S.gd;G.loading=1;gdCall('boot',[G.round||0],function(r){G.loading=0;G.data=r;G.round=r.round;G.err=0;if(S.mod==='goods')render();},function(e){G.loading=0;G.err=String(e);if(S.mod==='goods')render();});}
+function gdTab(k){var G=S.gd;G.tab=k;G.cur=null;G.po=null;G.d=null;
+ if(k==='stock'&&!G.stk)gdCall('stock',[''],function(r){G.stk=r;render();});
+ if(k==='wh'&&!G.wh)gdCall('whStock',[],function(r){G.wh=r;render();});
+ if(k==='move'&&!G.mv){var sid=G.mvStore||((G.stk&&G.stk.store)||'');gdCall('stock',[sid],function(r){G.stk=G.stk||r;G.mvStore=G.mvStore||r.store;gdCall('moves',[G.mvStore],function(m){G.mv=m;render();});});}
+ render();window.scrollTo(0,0);}
+function gdBtn(lbl,click,yellow,dis){return '<button '+(dis?'disabled ':'')+'onclick="'+click+'" style="padding:9px 14px;border-radius:8px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;'+(dis?'opacity:.4;':'')+(yellow?'background:#FDCD17;border:0;color:#111':'background:#fff;border:1px solid #111;color:#111')+'">'+lbl+'</button>';}
+function gdChip(on,lbl,click){return '<button onclick="'+click+'" style="padding:6px 12px;border-radius:16px;font-family:inherit;font-size:13px;cursor:pointer;'+(on?'background:#111;color:#fff;border:1px solid #111':'background:#fff;color:#111;border:1px solid #ccc')+'">'+lbl+'</button>';}
+function gdDl(r){var a=document.createElement('a');a.href='data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,'+r.b64;a.download=r.name;document.body.appendChild(a);a.click();a.remove();}
+
+function scGoods(){var G=S.gd||(gdInit(),S.gd),zh=L==='zh';
+ var tabs=[['repl',gT('门店补货','Replenishment toko')],['stock',gT('当前库存','Stok sekarang')],['move',gT('调拨与退仓','Transfer & retur')],['po',gT('仓库订货','Order gudang')]];
+ var h='<div class="dhead pb">'+(S._desk?'<div class="dtitle">'+gT('货品','Produk & Stok')+'</div>':'<h2 style="margin:4px 0 10px">'+gT('货品','Produk & Stok')+'</h2>')
+  +'<div class="dtabs">'+tabs.map(function(x){return '<div class="dtab'+(G.tab===x[0]||(x[0]==='stock'&&G.tab==='wh')?' on':'')+'" onclick="gdTab(\''+x[0]+'\')">'+x[1]+'</div>';}).join('')+'</div></div>';
+ if(G.err)return h+'<div class="card">'+(String(G.err).indexOf('NO_ACCESS')>=0?gT('你没有「货品」的权限。需要的话请联系 Victory。','Kamu belum punya akses Produk & Stok.'):gT('读取失败，请稍后再试','Gagal memuat, coba lagi'))+'</div>';
+ if(!G.data)return h+'<div class="card">'+t('loading')+'</div>';
+ if(G.tab==='repl')return h+(G.cur?gdOrderUI():gdReplUI());
+ if(G.tab==='stock'||G.tab==='wh')return h+gdStockUI();
+ if(G.tab==='move')return h+gdMoveUI();
+ if(G.tab==='po')return h+(G.po?gdPoUI():gdPoListUI());
+ return h;}
+
+// ---------- 门店补货：流程 + 门店列表 ----------
+function gdReplUI(){var G=S.gd,D=G.data,me=D.me.r,rd=(D.rounds||[]).find(function(r){return r.id===D.round});
+ if(!rd)return '<div class="card muted" style="text-align:center;padding:28px">'+gT('还没有补货轮次。','Belum ada putaran replenishment.')+(me.admin?'<div style="margin-top:12px">'+gdBtn(gT('开一轮补货（按今天的数据）','Buat putaran baru'),'gdNewRound()',1)+'</div>':'')+'</div>';
+ var os=D.orders||[],cnt=function(f){return os.filter(f).length;};
+ var lk=new Date(rd.lock_at),lkTxt=(lk.getMonth()+1)+'/'+lk.getDate()+' '+String(lk.getHours()).padStart(2,'0')+':'+String(lk.getMinutes()).padStart(2,'0');
+ var nodes=[[gT('① 系统分配','① Alokasi sistem'),rd.round_date,'',0],
+  [gT('② 门店查看 + 运营调整','② Toko lihat + Ops ubah'),gT('到 ','s/d ')+lkTxt,cnt(function(o){return o.stage==='open'}),'open'],
+  [gT('③ 分配锁定','③ Kunci alokasi'),lkTxt,'', ''],
+  [gT('④ 仓库确认','④ Konfirmasi gudang'),gT('可多次','bisa berkali-kali'),cnt(function(o){return o.stage==='locked'||o.stage==='confirmed'}),'wh'],
+  [gT('⑤ 货品发出','⑤ Kirim barang'),gT('周六前','sebelum Sabtu ')+' · '+rd.ship_by,cnt(function(o){return o.stage==='confirmed'}),'confirmed'],
+  [gT('⑥ 门店收货','⑥ Toko terima'),gT('确认 / 拒绝一次','terima / tolak sekali'),cnt(function(o){return ['shipped','rejected','returned'].indexOf(o.stage)>=0}),'recv']];
+ var h='<div class="card" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px"><div><b>'+gT('第 ','Putaran ')+rd.id+gT(' 轮','')+' · '+rd.round_date+'</b> <span class="small muted">'+gT('销量算到 ','Penjualan s/d ')+esc(rd.pos_end||'')+' · '+gT('仓库库存 ','Stok gudang ')+esc(rd.dms||'')+'</span></div><div style="display:flex;gap:6px;flex-wrap:wrap">'
+  +((D.rounds||[]).length>1?'<select onchange="S.gd.round=Number(this.value);gdLoad()" style="padding:7px;border-radius:8px;border:1px solid #ccc;font-family:inherit">'+D.rounds.map(function(r){return '<option value="'+r.id+'"'+(r.id===rd.id?' selected':'')+'>'+r.round_date+'</option>';}).join('')+'</select>':'')
+  +(me.admin&&rd.status==='open'?gdBtn(gT('现在锁定','Kunci sekarang'),'gdLock('+rd.id+')'):'')+(me.admin?gdBtn(gT('开新一轮','Putaran baru'),'gdNewRound()'):'')+'</div></div>'
+  +'<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;overflow-x:auto">'+nodes.map(function(n,i){var on=G.st===n[3]&&n[3];return '<div onclick="'+(n[3]?'S.gd.st=(S.gd.st===\''+n[3]+'\'?\'all\':\''+n[3]+'\');render()':(i===0?'gdAlloc()':''))+'" style="min-width:110px;padding:10px;border-radius:10px;cursor:pointer;'+(on?'background:#111;color:#fff':'background:#f6f6f4')+'"><div style="font-weight:700;font-size:13px">'+n[0]+'</div><div class="small" style="opacity:.7">'+esc(n[1])+'</div>'+(n[2]!==''?'<div style="font-size:20px;font-weight:800;margin-top:4px">'+n[2]+'</div>':'')+'</div>';}).join('')+'</div></div>';
+ if(G.alloc)h+=gdAllocUI();
+ var aud=os.filter(function(o){return o.audit_flag&&!o.audit_done}).length,late=os.filter(function(o){return o.late}).length;
+ if(aud||late)h+='<div class="card" style="background:#fff8db">'+(aud?'⚠ '+aud+gT(' 家店第二次收货还有异议，转稽查。',' toko masih keberatan, ke audit. '):'')+(late?'⏱ '+late+gT(' 家店发出 5 天还没确认收货。',' toko belum konfirmasi 5 hari.'):'')+'</div>';
+ h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">'+[['all',gT('全部','Semua')],['West',gT('西区','Barat')],['East',gT('东区','Timur')]].map(function(x){return gdChip(G.rg===x[0],x[1],"S.gd.rg='"+x[0]+"';render()");}).join('')+'</div>';
+ var f=os.filter(function(o){if(G.rg!=='all'&&o.region!==G.rg)return false;var s=G.st;if(s==='all'||!s)return true;if(s==='wh')return o.stage==='locked'||o.stage==='confirmed';if(s==='recv')return ['shipped','rejected','returned'].indexOf(o.stage)>=0;return o.stage===s;});
+ h+='<div class="card" style="padding:0;overflow-x:auto"><table class="dtbl"><thead><tr><th>'+gT('门店','Toko')+'</th><th>'+gT('状态','Status')+'</th><th style="text-align:right">'+gT('件数','Qty')+'</th><th style="text-align:right">SKU</th><th>'+gT('改动','Ubah')+'</th><th>DMS</th></tr></thead><tbody>'
+  +f.map(function(o){var dq=Number(o.q)-Number(o.sys_q);return '<tr style="cursor:pointer" onclick="gdOpen('+o.id+')"><td><b>'+esc(o.store_name)+'</b><div class="small muted">'+esc(o.store_id)+' · '+gdReg(o.region)+'</div></td><td class="small">'+gdStage(o.stage)+(o.audit_flag&&!o.audit_done?' <span style="color:#c00">'+gT('稽查','Audit')+'</span>':'')+(o.late?' <span style="color:#c00">⏱</span>':'')+'</td><td style="text-align:right">'+gdN(o.q)+(dq?'<div class="small muted">'+gT('系统 ','Sistem ')+gdN(o.sys_q)+'</div>':'')+'</td><td style="text-align:right">'+o.skus+'</td><td class="small">'+(Number(o.changes)?o.changes+gT(' 处',' kali'):'—')+(o.wh_version?' · v'+o.wh_version:'')+'</td><td class="small">'+esc(o.to_no||'')+'</td></tr>';}).join('')+'</tbody></table></div>';
+ return h;}
+function gdAlloc(){var G=S.gd;if(G.alloc){G.alloc=null;render();return;}gdCall('alloc',[G.data.round],function(r){G.alloc=r;render();});}
+function gdAllocUI(){var A=S.gd.alloc,s=A.short||[];return '<div class="card"><b>'+gT('① 系统分配说明','① Penjelasan alokasi')+'</b><div class="small muted" style="margin:4px 0 8px">'+gT('仓库够的 SKU 按需求全给；不够的先保证每家店 3 天，再 7 天、14 天，最后补满，同一层不够就按缺口比例分。下面是仓库不够的 SKU：','SKU yang stok gudangnya cukup dikirim penuh. Yang kurang: tiap toko dijamin 3 hari dulu, lalu 7, 14, lalu penuh. Daftar SKU yang kurang:')+'</div>'
+ +(s.length?'<div style="max-height:320px;overflow:auto"><table class="dtbl"><thead><tr><th>SKU</th><th style="text-align:right">'+gT('需求','Butuh')+'</th><th style="text-align:right">'+gT('仓库','Gudang')+'</th><th style="text-align:right">'+gT('分出','Dialokasi')+'</th><th style="text-align:right">'+gT('店数','Toko')+'</th></tr></thead><tbody>'+s.map(function(x){return '<tr><td class="small">'+esc(x.name)+'<div class="muted">'+esc(x.code)+'</div></td><td style="text-align:right">'+gdN(x.demand)+'</td><td style="text-align:right">'+gdN(x.wh)+'</td><td style="text-align:right">'+gdN(x.alloc)+'</td><td style="text-align:right">'+x.stores+'</td></tr>';}).join('')+'</tbody></table></div>':'<div class="muted">'+gT('这一轮仓库都够。','Semua cukup.')+'</div>')+'</div>';}
+function gdNewRound(){if(!confirm(gT('按今天的销量和库存开新一轮补货？','Buat putaran baru dengan data hari ini?')))return;S.gd.busy=1;gdCall('newRound',[''],function(){S.gd.round=0;gdLoad();toast(gT('已生成','Sudah dibuat'));});}
+function gdLock(id){if(!confirm(gT('现在锁定？锁定后运营不能再改，仓库开始确认。','Kunci sekarang? Ops tidak bisa ubah lagi.')))return;gdCall('lock',[id],function(){gdLoad();});}
+
+// ---------- 一家店的补货单 ----------
+function gdOpen(id){var G=S.gd;G.cur=id;G.d=null;G.ed={};G.why={};G.newc='';(S.nav=S.nav||[]);gdCall('get',[id],function(r){if(G.cur===id){G.d=r;render();}});render();window.scrollTo(0,0);}
+function gdBack(){var G=S.gd;G.cur=null;G.d=null;gdLoad();render();}
+function gdEd(code,v){S.gd.ed[code]=v;}
+function gdWhy(code,v){S.gd.why[code]=v;}
+function gdOrderUI(){var G=S.gd,D=G.d,h='<div style="margin:4px 0 10px"><a href="javascript:void(0)" onclick="gdBack()" style="color:#111">← '+gT('返回','Kembali')+'</a></div>';
+ if(!D)return h+'<div class="card">'+t('loading')+'</div>';
+ var o=D.order,c=D.can,edit=c.ops||c.wh||c.resolve,needWhy=c.wh||c.resolve;
+ h+='<div class="card"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><div><div style="font-size:20px;font-weight:800">'+esc(o.store_name)+'</div><div class="small muted">'+esc(o.store_id)+' · '+gdReg(o.region)+' · '+esc(o.stype||'')+' · '+gT('第 ','Putaran ')+o.round_id+gT(' 轮 ','')+o.round_date+'</div></div><div style="text-align:right"><div style="font-weight:700">'+gdStage(o.stage)+'</div>'+(o.to_no?'<div class="small">DMS '+esc(o.to_no)+'</div>':'')+(o.wh_version?'<div class="small muted">'+gT('仓库确认 v','Konfirmasi gudang v')+o.wh_version+'</div>':'')+'</div></div>'
+  +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+  +(o.stage!=='open'?gdBtn(gT('下载 DMS 调拨单','Unduh file DMS'),'gdDms('+o.id+')'):'')+gdBtn(gT('打印配货单','Cetak Surat Jalan'),'gdSlip('+o.id+')')
+  +(c.ship?gdBtn(gT('⑤ 货品发出','⑤ Kirim'),'gdShip('+o.id+')',1):'')+(c.audit?gdBtn(gT('稽查已处理','Audit selesai'),'gdAudit('+o.id+')',1):'')+'</div></div>';
+ if(o.stage==='rejected'||o.reject_reason)h+='<div class="card" style="background:#fff8db"><b>'+gT('门店拒收','Toko menolak')+'</b>：'+esc(o.reject_reason||'')+' <span class="small muted">'+esc(o.rejected_by||'')+'</span>'+((o.reject_urls||[]).length?'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'+o.reject_urls.map(function(u){return u?'<a href="'+esc(u)+'" target="_blank"><img src="'+esc(u)+'" style="width:84px;height:84px;object-fit:cover;border-radius:8px"></a>':'';}).join('')+'</div>':'')
+  +(o.resolve_kind?'<div style="margin-top:6px"><b>'+gT('仓库处理','Gudang')+'</b>：'+(o.resolve_kind==='warehouse'?gT('仓库的原因，已改数量、重新出 DMS 单','Kesalahan gudang, jumlah diubah, DMS baru'):gT('不是仓库的原因，原单发回','Bukan kesalahan gudang, dikirim balik'))+' · '+esc(o.resolve_note||'')+'</div>':'')
+  +(o.recv_note?'<div style="margin-top:6px"><b>'+gT('门店再确认备注','Catatan toko')+'</b>：'+esc(o.recv_note)+'</div>':'')
+  +(c.resolve?'<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+gdBtn(gT('仓库的原因（改下面数量 + 新 DMS 单号）','Kesalahan gudang (ubah jumlah + TO baru)'),'gdResolve('+o.id+',\'warehouse\')',1)+gdBtn(gT('不是仓库的原因，原单发回','Bukan gudang, kirim balik'),'gdResolve('+o.id+',\'no\')')+'</div>':'')+'</div>';
+ var tip=c.ops?gT('锁定前可以改数量（运营调整），门店备注在右边。','Bisa ubah jumlah sebelum dikunci.'):c.wh?gT('仓库确认：可以加也可以减，改了要写原因；确认后还能再改再确认。加的数量不会超过仓库还能分的数。','Gudang: boleh tambah/kurang, wajib tulis alasan. Bisa konfirmasi berkali-kali.'):'';
+ if(tip)h+='<div class="small muted" style="margin:6px 2px">'+tip+'</div>';
+ var ls=D.lines||[];
+ h+='<div class="card" style="padding:0;overflow-x:auto"><table class="dtbl"><thead><tr><th>'+gT('商品','Produk')+'</th><th style="text-align:right">'+gT('门店库存','Stok')+'</th><th style="text-align:right">'+gT('日销','Rata2/hari')+'</th><th style="text-align:right">'+gT('系统','Sistem')+'</th><th style="text-align:right">'+gT('数量','Jumlah')+'</th>'+(needWhy?'<th>'+gT('原因','Alasan')+'</th>':'')+'<th>'+gT('门店备注','Catatan toko')+'</th></tr></thead><tbody>'
+  +ls.map(function(l){var q=Number(l.qty),s=Number(l.sys_qty),ed=G.ed[l.code];return '<tr'+(q===0?' style="opacity:.5"':'')+'><td class="small"><b>'+esc(l.name)+'</b><div class="muted">'+esc(l.code)+' · '+esc(l.brand||'')+'</div></td><td style="text-align:right">'+gdN(l.stock)+(Number(l.transit)?'<div class="small muted">+'+gdN(l.transit)+'</div>':'')+'</td><td style="text-align:right">'+(Number(l.avg)||0).toFixed(1)+'</td><td style="text-align:right">'+gdN(s)+'</td><td style="text-align:right">'
+   +(edit?'<input type="number" min="0" value="'+(ed!==undefined?esc(ed):q)+'" oninput="gdEd(\''+l.code+'\',this.value)" style="width:70px;padding:6px;border:1px solid '+(q!==s?'#FDCD17':'#ccc')+';border-radius:6px;text-align:right">':'<b>'+gdN(q)+'</b>'+(q!==s?'<div class="small muted">'+(q>s?'+':'')+(q-s)+'</div>':''))+'</td>'
+   +(needWhy?'<td><input value="'+esc(G.why[l.code]||'')+'" oninput="gdWhy(\''+l.code+'\',this.value)" placeholder="'+gT('改了才填','isi jika diubah')+'" style="width:140px;padding:6px;border:1px solid #ccc;border-radius:6px"></td>':'')+'<td class="small">'+esc(l.store_note||'')+'</td></tr>';}).join('')+'</tbody></table></div>';
+ if(c.ops||c.wh)h+='<div class="card" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="gdnc" placeholder="'+gT('加一个 SKU：条码','Tambah SKU: barcode')+'" style="padding:8px;border:1px solid #ccc;border-radius:8px;width:180px"><input id="gdnq" type="number" min="1" placeholder="'+gT('数量','Jumlah')+'" style="padding:8px;border:1px solid #ccc;border-radius:8px;width:80px">'+(c.wh?'<input id="gdnw" placeholder="'+gT('原因','Alasan')+'" style="padding:8px;border:1px solid #ccc;border-radius:8px;width:160px">':'')+gdBtn(gT('加上','Tambah'),'gdAddSku()')+'</div>';
+ if(c.ops)h+='<div style="margin:10px 0">'+gdBtn(gT('保存调整','Simpan perubahan'),'gdSave(\'opsAdjust\')',1)+'</div>';
+ if(c.wh)h+='<div style="margin:10px 0">'+gdBtn(gT('④ 仓库确认','④ Konfirmasi gudang')+(o.stage==='confirmed'?gT('（再次）',' (lagi)'):''),'gdSave(\'whConfirm\')',1)+'</div>';
+ var lg=D.log||[];
+ h+='<div class="card"><b>'+gT('记录','Riwayat')+'</b>'+lg.map(function(x){return '<div class="small" style="padding:5px 0;border-bottom:1px solid #f0f0f0"><span class="muted">'+esc(x.at)+' · '+esc(x.who)+' · '+gT('节点 ','Node ')+esc(x.node)+'</span><br>'+(x.kind==='qty'?esc(x.name||x.code)+'：'+gdN(x.q_from)+' → '+gdN(x.q_to)+(x.reason?'（'+esc(x.reason)+'）':''):esc(x.reason||''))+'</div>';}).join('')+'</div>';
+ return h;}
+function gdChanges(){var G=S.gd,ch=[];Object.keys(G.ed||{}).forEach(function(k){var l=(G.d.lines||[]).find(function(x){return x.code===k});if(!l||String(G.ed[k])===''||Number(G.ed[k])===Number(l.qty))return;ch.push({code:k,qty:Number(G.ed[k]),reason:(G.why||{})[k]||''});});return ch;}
+function gdSave(fn){var G=S.gd,ch=gdChanges();if(G.busy)return;
+ if(fn==='opsAdjust'&&!ch.length)return toast(gT('没有改动','Tidak ada perubahan'));
+ if(fn==='whConfirm'&&ch.some(function(c){return !String(c.reason).trim()}))return toast(gT('改了数量要写原因','Tulis alasan perubahan'));
+ G.busy=1;gdCall(fn,[G.cur,ch],function(){G.busy=0;toast(gT('已保存','Tersimpan'));gdOpen(G.cur);});}
+function gdAddSku(){var G=S.gd,c=document.getElementById('gdnc').value.trim(),q=Number(document.getElementById('gdnq').value),w=document.getElementById('gdnw');if(!c||!(q>0))return toast(gT('填条码和数量','Isi barcode dan jumlah'));
+ var fn=G.d.can.wh?'whConfirm':'opsAdjust';if(fn==='whConfirm'&&!(w&&w.value.trim()))return toast(gT('写原因','Tulis alasan'));
+ gdCall(fn,[G.cur,[{code:c,qty:q,reason:w?w.value.trim():''}]],function(){toast(gT('已加上','Ditambahkan'));gdOpen(G.cur);});}
+function gdDms(id){gdCall('dms',[id],gdDl);}
+function gdShip(id){var t=prompt(gT('填 DMS 调拨单号（例 TO-20261121-001）。发出后不能再改。','Isi nomor TO DMS (contoh TO-20261121-001). Setelah kirim tidak bisa diubah.'));if(!t)return;gdCall('ship',[id,t],function(){toast(gT('已发出','Terkirim'));gdOpen(id);});}
+function gdResolve(id,k){var n=prompt(k==='warehouse'?gT('写一下原因（比如少发了什么）','Tulis alasannya'):gT('写一下核实结果（比如看了仓库 CCTV）','Tulis hasil pengecekan'));if(!n)return;
+ if(k==='warehouse'){var ch=gdChanges();if(ch.some(function(c){return !String(c.reason).trim()}))return toast(gT('改了数量要写原因','Tulis alasan perubahan'));var t=prompt(gT('新的 DMS 调拨单号','Nomor TO DMS baru'));if(!t)return;gdCall('resolve',[id,'warehouse',n,ch,t],function(){toast('OK');gdOpen(id);});}
+ else gdCall('resolve',[id,'not_warehouse',n],function(){toast('OK');gdOpen(id);});}
+function gdAudit(id){var n=prompt(gT('稽查结果','Hasil audit'));if(n===null)return;gdCall('auditDone',[id,n],function(){gdOpen(id);});}
+// 配货单（印尼文，按品类 → 品牌排，方便拣货）
+function gdSlip(id){var w=window.open('','_blank');if(!w)return toast(gT('浏览器拦截了新窗口','Popup diblokir'));w.document.write('Memuat…');
+ gdCall('slip',[id],function(r){var o=r.order,ls=r.lines,tot=ls.reduce(function(s,l){return s+Number(l.qty)},0),adj=r.log||[];
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Surat Jalan '+esc(o.store_id)+'</title><style>body{font-family:Arial,sans-serif;font-size:12px;margin:24px}h1{font-size:20px;margin:0}table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #999;padding:4px 6px;text-align:left}th{background:#FDCD17}td.n{text-align:right}.cat td{background:#eee;font-weight:bold}.sig{display:flex;gap:40px;margin-top:40px}.sig div{flex:1;border-top:1px solid #000;padding-top:4px;text-align:center}@media print{button{display:none}}</style></head><body>'
+   +'<button onclick="print()" style="float:right;padding:8px 16px">Cetak</button><h1>SURAT JALAN · LK VAPE</h1><div>Dari: Gudang Pusat &nbsp; → &nbsp; Ke: <b>'+esc(o.store_name)+'</b> ('+esc(o.store_id)+')</div><div>Putaran: '+esc(o.round_date)+' · Versi gudang: v'+o.wh_version+(o.to_no?' · DMS: <b>'+esc(o.to_no)+'</b>':'')+' · Total: <b>'+tot+' pcs</b>, '+ls.length+' SKU</div>'
+   +'<table><thead><tr><th>Barcode</th><th>Kategori</th><th>Merek</th><th>Nama produk</th><th>Jumlah</th><th>Cek</th></tr></thead><tbody>';
+  var lastC=null;ls.forEach(function(l){if(l.category!==lastC){lastC=l.category;html+='<tr class="cat"><td colspan="6">'+esc(l.category||'Lainnya')+'</td></tr>';}html+='<tr><td>'+esc(l.code)+'</td><td>'+esc(l.category||'')+'</td><td>'+esc(l.brand||'')+'</td><td>'+esc(l.name)+'</td><td class="n"><b>'+l.qty+'</b></td><td></td></tr>';});
+  html+='</tbody></table>'+(adj.length?'<h3 style="margin-top:16px">Perubahan oleh gudang</h3><table><thead><tr><th>Waktu</th><th>Oleh</th><th>Produk</th><th>Dari</th><th>Jadi</th><th>Alasan</th></tr></thead><tbody>'+adj.map(function(x){return '<tr><td>'+esc(x.at)+'</td><td>'+esc(x.who)+'</td><td>'+esc(x.name||x.code)+'</td><td class="n">'+gdN(x.q_from)+'</td><td class="n">'+gdN(x.q_to)+'</td><td>'+esc(x.reason||'')+'</td></tr>';}).join('')+'</tbody></table>':'')
+   +'<div class="sig"><div>Disiapkan (gudang)</div><div>Pengirim</div><div>Diterima (toko)</div></div></body></html>';
+  w.document.open();w.document.write(html);w.document.close();});}
+
+// ---------- 当前库存 ----------
+function gdStockUI(){var G=S.gd,h='<div style="display:flex;gap:6px;margin-bottom:10px">'+gdChip(G.tab==='stock',gT('门店库存','Stok toko'),"gdTab('stock')")+gdChip(G.tab==='wh',gT('仓库库存','Stok gudang'),"gdTab('wh')")+'</div>';
+ if(G.tab==='wh'){var W=G.wh;if(!W)return h+'<div class="card">'+t('loading')+'</div>';var q=String(G.whq||'').toLowerCase(),rows=W.rows.filter(function(r){return !q||(r.name+' '+r.code+' '+(r.brand||'')).toLowerCase().indexOf(q)>=0;});
+  return h+'<div class="card" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><b>'+gT('中心仓 · ','Gudang pusat · ')+esc(W.date)+'</b> <span class="small muted">'+gdN(W.rows.length)+' SKU · '+gdN(W.rows.reduce(function(s,r){return s+Number(r.qty)},0))+gT(' 件',' pcs')+gT('（DMS 每天自动同步）',' (sinkron DMS harian)')+'</span></div><input placeholder="'+gT('搜索','Cari')+'" value="'+esc(G.whq||'')+'" onchange="S.gd.whq=this.value;render()" style="padding:8px;border:1px solid #ccc;border-radius:8px"></div>'
+   +'<div class="card" style="padding:0;overflow-x:auto"><table class="dtbl"><thead><tr><th>'+gT('商品','Produk')+'</th><th>'+gT('品类','Kategori')+'</th><th style="text-align:right">'+gT('数量','Jumlah')+'</th></tr></thead><tbody>'+rows.slice(0,800).map(function(r){return '<tr><td class="small"><b>'+esc(r.name)+'</b><div class="muted">'+esc(r.code)+' · '+esc(r.brand||'')+'</div></td><td class="small">'+esc(r.category||'')+'</td><td style="text-align:right">'+gdN(r.qty)+'</td></tr>';}).join('')+'</tbody></table></div>';}
+ var K=G.stk;if(!K)return h+'<div class="card">'+t('loading')+'</div>';var k=K.kpi||{};
+ h+='<div class="card" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><select onchange="gdStkStore(this.value)" style="padding:8px;border-radius:8px;border:1px solid #ccc;font-family:inherit;max-width:100%">'+K.stores.map(function(s){return '<option value="'+s.store_id+'"'+(s.store_id===K.store?' selected':'')+'>'+esc(s.name)+' · '+s.store_id+'</option>';}).join('')+'</select></div>'
+  +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px">'+[[gT('有货 SKU','SKU ada stok'),gdN(k.skus)],[gT('总件数','Total pcs'),gdN(k.qty)],[gT('断货','Kosong'),gdN(k.oos)],[gT('不到 14 天','< 14 hari'),gdN(k.low)],[gT('超过 60 天','> 60 hari'),gdN(k.high)]].map(function(x){return '<div class="card" style="margin:0;padding:12px"><div class="small muted">'+x[0]+'</div><div style="font-size:22px;font-weight:800">'+x[1]+'</div></div>';}).join('')+'</div>';
+ var tb=function(title,rows,low){return '<div class="card" style="padding:0;overflow-x:auto"><div style="padding:10px 14px;font-weight:700">'+title+' ('+rows.length+')</div><table class="dtbl"><thead><tr><th>'+gT('商品','Produk')+'</th><th style="text-align:right">'+gT('库存','Stok')+'</th>'+(low?'<th style="text-align:right">'+gT('在途','Jalan')+'</th>':'')+'<th style="text-align:right">'+gT('日销','Rata2')+'</th><th style="text-align:right">'+gT('可卖天数','Hari')+'</th></tr></thead><tbody>'+rows.map(function(r){return '<tr><td class="small"><b>'+esc(r.name)+'</b><div class="muted">'+esc(r.code)+' · '+esc(r.brand||'')+'</div></td><td style="text-align:right">'+gdN(r.stock)+(r.oos?' <span style="color:#c00">'+gT('断货','habis')+'</span>':'')+'</td>'+(low?'<td style="text-align:right">'+gdN(r.transit)+'</td>':'')+'<td style="text-align:right">'+(Number(r.avg)||0).toFixed(2)+'</td><td style="text-align:right">'+gdD(r.dos)+'</td></tr>';}).join('')+'</tbody></table></div>';};
+ return h+tb(gT('不到 14 天（含断货）','Kurang dari 14 hari'),K.low,1)+tb(gT('超过 60 天 / 没有销量','Lebih dari 60 hari / tidak laku'),K.high,0);}
+function gdStkStore(sid){var G=S.gd;G.stk=null;render();gdCall('stock',[sid],function(r){G.stk=r;render();});}
+
+// ---------- 调拨与退仓（只给建议）----------
+function gdMoveUI(){var G=S.gd,K=G.stk,M=G.mv,h='';
+ if(!K)return '<div class="card">'+t('loading')+'</div>';
+ h+='<div class="card"><select onchange="gdMvStore(this.value)" style="padding:8px;border-radius:8px;border:1px solid #ccc;font-family:inherit;max-width:100%">'+K.stores.map(function(s){return '<option value="'+s.store_id+'"'+(s.store_id===G.mvStore?' selected':'')+'>'+esc(s.name)+' · '+s.store_id+'</option>';}).join('')+'</select><div class="small muted" style="margin-top:6px">'+gT('这家店超过 60 天的货：先调给同城、再同区断货或不到 14 天的店（每家店最多调给 2 家，自己留 30 天）；调不出去的建议退仓。只是建议，实际在 DMS 做。','Barang > 60 hari: transfer ke toko terdekat yang kurang (maks 2 toko, sisakan 30 hari); sisanya retur ke gudang. Hanya saran, eksekusi di DMS.')+'</div></div>';
+ if(!M)return h+'<div class="card">'+t('loading')+'</div>';
+ if(M.targets&&M.targets.length)h+='<div class="small" style="margin:4px 2px 8px">'+gT('调给：','Transfer ke: ')+M.targets.map(function(x){return '<b>'+esc(x.name||x.id)+'</b>'+(x.same?gT('（同城）',' (satu kota)'):'');}).join('、')+'</div>';
+ h+='<div class="card" style="padding:0;overflow-x:auto"><div style="padding:10px 14px;font-weight:700">'+gT('建议调拨','Saran transfer')+' ('+M.moves.length+')</div><table class="dtbl"><thead><tr><th>'+gT('商品','Produk')+'</th><th style="text-align:right">'+gT('本店','Toko ini')+'</th><th>'+gT('调给','Ke')+'</th><th style="text-align:right">'+gT('对方','Toko tujuan')+'</th><th style="text-align:right">'+gT('调','Qty')+'</th></tr></thead><tbody>'
+  +M.moves.map(function(m){return '<tr><td class="small"><b>'+esc(m.name)+'</b><div class="muted">'+esc(m.code)+'</div></td><td style="text-align:right" class="small">'+gdN(m.stock)+' · '+gdD(m.dos)+'</td><td class="small">'+esc(m.toName||m.to)+'</td><td style="text-align:right" class="small">'+gdN(m.toStock)+' · '+gdD(m.toDos)+'</td><td style="text-align:right"><b>'+gdN(m.qty)+'</b></td></tr>';}).join('')+'</tbody></table></div>'
+  +'<div class="card" style="padding:0;overflow-x:auto"><div style="padding:10px 14px;font-weight:700">'+gT('建议退仓','Saran retur ke gudang')+' ('+M.backs.length+')</div><table class="dtbl"><thead><tr><th>'+gT('商品','Produk')+'</th><th style="text-align:right">'+gT('库存','Stok')+'</th><th style="text-align:right">'+gT('可卖天数','Hari')+'</th><th style="text-align:right">'+gT('退','Retur')+'</th></tr></thead><tbody>'
+  +M.backs.map(function(m){return '<tr><td class="small"><b>'+esc(m.name)+'</b><div class="muted">'+esc(m.code)+'</div></td><td style="text-align:right">'+gdN(m.stock)+'</td><td style="text-align:right">'+gdD(m.dos)+'</td><td style="text-align:right"><b>'+gdN(m.qty)+'</b></td></tr>';}).join('')+'</tbody></table></div>';
+ return h;}
+function gdMvStore(sid){var G=S.gd;G.mvStore=sid;G.mv=null;render();gdCall('moves',[sid],function(m){G.mv=m;render();});}
+
+// ---------- 仓库订货 ----------
+function gdPoListUI(){var G=S.gd,D=G.data,ps=D.pos||[],me=D.me.r,money=me.po||me.admin;
+ if(!(me.po||me.admin||me.wh))return '<div class="card">'+gT('你没有「仓库订货」的权限。','Tidak ada akses order gudang.')+'</div>';
+ var h='<div class="card" style="padding:12px 14px"><div style="display:grid;grid-template-columns:repeat(7,minmax(96px,1fr));gap:6px;overflow-x:auto">'+GD_PO.slice(0,7).map(function(s){var n=ps.filter(function(p){return p.stage===s[0]}).length,on=G.pst===s[0];return '<div onclick="S.gd.pst=(S.gd.pst===\''+s[0]+'\'?null:\''+s[0]+'\');render()" style="padding:10px;border-radius:10px;cursor:pointer;'+(on?'background:#111;color:#fff':'background:#f6f6f4')+'"><div style="font-weight:700;font-size:13px">'+(L==='zh'?s[1]:s[2])+'</div><div style="font-size:20px;font-weight:800;margin-top:4px">'+n+'</div></div>';}).join('')+'</div>'
+  +'<div class="small muted" style="margin-top:8px">'+gT('建议量 = 目标天数 × 全渠道日销 − 仓库在库 − 已下未到。每张 PO 都要 Victory 和仓库经理确认。','Saran = target hari × rata2 jual − stok gudang − PO belum datang.')+'</div></div>';
+ var f=ps.filter(function(p){return !G.pst||p.stage===G.pst});
+ h+='<div class="card" style="padding:0;overflow-x:auto"><table class="dtbl"><thead><tr><th>PO</th><th>'+gT('经销商','Distributor')+'</th><th>'+gT('状态','Status')+'</th>'+(money?'<th style="text-align:right">'+gT('金额','Nilai')+'</th>':'')+'<th style="text-align:right">'+gT('确认满足','Konfirmasi')+'</th><th style="text-align:right">'+gT('到货满足','Datang')+'</th></tr></thead><tbody>'
+  +f.map(function(p){return '<tr style="cursor:pointer" onclick="gdPoOpen('+p.id+')"><td><b>'+esc(p.no)+'</b>'+(p.invoice_no?'<div class="small muted">'+esc(p.invoice_no)+'</div>':'')+'</td><td class="small">'+esc(p.supplier)+'</td><td class="small">'+gdPoStage(p.stage)+'</td>'+(money?'<td style="text-align:right">'+gdJt(p.value)+'</td>':'')+'<td style="text-align:right">'+(p.f1!==null?p.f1+'%':'—')+'</td><td style="text-align:right">'+(p.f2!==null?p.f2+'%':'—')+'</td></tr>';}).join('')+'</tbody></table></div>';
+ return h;}
+function gdPoOpen(id){var G=S.gd;G.po=id;G.pd=null;G.ped={};G.pwhy={};G.arr={};gdCall('po',[id],function(r){if(G.po===id){G.pd=r;render();}});render();window.scrollTo(0,0);}
+function gdPoUI(){var G=S.gd,P=G.pd,h='<div style="margin:4px 0 10px"><a href="javascript:void(0)" onclick="S.gd.po=null;gdLoad();render()" style="color:#111">← '+gT('返回','Kembali')+'</a></div>';
+ if(!P)return h+'<div class="card">'+t('loading')+'</div>';
+ var p=P.po,c=P.can,me=G.data.me.r,st=p.stage,wh=me.wh||me.admin,col=st==='suggest'?'v':'n';
+ var idx=GD_PO.findIndex(function(s){return s[0]===st});
+ h+='<div class="card"><div style="display:flex;gap:4px;overflow-x:auto;margin-bottom:12px">'+GD_PO.slice(0,7).map(function(s,i){return '<div style="flex:1;min-width:90px;padding:6px 8px;border-radius:8px;font-size:12px;'+(i<idx||st==='closed'?'background:#e9e9e4':i===idx?'background:#FDCD17;font-weight:700':'background:#f6f6f4;color:#999')+'">'+(L==='zh'?s[1]:s[2])+'</div>';}).join('')+'</div>'
+  +'<div style="font-size:20px;font-weight:800">'+esc(p.no)+' · '+esc(p.supplier)+'</div><div class="small muted">'+gdPoStage(st)+(p.invoice_no?' · Invoice '+esc(p.invoice_no):'')+'</div>'
+  +(P.pay?'<div class="small" style="margin-top:6px">'+gT('付款','Pembayaran')+'：'+(P.pay.none?gT('钉钉里还没有这张发票的付款申请','Belum ada pengajuan bayar untuk invoice ini'):esc(P.pay.id)+' · '+esc(P.pay.result||gT('审批中','proses')))+'</div>':'')
+  +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+  +(st==='suggest'&&me.admin?gdBtn(gT('保存修改','Simpan'),'gdPoSave()')+gdBtn(gT('② Victory 确认','② Victory OK'),'gdPoNext()',1):'')
+  +(st==='victory'&&wh?gdBtn(gT('保存修改','Simpan'),'gdPoSave()')+gdBtn(gT('③ 仓库经理确认','③ Manajer gudang OK'),'gdPoNext()',1):'')
+  +(['nia','exported','talk'].indexOf(st)>=0&&wh?gdBtn(gT('④ 导出给经销商（不带价格）','④ Ekspor ke distributor (tanpa harga)'),'gdPoExport()',st==='nia'):'')
+  +(st==='exported'&&wh?gdBtn(gT('⑤ 开始 PO 沟通','⑤ Mulai diskusi PO'),'gdPoNext()'):'')
+  +(['exported','talk','returned'].indexOf(st)>=0&&wh?'<label style="padding:9px 14px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;background:'+(st==='talk'?'#FDCD17':'#fff')+';border:1px solid #111">'+gT('⑥ 上传经销商回传','⑥ Unggah balasan distributor')+'<input type="file" accept=".xlsx,.xls" style="display:none" onchange="gdPoRet(this)"></label>':'')
+  +(['returned','arrived'].indexOf(st)>=0&&wh?gdBtn(gT('⑦ 登记到仓','⑦ Catat barang datang'),'gdPoArrive()',1):'')
+  +(st==='arrived'&&wh?gdBtn(gT('完结','Selesai'),'gdPoClose()'):'')+'</div></div>';
+ var edit=c.edit,ls=P.lines||[],money=c.money,tot=0;
+ h+='<div class="card" style="padding:0;overflow-x:auto"><table class="dtbl"><thead><tr><th>'+gT('商品','Produk')+'</th><th style="text-align:right">'+gT('仓库','Gudang')+'</th><th style="text-align:right">'+gT('已下未到','PO jalan')+'</th><th style="text-align:right">'+gT('建议','Saran')+'</th><th style="text-align:right">Victory</th><th style="text-align:right">'+gT('仓库经理','Gudang')+'</th>'+(edit&&col==='n'?'<th>'+gT('原因','Alasan')+'</th>':'')+'<th style="text-align:right">'+gT('确认','Konf.')+'</th><th style="text-align:right">'+gT('到货','Datang')+'</th>'+(['returned','arrived'].indexOf(st)>=0&&wh?'<th>'+gT('本次到货','Datang kali ini')+'</th>':'')+(money?'<th style="text-align:right">'+gT('单价','Harga')+'</th>':'')+'</tr></thead><tbody>'
+  +ls.map(function(l){var cur=col==='v'?(l.v_qty!==null?l.v_qty:l.sug_qty):(l.n_qty!==null?l.n_qty:(l.v_qty!==null?l.v_qty:l.sug_qty)),fin=l.conf_qty!==null?l.conf_qty:(l.n_qty!==null?l.n_qty:(l.v_qty!==null?l.v_qty:l.sug_qty));tot+=Number(fin)*Number(l.cost||0);
+   var inp=function(v,key){return '<input type="number" min="0" value="'+(G.ped[l.code]!==undefined?esc(G.ped[l.code]):Number(v))+'" oninput="S.gd.ped[\''+l.code+'\']=this.value" style="width:64px;padding:5px;border:1px solid #ccc;border-radius:6px;text-align:right">';};
+   return '<tr><td class="small"><b>'+esc(l.name)+'</b><div class="muted">'+esc(l.code)+' · '+esc(l.brand||'')+'</div></td><td style="text-align:right">'+gdN(l.wh_stock)+'</td><td style="text-align:right">'+gdN(l.open_qty)+'</td><td style="text-align:right">'+gdN(l.sug_qty)+'</td>'
+    +'<td style="text-align:right">'+(edit&&col==='v'?inp(cur):(l.v_qty!==null?gdN(l.v_qty):'—'))+'</td><td style="text-align:right">'+(edit&&col==='n'?inp(cur):(l.n_qty!==null?gdN(l.n_qty):'—'))+'</td>'
+    +(edit&&col==='n'?'<td><input value="'+esc(G.pwhy[l.code]||'')+'" oninput="S.gd.pwhy[\''+l.code+'\']=this.value" style="width:120px;padding:5px;border:1px solid #ccc;border-radius:6px"></td>':'')
+    +'<td style="text-align:right">'+(l.conf_qty!==null?gdN(l.conf_qty):'—')+'</td><td style="text-align:right">'+gdN(l.recv_qty)+'</td>'
+    +(['returned','arrived'].indexOf(st)>=0&&wh?'<td><input type="number" min="0" oninput="S.gd.arr[\''+l.code+'\']=this.value" style="width:64px;padding:5px;border:1px solid #ccc;border-radius:6px;text-align:right"></td>':'')
+    +(money?'<td style="text-align:right" class="small">'+rp(l.cost)+'</td>':'')+'</tr>';}).join('')+'</tbody></table>'+(money?'<div style="padding:10px 14px;text-align:right"><b>'+gT('合计 ','Total ')+rp(tot)+'</b></div>':'')+'</div>';
+ if((P.arrivals||[]).length)h+='<div class="card"><b>'+gT('到仓记录','Riwayat datang')+'</b>'+P.arrivals.map(function(a){return '<div class="small" style="padding:4px 0">'+esc(a.at)+' · '+esc(a.who)+(a.dms_po_no?' · DMS '+esc(a.dms_po_no):'')+' · '+a.lines.reduce(function(s,x){return s+Number(x.qty)},0)+gT(' 件',' pcs')+'</div>';}).join('')+'</div>';
+ if((P.log||[]).length)h+='<div class="card"><b>'+gT('记录','Riwayat')+'</b>'+P.log.map(function(x){return '<div class="small" style="padding:4px 0;border-bottom:1px solid #f0f0f0"><span class="muted">'+esc(x.at)+' · '+esc(x.who)+'</span> '+(x.kind==='qty'?esc(x.name||x.code)+'：'+gdN(x.q_from)+' → '+gdN(x.q_to)+(x.reason?'（'+esc(x.reason)+'）':''):esc(x.reason||''))+'</div>';}).join('')+'</div>';
+ return h;}
+function gdPoChanges(){var G=S.gd,ch=[];Object.keys(G.ped||{}).forEach(function(k){if(String(G.ped[k])==='')return;ch.push({code:k,qty:Number(G.ped[k]),reason:(G.pwhy||{})[k]||''});});return ch;}
+function gdPoSave(cb){var G=S.gd,ch=gdPoChanges();if(!ch.length){if(cb)cb();else toast(gT('没有改动','Tidak ada perubahan'));return;}gdCall('poSave',[G.po,ch],function(){G.ped={};G.pwhy={};if(cb)cb();else{toast(gT('已保存','Tersimpan'));gdPoOpen(G.po);}});}
+function gdPoNext(){var G=S.gd;gdPoSave(function(){gdCall('poNext',[G.po],function(){toast('OK');gdPoOpen(G.po);});});}
+function gdPoExport(){var G=S.gd;gdCall('poExport',[G.po],function(r){gdDl(r);gdPoOpen(G.po);});}
+function gdPoRet(inp){var f=inp.files&&inp.files[0],G=S.gd;if(!f)return;var rd=new FileReader();rd.onload=function(){gdCall('poReturn',[G.po,String(rd.result)],function(r){toast(gT('对上 ','Cocok ')+r.matched+gT(' 行',' baris')+(r.invoice?' · '+r.invoice:''));gdPoOpen(G.po);});};rd.readAsDataURL(f);}
+function gdPoArrive(){var G=S.gd,items=Object.keys(G.arr||{}).map(function(k){return {code:k,qty:Number(G.arr[k])}}).filter(function(x){return x.qty>0});if(!items.length)return toast(gT('在「本次到货」填数量','Isi kolom "datang kali ini"'));
+ var n=prompt(gT('DMS 采购单号（入库时的 PO 号）','Nomor PO di DMS'));if(n===null)return;gdCall('poArrive',[G.po,n,items],function(){toast('OK');gdPoOpen(G.po);});}
+function gdPoClose(){if(!confirm(gT('确定完结这张 PO？','Tutup PO ini?')))return;gdCall('poClose',[S.gd.po],function(){gdPoOpen(S.gd.po);});}
 // 密码框加「眼睛」：点一下显示密码，再点一下隐藏（LK Hub / LK Toko 共用，2026-11-20）
 (function(){
  var EYE='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
