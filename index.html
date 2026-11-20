@@ -66,9 +66,16 @@ textarea{min-height:70px}.opt{border:1px solid #ccc;border-radius:9px;padding:10
 .sl-mask{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:7;display:flex;align-items:flex-end;justify-content:center}
 .sl-sheet{background:#fff;width:100%;max-width:560px;border-radius:16px 16px 0 0;padding:16px 12px 26px}
 .sl-sheet .it{padding:13px 12px;border-radius:10px;font-size:16px;display:flex;justify-content:space-between;cursor:pointer}.sl-sheet .it.on{background:#fff8d6;font-weight:700}
+body.desk header{display:none}
+#dnav{display:none}body.desk #dnav{display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;width:232px;background:#111;color:#fff;padding:20px 12px;overflow:auto;z-index:6}
+body.desk main{max-width:1180px;margin:0 0 0 232px;padding:26px 36px 40px}body.desk.dv main{max-width:760px}
+.dn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#d6d6d6;cursor:pointer;font-size:15px;margin-bottom:2px}.dn:hover{background:#1f1f1f}.dn.on{background:#FDCD17;color:#111;font-weight:700}.dn.off{color:#6b6b6b}.dn small{margin-left:auto;font-size:11px;color:#6b6b6b}
+.dtitle{font-size:24px;font-weight:800;margin:0 0 12px}.dtabs{display:flex;gap:4px;border-bottom:1px solid #ddd;margin-bottom:18px}.dtab{padding:9px 14px;font-size:15px;color:#666;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}.dtab.on{color:#111;font-weight:700;border-bottom-color:#FDCD17}.dtab.off{color:#bbb}
+.dgrid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.dk4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.dkp:hover{border-color:#bbb}
+body.desk #toast{left:calc(50% + 116px)}
 </style></head><body>
 <header><div style="display:flex;align-items:center;gap:8px"><span id="homeBtn"></span><b>LK</b> Hub</div><div><span id="sync" class="sync"></span> <button class="lang" onclick="toggleLang()">ID | 中文</button></div></header>
-<main id="app"></main><div id="toast"></div><div id="zoom" onclick="this.style.display='none'" style="position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:9"></div><div id="busy"><div id="busymsg"></div></div>
+<aside id="dnav"></aside><main id="app"></main><div id="toast"></div><div id="zoom" onclick="this.style.display='none'" style="position:fixed;inset:0;background:#000;display:none;align-items:center;justify-content:center;z-index:9"></div><div id="busy"><div id="busymsg"></div></div>
 <script>
 // ================= i18n =================
 var L = localStorage.getItem('lk_lang') || 'id';
@@ -243,7 +250,8 @@ function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.t0=Date.no
 function recStop(force){if(!REC||REC.stopping)return;REC.sec=recClock();if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}REC.stopping=true;clearInterval(REC.timer);if(REC.paused){REC.mr.resume();}REC.mr.stop();}
 
 // ================= screens =================
-function render(){var a=document.getElementById('app');setSync();if(!S.v||S.v.type!=='SPOT')SPOT_KEY='';
+function render(){var dk=S._desk=!!(S.token&&!S.mustChange&&deskOn()),dv=document.getElementById('dnav');document.body.classList.toggle('desk',dk);document.body.classList.toggle('dv',dk&&!!S.v);render0();if(dk&&dv){dv.innerHTML=S.boot?deskNav():'';if(!S.v&&S.boot){var tb=deskTabs();if(tb)document.getElementById('app').insertAdjacentHTML('afterbegin',tb);}}else if(dv)dv.innerHTML='';}
+function render0(){var a=document.getElementById('app');setSync();if(!S.v||S.v.type!=='SPOT')SPOT_KEY='';
  if(!S.token)return a.innerHTML=scLogin();
  if(S.mustChange)return a.innerHTML=scChangePw();
  if(S.myPw&&!S.v)return a.innerHTML=scMyPw();
@@ -251,10 +259,105 @@ function render(){var a=document.getElementById('app');setSync();if(!S.v||S.v.ty
   if(!S.boot){try{var cb=JSON.parse(localStorage.getItem(bk)||'null');if(cb&&cb.serverTime){S.boot=cb;S.bootStale=1;if(cb.entries)S.user.entries=cb.entries;}}catch(e){}}
   run('bootstrap',[S.token],function(b){S.booting=0;S.boot=b;S.bootStale=0;if(b.entries){S.user.entries=b.entries;try{var ss=sessStore(),o=JSON.parse(ss.getItem('lk_sess')||'null');if(o){o.user.entries=b.entries;ss.setItem('lk_sess',JSON.stringify(o));}}catch(e){}}OFF=new Date(b.serverTime.replace(' ','T'))-Date.now();try{localStorage.setItem(bk,JSON.stringify(b));}catch(e){}if(!S.v)render();},function(){S.booting=0;if(!S.bootStale)toast(t('err'));});}
   if(!S.boot){a.innerHTML='<div class="card">'+t('loading')+'</div>';return;}}
- if(!S.v){if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='ops')return a.innerHTML=scOps();if(S.mod==='ntc')return a.innerHTML=scNtc();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
+ if(!S.v){if(S._desk&&!S.mod)return a.innerHTML=deskHome();if(S.mod==='myrec')return a.innerHTML=scMyRec();if(S._desk&&S.mod==='check')return a.innerHTML=deskChk();if(S.mod==='check')return a.innerHTML=scCheckMod();if(S.mod==='sales')return a.innerHTML=scSalesMod();if(S.mod==='salesS'||S.mod==='salesG')return a.innerHTML=scSales();if(S.mod==='salesD')return a.innerHTML=scSalesD();if(S.mod==='fin')return a.innerHTML=scFin();if(S.mod==='hr')return a.innerHTML=scHr();if(S.mod==='ops')return a.innerHTML=scOps();if(S.mod==='ntc')return a.innerHTML=scNtc();if(S.mod==='dash')return a.innerHTML=scDash();if(S.mod==='visit')return a.innerHTML=scVisit();if(S.mod==='spotd')return a.innerHTML=scSpotD();if(S.mod==='store')return a.innerHTML=scStore();return a.innerHTML=scHome();}
  if(S.v.type==='STD')return a.innerHTML=chkBack()+scStd();
  var sk=S.v.visitId+'|'+S.v.idx+'|'+(S.v.guideSeen?1:0);a.innerHTML=chkBack()+scSpot();if(sk!==SPOT_KEY){SPOT_KEY=sk;window.scrollTo(0,0);}}
 var SPOT_KEY='';
+// ================= 电脑版新界面（2026-11-20）=================
+// 左边是九宫格的 9 个模块，点进去页面上方是副标题；首页是门户（公告 + 待办 + 提醒 + 核心概览）。
+// 先做成可开关的试用：账号菜单里打开（或网址加 ?desk=1），宽度 ≥ 1000 才生效；关掉就是原来的样子。
+(function(){try{var q=/[?&]desk=([01])/.exec(location.search);if(q)localStorage.setItem('lk_desk',q[1]);}catch(e){}})();
+function deskOn(){try{return localStorage.getItem('lk_desk')==='1'&&window.innerWidth>=1000;}catch(e){return false;}}
+function deskToggle(){var on=false;try{on=localStorage.getItem('lk_desk')==='1';localStorage.setItem('lk_desk',on?'0':'1');}catch(e){}S.mod=null;S.nav=[];render();window.scrollTo(0,0);toast(L==='zh'?(on?'已切回原来的界面':'已打开电脑版新界面'):(on?'Kembali ke tampilan lama':'Tampilan desktop baru aktif'));}
+window.addEventListener('resize',function(){var on=deskOn();if(on!==!!S._desk){S._desk=on;render();}});
+var D_MODS=['home','ops','sales','check','goods','fin','hr','exp','fix','school'];
+function deskMod(){var m=S.mod;if(!m||m==='ntc')return 'home';if(m==='ops')return 'ops';if(/^sales/.test(m))return 'sales';if(/^(check|dash|visit|spotd|store|myrec)$/.test(m))return 'check';if(m==='fin')return 'fin';if(m==='hr')return 'hr';return 'home';}
+function deskName(k){var zh=L==='zh';return {home:zh?'首页':'Beranda',ops:zh?'门店运营':'Operasional Toko',sales:zh?'销售':'Penjualan',check:zh?'门店检查':'Cek Toko',goods:zh?'货品':'Produk & Stok',fin:zh?'财务':'Keuangan',hr:zh?'人事':'SDM',exp:zh?'拓展':'Ekspansi',fix:zh?'报修与反馈':'Perbaikan & Laporan',school:'LK School'}[k];}
+function deskAvail(k){var sa=(S.boot&&S.boot.sales)||{},core=!!((S.boot&&S.boot.me)||{}).core,pc=(S.boot&&S.boot.pc)||{};
+ if(k==='home')return 2;if(['goods','exp','fix','school'].indexOf(k)>=0)return core?0:-1;
+ if(k==='ops')return opsOk()?2:(core?1:-1);if(k==='sales')return (sa.store||sa.grab)?2:(core?1:-1);
+ if(k==='check')return (S.user.entries||[]).length||((S.boot.home||{}).dash)?2:(core?1:-1);if(k==='fin')return pc.has||core?2:-1;if(k==='hr')return sdmOk()?2:(core?1:-1);return -1;}
+function deskGo(k){var zh=L==='zh',av=deskAvail(k);if(av===0)return toast(zh?'即将上线':'Segera hadir');if(av===1)return offToast();S.nav=[];S.v=null;
+ if(k==='home'){S.mod=null;render();}else if(k==='sales'){var sa=(S.boot&&S.boot.sales)||{};S.mod=null;if(sa.store)slOpen('store');else if(sa.grab)slOpen('grab');else{S.mod='sales';render();}S.nav=[];}
+ else if(k==='check'){S.chkT='STD';S.mod='check';render();}else if(k==='fin'){openMod('fin');S.finSub='mine';render();}else openMod(k);window.scrollTo(0,0);}
+function deskNav(){var zh=L==='zh',cur=deskMod(),u=S.user||{},m=(S.boot&&S.boot.me)||{},nm=titleCase(m.fullName||u.fullName||u.nick||''),av=myAv();
+ var h='<div style="display:flex;align-items:center;gap:10px;padding:2px 8px 20px"><div style="width:36px;height:36px;background:#FDCD17;color:#111;font-weight:800;border-radius:7px;display:flex;align-items:center;justify-content:center">LK</div><div><div style="font-weight:700">LK Hub</div><div style="font-size:12px;color:#9499A0">'+(zh?'核心团队工作台':'Ruang kerja tim inti')+'</div></div></div>';
+ D_MODS.forEach(function(k){var a=deskAvail(k);if(a<0)return;var ic=k==='home'?'M3 11l9-7 9 7v9h-6v-6H9v6H3z':ICO[k];
+  h+='<div class="dn'+(k===cur?' on':'')+(a<2?' off':'')+'" onclick="deskGo(\''+k+'\')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+ic+'"/></svg><span>'+esc(deskName(k))+'</span>'+(a===0?'<small>'+(zh?'即将上线':'Segera')+'</small>':'')+'</div>';});
+ h+='<div style="margin-top:auto;padding-top:16px;border-top:1px solid #2a2a2a;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="acctMenu()"><div style="width:34px;height:34px;border-radius:50%;background:#FDCD17;color:#111;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none">'+(av?'<img src="'+av+'" style="width:100%;height:100%;object-fit:cover">':esc(nm.charAt(0)))+'</div><div style="min-width:0;flex:1"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(nm)+'</div><div style="font-size:12px;color:#9499A0">'+(zh?'账号 · 设置':'Akun · Pengaturan')+'</div></div></div>'
+  +'<div style="display:flex;gap:8px;margin-top:10px"><button class="lang" style="flex:1" onclick="toggleLang()">ID | 中文</button></div>';
+ return h;}
+// 副标题（页面上方）：和手机版点进格子看到的几项一样
+function deskTabs(){var zh=L==='zh',k=deskMod(),m=S.mod,sa=(S.boot&&S.boot.sales)||{},H=(S.boot&&S.boot.home)||{},pc=(S.boot&&S.boot.pc)||{},T=[];
+ var tab=function(lbl,on,click,off){return '<div class="dtab'+(on?' on':'')+(off?' off':'')+'" onclick="'+(off?(off===2?'toast(\''+(zh?'即将上线':'Segera hadir')+'\')':'offToast()'):click)+'">'+lbl+'</div>';};
+ if(k==='sales'){T.push(tab(zh?'门店销售':'Penjualan toko',m==='salesS'||(m==='salesD'&&S.slK!=='grab'),'S.nav=[];slOpen(\'store\');S.nav=[]',sa.store?0:1));T.push(tab(zh?'GrabMart 销售':'Penjualan GrabMart',m==='salesG'||(m==='salesD'&&S.slK==='grab'),'S.nav=[];slOpen(\'grab\');S.nav=[]',sa.grab?0:1));T.push(tab(zh?'Tokopedia 销售':'Penjualan Tokopedia',0,'',2));}
+ else if(k==='check'){var ent=S.user.entries||[];T.push(tab(t('std'),m==='check'&&S.chkT!=='SPOT','S.nav=[];S.chkT=\'STD\';S.mod=\'check\';render()',ent.indexOf('STD')>=0?0:1));T.push(tab(t('spot'),m==='check'&&S.chkT==='SPOT','S.nav=[];S.chkT=\'SPOT\';S.mod=\'check\';render()',ent.indexOf('SPOT')>=0?0:1));
+  if(H.dash)T.push(tab(zh?'检查看板':'Dashboard cek',/^(dash|store)$/.test(m)||(/^(visit|spotd)$/.test(m)&&S.fromDash),'S.nav=[];S.fromDash=1;S.mod=\'dash\';render()'));
+  T.push(tab(zh?'我的记录':'Riwayat saya',m==='myrec'||(/^(visit|spotd)$/.test(m)&&!S.fromDash),'S.nav=[];S.fromDash=0;S.mod=\'myrec\';render()'));}
+ else if(k==='fin'){T.push(tab(zh?'我的备用金':'Petty cash saya',S.finSub!=='all'&&S.finSub!=='who','S.finSub=\'mine\';render()'));if(pc.canAll||(S.fin&&S.fin.canAll))T.push(tab(zh?'团队备用金':'Petty cash tim',S.finSub==='all'||S.finSub==='who','S.finSub=\'all\';S.finWho=null;render()'));}
+ else return '';
+ return '<div class="dtitle">'+esc(deskName(k))+'</div><div class="dtabs">'+T.join('')+'</div>';}
+// 门店检查 · 标准化检核 / 库存抽检：开始新的检查 + 本期还没做的店
+function deskChk(){var zh=L==='zh',ty=S.chkT==='SPOT'?'SPOT':'STD',on=(S.user.entries||[]).indexOf(ty)>=0,d=loadDraft(),P=((S.boot&&S.boot.home)||{}).prog,h='';
+ h+='<div class="guide" style="border-left-color:#b3261e;background:#fdecea"><b>⚠ '+t('honestyTitle')+'</b><br>'+t('honesty')+'</div>';
+ if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+(zh?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc((d.storeId||'')+' '+(d.storeName||''))+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><div style="display:flex;gap:8px;max-width:420px"><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div></div>';
+ h+='<div class="card" style="display:flex;align-items:center;gap:16px"><div style="flex:1"><b style="font-size:17px">'+(ty==='STD'?t('std'):t('spot'))+'</b><div class="small muted">'+(ty==='STD'?t('stdsub'):t('spotsub'))+'</div></div>'+(on?'<button class="btn" style="width:auto;margin:0;padding:12px 22px" onclick="newVisit(\''+ty+'\')">'+(zh?'开始新的检查':'Mulai cek baru')+'</button>':'<span class="muted">'+(zh?'没有权限':'Tidak ada akses')+'</span>')+'</div>';
+ var left=(P&&P.left||[]).filter(function(x){return P.kind!=='AS'||(ty==='STD'?!x.std:!x.spot);});
+ if(on&&left.length)h+='<div class="card"><b>'+(zh?'本期还要去的店':'Toko yang belum dicek periode ini')+'</b> <span class="small muted">'+pd(P.p||P.pw)+'</span>'+left.map(function(x){return dRow(esc(x.sn)+' <span class="small muted">'+esc(x.s)+'</span>',(zh?'开始 ›':'Mulai ›'),'#111','startAt(\''+esc(x.s)+'\''+(ty==='SPOT'?',\'SPOT\'':'')+')');}).join('')+'</div>';
+ return h;}
+// 我的记录 · 门店检查：自己做过的，最近 60 天，按门店排；只读（手机版、电脑版都用）
+function scMyRec(){var zh=L==='zh',r=(S.dc||{}).myrec,desk=S._desk,h=desk?'':backBtn()+'<h2 style="margin:4px 0 2px">'+(zh?'我的记录':'Riwayat saya')+'</h2>';
+ if(!r||r.err){fetchD('myrec','myRecs',[S.token],'myrec');return h+loadingCard(r,'delete S.dc.myrec;render()');}
+ var mode=S.mrMode||'store',ty=S.mrTy||'';
+ h+='<div class="small muted" style="margin:0 0 10px">'+(zh?'最近 60 天 · 本期 '+pd(r.p)+' · 只能看，不能改 · 点一条看详情':'60 hari terakhir · periode '+pd(r.p)+' · hanya bisa dilihat')+'</div>';
+ h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+[['store',zh?'按门店':'Per toko'],['time',zh?'按时间':'Per waktu']].map(function(x){var on=mode===x[0];return '<span class="back" style="margin:0;'+(on?'background:#111;color:#FDCD17':'')+'" onclick="S.mrMode=\''+x[0]+'\';render()">'+x[1]+'</span>';}).join('')+(mode==='time'?[['',zh?'全部':'Semua'],['STD',t('std')],['SPOT',t('spot')]].map(function(x){var on=ty===x[0];return '<span class="back" style="margin:0;'+(on?'background:#555;color:#fff':'')+'" onclick="S.mrTy=\''+x[0]+'\';render()">'+x[1]+'</span>';}).join(''):'')+'</div>';
+ var line=function(x){return x.t==='STD'?dRow(t('std')+' · '+md(x.d)+(x.ok?'':' <span class="small" style="color:#b26a00">'+(zh?'不到 30 分钟':'< 30 mnt')+'</span>'),(x.sc==null?'—':x.sc+(zh?' 分':''))+(x.iss?(zh?' · 待整改 ':' · perbaikan ')+x.iss:'')+' ›',x.sc!=null&&x.sc<80?'#b3261e':'#111','S.fromDash=0;openVisit(\''+esc(x.id)+'\')')
+  :dRow(t('spot')+' · '+md(x.d)+(x.ok?'':' <span class="small" style="color:#b26a00">'+(zh?'不到 20 分钟':'< 20 mnt')+'</span>'),x.cnt+' SKU · '+(x.bad?(zh?'不一致 ':'selisih ')+x.bad:(zh?'全部一致':'semua cocok'))+' ›',x.bad>=2?'#b3261e':'#111','S.fromDash=0;openSpotD(\''+esc(x.id)+'\')');};
+ if(mode==='time'){var l=r.list.filter(function(x){return !ty||x.t===ty;});return h+'<div class="card">'+(l.length?l.map(function(x){return '<div class="small muted" style="padding-top:8px">'+esc(x.sn)+'</div>'+line(x);}).join(''):'<div class="muted">'+(zh?'最近 60 天还没有记录':'Belum ada catatan 60 hari terakhir')+'</div>')+'</div>';}
+ if(!r.stores.length)return h+'<div class="card muted" style="text-align:center;padding:24px">'+(zh?'最近 60 天还没有记录':'Belum ada catatan 60 hari terakhir')+'</div>';
+ var cols=desk?'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px':'';
+ return h+'<div style="'+cols+'">'+r.stores.map(function(s){var done=s.inStd&&(s.inSpot||!r.needSpot),st=done?(zh?'本期已做 ✓':'Periode ini selesai ✓'):!s.inStd&&!s.inSpot?(zh?'本期还没去':'Belum dicek periode ini'):!s.inStd?(zh?'本期还差巡检':'Kurang inspeksi'):(zh?'本期还差抽检':'Kurang cek stok');
+  var items=r.list.filter(function(x){return x.s===s.s;}),open=(S.mrOpen||{})[s.s],sh=open?items:items.slice(0,2);
+  return '<div class="card" style="margin-bottom:'+(desk?'0':'12px')+(done?'':';border-left:4px solid #b3261e')+'"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+esc(s.sn)+'</b><span class="small" style="white-space:nowrap;color:'+(done?'#1d7a3a':'#b3261e')+'">'+st+'</span></div><div class="small muted">'+esc(s.s)+(s.last?' · '+(zh?'上次 ':'terakhir ')+md(s.last):'')+'</div>'
+   +(items.length?sh.map(line).join('')+(items.length>2&&!open?'<div class="small" style="padding-top:6px;cursor:pointer;color:#555" onclick="S.mrOpen=S.mrOpen||{};S.mrOpen[\''+esc(s.s)+'\']=1;render()">'+(zh?'全部 '+items.length+' 条 ›':'Semua '+items.length+' ›')+'</div>':''):'<div class="small muted" style="padding-top:8px">'+(zh?'最近 60 天没去过':'Belum dicek 60 hari terakhir')+'</div>')+'</div>';}).join('')+'</div>';}
+// 电脑版首页（门户）：公告（大家一样）+ 我的待办 + 提醒 + 核心概览（只给有看板的人）
+function deskSalesLoad(){var sa=(S.boot&&S.boot.sales)||{};if(!sa.store)return;S.dc=S.dc||{};if(S.dc.sv_store||S._dsl)return;S._dsl=1;
+ try{var c=JSON.parse(localStorage.getItem(slLsKey('store'))||'null');if(c&&c.stores){c._stale=1;S.dc.sv_store=c;}}catch(e){}
+ run('salesView',[S.token,'store','cur'],function(r){S.dc.sv_store=r;try{localStorage.setItem(slLsKey('store'),JSON.stringify(r));}catch(e){}if(!S.mod&&!S.v)render();},function(){});}
+function deskHome(){var zh=L==='zh',H=(S.boot&&S.boot.home)||{},d=loadDraft(),P=H.prog,u=S.user||{},m=(S.boot&&S.boot.me)||{},nm=titleCase(m.fullName||u.fullName||u.nick||'');
+ if(sdmTk())sdmLoad('ntc','notices');deskSalesLoad();
+ var h='<div class="dtitle" style="margin-bottom:2px">'+(zh?'首页':'Beranda')+'</div><div class="small muted" style="margin-bottom:16px">'+esc(greet())+'，'+esc(nm)+' · '+esc(deptLine())+'</div>';
+ h+=nBar();
+ // 待办：要我做的事，做完就消失
+ var td=[];
+ if(d&&d.nick===S.user.nick)td.push(['check',(zh?'继续没做完的检查：':'Lanjutkan cek: ')+esc(d.storeName||d.storeId||''),'',"resume()"]);
+ (H.todo||[]).forEach(function(x){td.push(['check',(zh?'整改超期：':'Perbaikan terlambat: ')+esc(x.s)+' · '+esc(x.desc||''),(zh?'截止 ':'Batas ')+md(x.due),"S.nav=[];S.fromDash=1;S.mod='dash';render()",1]);});
+ if(P&&P.left&&P.left.length){P.left.slice(0,5).forEach(function(x){var ty=P.kind==='AS'&&x.std&&!x.spot?'SPOT':'STD';td.push(['check',(ty==='STD'?t('std'):t('spot'))+' · '+esc(x.sn),pd(P.p||P.pw)+(zh?' 内':''),"startAt('"+esc(x.s)+"'"+(ty==='SPOT'?",'SPOT'":'')+")"]);});
+  if(P.left.length>5)td.push(['check',(zh?'还有 '+(P.left.length-5)+' 家店本期没做完':'+'+(P.left.length-5)+' toko lagi'),'',"S.nav=[];S.chkT='STD';S.mod='check';render()"]);}
+ var tdH='<div class="card" style="margin:0"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:17px">'+(zh?'我的待办':'Tugas saya')+'</b><span class="small muted">'+(zh?'点一条直接去做':'Ketuk untuk mengerjakan')+'</span></div>'
+  +(td.length?td.map(function(x){return '<div onclick="'+x[3]+'" style="display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #eee;font-size:14px;cursor:pointer"><span class="tag" style="margin:0;white-space:nowrap">'+esc(deskName(x[0]))+'</span><span style="flex:1;min-width:0">'+x[1]+'</span><span class="small" style="white-space:nowrap;color:'+(x[4]?'#b3261e':'#777')+'">'+x[2]+'</span></div>';}).join(''):'<div class="small muted" style="padding:10px 0 2px">'+(zh?'目前没有要你做的事 ✓':'Tidak ada tugas ✓')+'</div>')+'</div>';
+ // 提醒：要我知道的情况
+ var al=[],D=H.dash;
+ (S.boot.health||[]).forEach(function(x){al.push(['#b3261e',esc(x.src||'')+(zh?' 数据读取异常':' gagal dibaca'),(zh?'从 ':'Sejak ')+esc(x.since||'')+(x.bak?(zh?' · 正在用备份数据':' · pakai data cadangan'):'')]);});
+ if(D){var nv=(D.stores||[]).filter(function(x){return !x.inHalf;}).length;if(nv)al.push(['#e0a100',(zh?nv+' 家店本期（'+pd(D.half)+'）还没人做标准化检核':nv+' toko belum diinspeksi periode ini'),zh?'点开检查看板':'Buka dashboard',"S.nav=[];S.fromDash=1;S.mod='dash';render()"]);
+  if(D.iss&&D.iss.over)al.push(['#b3261e',(zh?D.iss.over+' 项整改已超期':D.iss.over+' perbaikan lewat batas'),zh?'点开看是哪几项':'Lihat detail',"S.nav=[];S.fromDash=1;S.mod='dash';render()"]);}
+ var sv=slData('store'),R=sv&&sv.stores?sv:null,K=null;
+ if(R&&R.e>0){var A=0,T=0,AA=0,L7=0,lo=0;R.stores.forEach(function(x){var o=slCalc(x,R);AA+=o.a;if(o.t>0){A+=o.a;T+=o.t;L7+=o.l7||0;if(o.proj!=null&&o.proj<0.85)lo++;}});
+  K={ach:T>0?A/T:null,proj:T>0?A/R.e*R.dim/T:null,need:T>A&&R.dim>R.e?(T-A)/(R.dim-R.e):0,l7:L7/7,aa:AA,asOf:R.asOf,lo:lo};
+  if(lo)al.push(['#e0a100',(zh?lo+' 家店预计月达成不到 85%':lo+' toko proyeksi < 85%'),zh?'点开看是哪几家':'Lihat toko',"deskGo('sales')"]);
+  al.push(['#9aa0a6',(zh?'销售数据到 ':'Data penjualan s.d. ')+mdLbl(R.asOf),zh?'POS 最近一次更新':'Update POS terakhir']);}
+ var alH='<div class="card" style="margin:0"><b style="font-size:17px">'+(zh?'提醒':'Pengingat')+'</b>'+(al.length?al.map(function(x){return '<div'+(x[3]?' onclick="'+x[3]+'"':'')+' style="display:flex;gap:10px;padding:10px 0;border-top:1px solid #eee;font-size:14px;align-items:flex-start'+(x[3]?';cursor:pointer':'')+'"><span style="width:10px;height:10px;border-radius:5px;background:'+x[0]+';margin-top:5px;flex:none"></span><span style="flex:1"><span>'+x[1]+'</span>'+(x[2]?'<div class="small muted">'+x[2]+'</div>':'')+'</span></div>';}).join(''):'<div class="small muted" style="padding:10px 0 2px">'+(zh?'目前没有需要注意的情况':'Tidak ada yang perlu diperhatikan')+'</div>')+'</div>';
+ h+='<div class="dgrid2">'+tdH+alH+'</div>';
+ // 核心概览：只给有看板的岗位（管理层全部门店、运营团队自己负责的门店）
+ if(D||K){var kp=function(lbl,val,sub,go,c){return '<div class="card dkp" onclick="'+go+'" style="margin:0;cursor:pointer"><div class="small muted" style="font-weight:700">'+lbl+'</div><div style="font-size:28px;font-weight:800;margin:4px 0;color:'+(c||'#111')+'">'+val+'</div><div class="small">'+sub+'</div><div class="small muted" style="margin-top:6px">'+(zh?'点开看明细 ›':'Lihat detail ›')+'</div></div>';},cards=[];
+  if(K)cards.push(kp((zh?'销售 · 预计月达成':'Penjualan · proyeksi'),K.proj==null?'—':Math.round(K.proj*100)+'%',(zh?'已完成 ':'Tercapai ')+(K.ach==null?'—':Math.round(K.ach*100)+'%')+' · '+(zh?'剩余每天要卖 ':'sisa/hari ')+(K.need>0?jt(K.need):'✓'),"deskGo('sales')",achCol(K.proj)));
+  if(D){cards.push(kp((zh?'标准化检核 · 本期覆盖':'Inspeksi · cakupan'),D.cov.c+' / '+D.cov.n,pd(D.half)+' · '+D.cov.all+'%',"S.nav=[];S.fromDash=1;S.mod='dash';render()"));
+   cards.push(kp((zh?'本月平均分':'Skor rata-rata bulan ini'),D.score.avg==null?'—':D.score.avg,(zh?D.score.n+' 次检核':D.score.n+' inspeksi'),"S.nav=[];S.fromDash=1;S.mod='dash';render()",D.score.avg!=null&&D.score.avg<80?'#b3261e':''));
+   cards.push(kp((zh?'待整改':'Perbaikan terbuka'),D.iss.open,(zh?'其中超期 ':'lewat batas ')+D.iss.over,"S.nav=[];S.fromDash=1;S.mod='dash';render()",D.iss.over?'#b3261e':''));}
+  h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 10px"><b style="font-size:18px">'+(zh?'核心概览':'Ringkasan')+'</b><span class="small muted">'+(D?esc(scopeTxt(D)):'')+'</span></div><div class="dk4">'+cards.join('')+'</div>';
+  if(opsOk())h+='<div class="card" style="margin-top:16px;display:flex;align-items:center;gap:12px;cursor:pointer" onclick="deskGo(\'ops\')"><div style="flex:1"><b>'+(zh?'今天开店 · 店员反馈':'Toko buka hari ini · Masukan staf')+'</b><div class="small muted">'+(zh?'门店开店检查、打卡和下班问卷的实时情况在「门店运营」里看（需要再确认一次密码）。店员反馈按主题汇总会在 LK Toko 门店正式使用（11/24）后显示在这里。':'Lihat di Operasional Toko. Ringkasan masukan staf tampil di sini setelah LK Toko dipakai (24/11).')+'</div></div><span style="font-size:20px;color:#bbb">›</span></div>';}
+ return h;}
+
 function standalone(){return (window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;}
 var A2HS_EVT=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();A2HS_EVT=e;try{render();}catch(x){}});
 function a2hsInstall(){if(!A2HS_EVT)return;A2HS_EVT.prompt();A2HS_EVT.userChoice.then(function(){A2HS_EVT=null;render();});}
@@ -304,6 +407,7 @@ function acctMenu(){var zh=L==='zh',m=document.createElement('div');m.id='acm';m
  m.innerHTML='<div style="background:#fff;width:100%;border-radius:16px 16px 0 0;padding:14px 16px 26px"><div style="width:36px;height:4px;border-radius:2px;background:#ddd;margin:0 auto 12px"></div><b style="font-size:16px">'+(zh?'我的账号':'Akun saya')+'</b><div style="height:8px"></div>'
   +row('avMenu()','M4 7h3l2-3h6l2 3h3v13H4zM12 17a4 4 0 100-8 4 4 0 000 8z',zh?'更换头像':'Ganti foto profil')
   +row('S.myPw=1;render()','M7 11V8a5 5 0 0110 0v3M5 11h14v10H5zM12 15v2',zh?'修改密码':'Ganti password')
+  +(window.innerWidth>=1000?row('deskToggle()','M3 4h18v12H3zM8 20h8M12 16v4',(function(){var on=false;try{on=localStorage.getItem('lk_desk')==='1';}catch(e){}return zh?(on?'切回原来的界面':'试用电脑版新界面'):(on?'Kembali ke tampilan lama':'Coba tampilan desktop baru');})()):'')
   +row('askLogout()','M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',zh?'退出登录':'Keluar',1)+'</div>';document.body.appendChild(m);}
 function avMenu(){var zh=L==='zh',has=!!myAv(),m=document.createElement('div');m.id='avm';m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:flex-end';m.onclick=function(e){if(e.target===m)m.remove();};
  m.innerHTML='<div style="background:#fff;width:100%;border-radius:16px 16px 0 0;padding:16px 16px 24px"><b>'+(zh?'更换头像':'Ganti foto profil')+'</b><div class="small muted" style="margin:4px 0 10px">'+(zh?'自愿上传，只显示在你自己的 LK Hub 里。建议用清楚的正脸照。':'Opsional, hanya tampil di LK Hub kamu. Sebaiknya foto wajah yang jelas.')+'</div>'
@@ -439,8 +543,8 @@ function sdLinks(l,regs){var zh=L==='zh';return (regs||[]).map(function(r){retur
 function scHr(){var zh=L==='zh',tab=S.sdT||0,h='<h2 style="margin:4px 0 10px">'+(zh?'人事':'SDM')+'</h2>';
  if(S.sdNeed||!sdmTk())return h+'<div class="card"><b>'+(zh?'请再输入一次密码':'Masukkan password sekali lagi')+'</b><div class="small muted" style="margin:4px 0 8px">'+(zh?'人事里是全员资料，第一次打开要确认一下是你本人（到明天早上 6 点前不用再输）。':'Data SDM berisi data semua karyawan, jadi perlu konfirmasi sekali (berlaku sampai besok jam 06:00).')+'</div><input id="sdmpw" type="password" autocomplete="current-password" placeholder="'+t('pw')+'"><button class="btn" onclick="sdmPw()">'+(zh?'确认':'Konfirmasi')+'</button></div>';
  if(S.sdP)return sdPerson();
- var tabs=zh?['门店人员','门店班次','考勤','积分校正']:['Tim Toko','Shift Toko','Absensi','Koreksi Poin'];
- h+='<div style="display:flex;background:#e6e4df;border-radius:12px;padding:3px;margin-bottom:12px">'+tabs.map(function(n,k){var off=k===3&&SDM_NOADJ.indexOf(String(S.user.nick||'').toLowerCase())>=0;return '<button onclick="S.sdT='+k+';render();window.scrollTo(0,0)" style="flex:1;border:0;border-radius:10px;padding:9px 2px;font-size:13px;font-weight:'+(k===tab?'700;background:#fff;color:'+(off?'#aaa':'#111'):'500;background:transparent;color:'+(off?'#bbb':'#666'))+'">'+n+'</button>';}).join('')+'</div>';
+ var tabs=zh?['门店人员','门店班次','考勤','积分校正','我的记录']:['Tim Toko','Shift Toko','Absensi','Koreksi Poin','Riwayat saya'];
+ h+='<div style="display:flex;background:#e6e4df;border-radius:12px;padding:3px;margin-bottom:12px">'+tabs.map(function(n,k){var off=k>=3&&SDM_NOADJ.indexOf(String(S.user.nick||'').toLowerCase())>=0;return '<button onclick="S.sdT='+k+';render();window.scrollTo(0,0)" style="flex:1;border:0;border-radius:10px;padding:9px 2px;font-size:13px;font-weight:'+(k===tab?'700;background:#fff;color:'+(off?'#aaa':'#111'):'500;background:transparent;color:'+(off?'#bbb':'#666'))+'">'+n+'</button>';}).join('')+'</div>';
  if(S.sdErr){S.sdErr=0;h+='<div class="card" style="background:#fdecea">'+(zh?'读取失败，请稍后再试':'Gagal memuat, coba lagi nanti')+'</div>';}
  var ld='<div class="card">'+t('loading')+'</div>';
  if(tab===0){var d=(S.sd||{}).people;if(!d){sdmLoad('people','people');return h+ld;}
@@ -465,6 +569,9 @@ function scHr(){var zh=L==='zh',tab=S.sdT||0,h='<h2 style="margin:4px 0 10px">'+
   var c=function(v,l,red){return '<span style="margin-right:10px;'+(v&&red?'color:#d93025;font-weight:600':'color:#666')+'">'+l+' '+v+'</span>';};
   h+='<div class="card" style="padding:4px 14px">'+list.map(function(a,i){return '<div onclick="S.sdP={nick:\''+a.nick+'\',name:\''+esc(a.name).replace(/\'/g,'')+'\',ym:\''+d.ym+'\'};render();window.scrollTo(0,0)" style="padding:9px 0;'+(i?'border-top:1px solid #eee;':'')+'cursor:pointer"><div style="display:flex;justify-content:space-between;font-size:14px"><b>'+esc(a.name)+'</b><span class="muted">›</span></div><div class="small muted">'+esc(a.stores.map(function(x){return x.name;}).join(' · '))+'</div><div class="small" style="margin-top:2px">'+c(a.days,zh?'出勤':'Hadir')+c(a.late,zh?'迟到':'Telat',1)+c(a.early,zh?'早退':'Pulang awal',1)+c(a.noOut,zh?'没打下班卡':'Tanpa pulang',1)+c(a.absent,zh?'旷工':'Alpa',1)+'</div></div>';}).join('')+'</div>';
   return h;}
+ if(tab===4){if(SDM_NOADJ.indexOf(String(S.user.nick||'').toLowerCase())>=0)return h+'<div class="card muted" style="text-align:center;padding:24px">'+(zh?'积分校正由 HR 操作，你这里没有记录':'Belum ada catatan')+'</div>';var d4=(S.sd||{}).adj;if(!d4){sdmLoad('adj','adjList');return h+ld;}
+  var me=[String(S.user.nick||'').toLowerCase(),String(((S.boot&&S.boot.me)||{}).fullName||S.user.fullName||'').toLowerCase()],mine=d4.list.filter(function(x){var b=String(x.by||'').toLowerCase();return b&&me.indexOf(b)>=0;});
+  return h+'<div class="small muted" style="margin-bottom:8px">'+(zh?'你做过的积分校正和旷工登记 · 只能看，不能改 · 要改请再提交一条校正':'Koreksi yang kamu buat · hanya bisa dilihat')+'</div><div class="card">'+(mine.length?mine.map(function(x){return '<div style="padding:8px 0;border-top:1px solid #eee;font-size:14px"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+esc(x.name)+' · '+esc(x.date)+'</b><b style="color:'+(x.points<0?'#d93025':'#1e8e3e')+'">'+(x.points>0?'+':'')+x.points+'</b></div><div class="small">'+esc(x.reason)+'</div><div class="small muted">'+esc(x.created)+'</div></div>';}).join(''):'<div class="small muted">'+(zh?'还没有':'Belum ada')+'</div>')+'</div>';}
  if(SDM_NOADJ.indexOf(String(S.user.nick||'').toLowerCase())>=0)return h+'<div class="card" style="text-align:center;color:#888;padding:28px 16px"><div style="font-size:15px;font-weight:600;color:#666">'+(zh?'暂无权限':'Belum ada akses')+'</div><div class="small" style="margin-top:6px">'+(zh?'积分校正由 HR 操作。需要校正的话，请把人、日期和原因发给 HR。':'Koreksi poin dilakukan oleh HR. Kirim nama, tanggal, dan alasannya ke HR.')+'</div></div>';
  var d=(S.sd||{}).adj;if(!d){sdmLoad('adj','adjList');return h+ld;}
  var F=S.sdF=S.sdF||{kind:'ADJ',date:''},ppl=d.people.slice().sort(function(a,b){return String(a.name).localeCompare(b.name);});
@@ -775,6 +882,7 @@ function scCheckMod(){var d=loadDraft(),h='<h2 style="margin:4px 0 10px">'+(L===
  if(d&&d.nick===S.user.nick)h+='<div class="card" style="background:#fff8d6"><b>'+(L==='zh'?'你有一份没做完的检查':'Ada inspeksi yang belum selesai')+'</b><div class="small">'+esc(d.storeId+' '+d.storeName)+' · '+(d.type==='STD'?t('std'):t('spot'))+'</div><button class="btn" onclick="resume()">'+t('resume')+'</button><button class="btn btn2" onclick="discard()">'+t('discard')+'</button></div>';
  var core=!!((S.boot&&S.boot.me)||{}).core;
  [['STD','check',t('std'),t('stdsub')],['SPOT','scan',t('spot'),t('spotsub')]].forEach(function(x){var on=(S.user.entries||[]).indexOf(x[0])>=0;if(!on&&!core)return;h+=ecard(on,on?'newVisit(\''+x[0]+'\')':'offToast()',x[1],x[2],x[3]);});
+ if((S.user.entries||[]).length)h+=ecard(1,"S.fromDash=0;navTo('myrec')",'user',L==='zh'?'我的记录':'Riwayat saya',L==='zh'?'最近 60 天自己做过的检查，按门店看，只读':'Inspeksi saya 60 hari terakhir, per toko');
  return h;}
 function loadFin(who){if(!who)S.finLoading=1;S.finWhoC=S.finWhoC||{};run('getPettyCash',who?[S.token,who]:[S.token],function(r){if(who){S.finWhoC[who]=r;if(S.finWhoName===who)S.finWho=r;}else{S.finLoading=0;S.fin=r;S.finErr=0;try{localStorage.setItem(finKey(),JSON.stringify(r));}catch(e){}}if(S.mod==='fin')render();},function(){if(!who)S.finLoading=0;if(S.mod==='fin'&&!(who?S.finWho:S.fin)){S.finErr=1;render();}});}
 function pLabel(p){var zh=L==='zh',m=/^(\d{4})(\d{2})$/.exec(p),mn=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];if(m)return zh?m[1]+'年'+Number(m[2])+'月':mn[Number(m[2])-1]+' '+m[1];if(/26H1/.test(p))return zh?'2026 上半年':'Jan–Jun 2026';var y=/(\d{4})/.exec(p);return y?y[1]:p;}
