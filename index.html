@@ -134,6 +134,7 @@ reasons:[['Ada toko pesaing baru di dekat sini','附近新开了竞争店'],['St
 function t(k,i){var v=T[k];if(!v)return k;return L==='zh'?v[1]:v[0];}
 function tt(arr){return L==='zh'?arr[1]:arr[0];}
 function f(it,k){return it[k+'_'+L]||it[k+'_id']||'';}
+function langLbl(){var on=function(x,t){return L===x?'<b style="color:#FDCD17">'+t+'</b>':'<span style="opacity:.45">'+t+'</span>';};return on('id','ID')+' | '+on('zh','中文');}
 function setLangTo(l){if(L!==l)toggleLang();}
 function toggleLang(){L=L==='zh'?'id':'zh';localStorage.setItem('lk_lang',L);if(S.token)run('setLang',[S.token,L],function(){},function(){});render();}
 
@@ -259,7 +260,7 @@ function recPause(){if(!REC)return;if(REC.paused){REC.mr.resume();REC.t0=Date.no
 function recStop(force){if(!REC||REC.stopping)return;REC.sec=recClock();if(!force&&REC.sec<REC.min*60){toast(t('tooshort')+' '+REC.min+' '+t('minutes'));return;}REC.stopping=true;clearInterval(REC.timer);if(REC.paused){REC.mr.resume();}REC.mr.stop();}
 
 // ================= screens =================
-function render(){var dk=S._desk=!!(S.token&&!S.mustChange&&deskOn()),dv=document.getElementById('dnav');document.body.classList.toggle('desk',dk);document.body.classList.toggle('dv',dk&&!!S.v);render0();if(dk&&dv){dv.innerHTML=S.boot?deskNav():'';if(!S.v&&S.boot){var tb=deskTabs();if(tb)document.getElementById('app').insertAdjacentHTML('afterbegin',tb);}}else if(dv)dv.innerHTML='';}
+function render(){var lb=document.querySelector('header .lang');if(lb)lb.innerHTML=langLbl();var dk=S._desk=!!(S.token&&!S.mustChange&&deskOn()),dv=document.getElementById('dnav');document.body.classList.toggle('desk',dk);document.body.classList.toggle('dv',dk&&!!S.v);render0();if(dk&&dv){dv.innerHTML=S.boot?deskNav():'';if(!S.v&&S.boot){var tb=deskTabs();if(tb)document.getElementById('app').insertAdjacentHTML('afterbegin',tb);}}else if(dv)dv.innerHTML='';}
 function render0(){var a=document.getElementById('app');setSync();if(!S.v||S.v.type!=='SPOT')SPOT_KEY='';
  if(!S.token)return a.innerHTML=scLogin();
  if(S.mustChange)return a.innerHTML=scChangePw();
