@@ -423,6 +423,11 @@ function homeAlerts(K){var zh=L==='zh',H=(S.boot&&S.boot.home)||{},D=H.dash,al=[
  (S.boot.health||[]).forEach(function(x){al.push(['#b3261e',esc(x.src||'')+(zh?' 数据读取异常':' gagal dibaca'),(zh?'从 ':'Sejak ')+esc(x.since||'')+(x.bak?(zh?' · 正在用备份数据':' · pakai data cadangan'):'')]);});
  if(D){var nv=(D.stores||[]).filter(function(x){return !x.inHalf;}).length,pg=perDays(D.half);if(nv)al.push(['#e0a100',(zh?nv+' 家店本期（'+pd(D.half)+'）还没人做标准化检核':nv+' toko belum diinspeksi periode ini'),(pg?(zh?'本期已过 '+pg.gone+'/'+pg.tot+' 天 · ':pg.gone+'/'+pg.tot+' hari · '):'')+(zh?'点开检查看板':'Buka dashboard'),dash]);
   if(D.iss&&D.iss.over)al.push(['#b3261e',(zh?D.iss.over+' 项整改已超期':D.iss.over+' perbaikan lewat batas'),zh?'点开看是哪几项':'Lihat detail',dash]);}
+ // 2026-11-21：每天 10:30 后，还没人打卡 / 没做开店检查的门店在首页标红（数据同「门店运营 · 今日」；11/24 门店正式开始用之前不显示）
+ var jk=new Date(Date.now()+7*3600000),jd=jk.toISOString().slice(0,10),jm=jk.getUTCHours()*60+jk.getUTCMinutes();
+ if(sdmTk()&&jd>='2026-11-24'&&jm>=630){var od=(S.sd||{}).opsT_;if(!od)sdmLoad('opsT_','opsToday',{date:''});else if(od.ok){var ls=od.list||[],ni=ls.filter(function(x){return (x.flags||[]).some(function(f){return f.k==='NO_IN'});}),nb=ls.filter(function(x){return (x.flags||[]).some(function(f){return f.k==='NO_BUKA'});}),go="S.nav=[];S.opT=0;S.opD='';S.mod='ops';render()";
+  if(ni.length)al.push(['#b3261e',(zh?ni.length+' 家店 10:30 了还没人打卡':ni.length+' toko belum ada yang absen (10:30)'),ni.map(function(x){return esc(x.name)}).slice(0,6).join('、')+(ni.length>6?' …':''),go]);
+  if(nb.length)al.push(['#b3261e',(zh?nb.length+' 家店打了卡但还没做开店检查':nb.length+' toko belum cek buka'),nb.map(function(x){return esc(x.name)}).slice(0,6).join('、')+(nb.length>6?' …':''),go]);}}
  if(K){if(K.lo)al.push(['#e0a100',(zh?K.lo+' 家店预计月达成不到 85%':K.lo+' toko proyeksi < 85%'),zh?'点开看是哪几家':'Lihat toko',S._desk?"deskGo('sales')":"slOpen('store')"]);
   al.push(['#9aa0a6',(zh?'销售数据到 ':'Data penjualan s.d. ')+mdLbl(K.asOf),zh?'POS 最近一次更新':'Update POS terakhir']);}
  return al;}
@@ -623,7 +628,7 @@ function sdcKey(){return 'lk_sdc_'+String((S.user&&S.user.nick)||'').trim().toLo
 function sdcHyd(){if(S.sdHyd)return;S.sdHyd=1;S.sd=S.sd||{};S.sdFresh=S.sdFresh||{};try{var c=JSON.parse(secStore().getItem(sdcKey())||'null')||{};SDC_KEEP.forEach(function(k){if(c[k]&&!S.sd[k])S.sd[k]=c[k];});}catch(e){}}
 function sdcSave(){try{var o={};SDC_KEEP.forEach(function(k){if(S.sd&&S.sd[k])o[k]=S.sd[k];});secStore().setItem(sdcKey(),JSON.stringify(o));}catch(e){}}
 function sdmPre(){if(!sdmTk())return;sdmLoad('people','people');sdmLoad('shifts','shifts');sdmLoad('attM_','attMonth',{ym:''});if(!sdmNoAdj())sdmLoad('adj','adjList');}
-function sdmLoad(k,op,a){sdcHyd();S.sd=S.sd||{};S.sdFresh=S.sdFresh||{};if(S.sd['_'+k]||(S.sd[k]&&S.sdFresh[k]))return;S.sd['_'+k]=1;sdmCall(op,a,function(r){S.sd[k]=r;S.sdFresh[k]=1;delete S.sd['_'+k];if(SDC_KEEP.indexOf(k)>=0)sdcSave();if(S.mod==='hr'||S.mod==='ops'||S.mod==='ntc'||((k==='ntc'||k==='fb')&&!S.mod&&!S.v))render();});}
+function sdmLoad(k,op,a){sdcHyd();S.sd=S.sd||{};S.sdFresh=S.sdFresh||{};if(S.sd['_'+k]||(S.sd[k]&&S.sdFresh[k]))return;S.sd['_'+k]=1;sdmCall(op,a,function(r){S.sd[k]=r;S.sdFresh[k]=1;delete S.sd['_'+k];if(SDC_KEEP.indexOf(k)>=0)sdcSave();if(S.mod==='hr'||S.mod==='ops'||S.mod==='ntc'||((k==='ntc'||k==='fb'||k==='opsT_')&&!S.mod&&!S.v))render();});}
 function sdmPw(){var p=document.getElementById('sdmpw').value;if(!p)return;busyOn('…');tkCall('sdmLogin',[S.user.nick,p],function(r){busyOff();if(!r.ok)return toast(r.err==='LOCKED'?(L==='zh'?'错误次数太多，请 15 分钟后再试':'Terlalu banyak salah, coba 15 menit lagi'):t('wrong'));try{secStore().setItem(sdmKey(),r.ticket);}catch(e){}S.sdNeed=0;S.sd={};render();},function(){busyOff();toast(t('err'));});}
 function sdmBadge(){var s=(S.sd||{}).sum;return s&&s.n?'<span style="position:absolute;top:8px;right:10px;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:#d93025;color:#fff;font-size:12px;font-weight:700;line-height:20px">'+s.n+'</span>':'';}
 var SD_REG={West:['西区','Barat'],East:['东区','Timur']};
